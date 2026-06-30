@@ -41,8 +41,17 @@ services:
     networks:
       - elk-os
     healthcheck:
-      # The login route renders without auth or Directus — a stable 200 target.
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/login >/dev/null 2>&1 || wget -qO- http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1"]
+      # node:22-bookworm-slim ships neither wget nor curl, so probe with node
+      # itself. The auth-free /login route renders without Directus — a stable
+      # 200 target; fall back to the marketing root.
+      test:
+        - CMD
+        - node
+        - -e
+        - |
+          const http=require('http');
+          const hit=(p)=>new Promise(r=>http.get({host:'127.0.0.1',port:3000,path:p},res=>{res.resume();r(res.statusCode===200)}).on('error',()=>r(false)));
+          (async()=>process.exit((await hit('/login'))||(await hit('/'))?0:1))();
       interval: 15s
       timeout: 10s
       retries: 5
