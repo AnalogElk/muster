@@ -359,5 +359,36 @@ system did exactly that, to itself, live.*
 
 ---
 
+## 2026-06-29 — Session 8: Muster — the front door becomes the whitepaper
+
+The demo got its own identity, and the Analog Elk layer was demoted from headline to
+footnote. A 17-agent panel (948k tokens: 10 research lenses → 2 drafts → 3 adversarial
+critics → 2 finals) produced this whitepaper ("The Task Record Is the Coordination
+Substrate") and resolved the project's name to **Muster** — *"Muster the agents. Keep
+the receipts."*, category *"the operating system for agentic software teams"* —
+rejecting "Elk OS," "Cairn," "Quorum," and "Agency OS" for dev-namespace collisions and
+to fully decouple from Analog Elk (note: "Elk" still echoed the origin).
+
+A distinctively-designed static landing (bone/pine/ember palette, editorial serif +
+a monospace "Build Telemetry" rail, a self-drawing "Build-Trail" mark) was built as the
+**whitepaper-as-homepage**, with the full paper rendered on `/paper.html` and inner
+links into the live system. It deployed to the box and Caddy was repointed: the apex
+now serves the Muster whitepaper home; the portal is demoted to `app.<host>`; the board
+stays at `cms.<host>` — all with real Let's Encrypt TLS. Verified live (apex `<title>`
+= "Muster …", 200, valid chain).
+
+**The cost/benefit verdict (the analysis requested, grounded in real metrics):** the
+apparatus did **not** primarily buy speed (~1.5–2×, honestly estimated; an invented
+Amdahl figure was deleted rather than dressed up). It bought **correctness** (error-
+decorrelated verification caught ~13 defects a single error-correlated pass would ship)
+and **durability** (2M+ tokens across 7 sessions — categorically impossible for one
+context window). The cost is a real token premium: insurance you pay whether or not you
+file a claim.
+
+Commits through `3337e13`. The whitepaper, the identity (Muster), and the new front
+door are live at https://34.220.64.149.sslip.io.
+
+---
+
 <!-- Append new sessions/phases below. Each phase flips from aspirational to real
      only when `doctor` proves it. -->
