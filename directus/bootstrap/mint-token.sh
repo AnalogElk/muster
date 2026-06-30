@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# =============================================================================
+# Elk OS — Directus admin static-token minter (non-interactive)
+# =============================================================================
+# The agencyos-test prototype required a human to click "Generate Static Token"
+# in the Directus UI. We automate it:
+#
+#   1. Directus auto-creates the admin user from ADMIN_EMAIL/ADMIN_PASSWORD on
+#      first boot of an empty database.
+#   2. We log in over REST to get a short-lived access token.
+#   3. We generate a strong random static token and PATCH it onto the admin user.
+#   4. We verify the static token authenticates, then write it back to .env.
+#
+# Idempotent: if DIRECTUS_ADMIN_TOKEN is already populated in .env, we no-op.
+# The token is NEVER echoed to stdout/stderr (constitution rule).
+#
+# Usage: mint-token.sh <path-to-.env>
+# =============================================================================
+set -euo pipefail
+
+ENV_FILE="${1:?usage: mint-token.sh <path-to-.env>}"
+[ -f "$ENV_FILE" ] || { echo "[bootstrap] env file not found: $ENV_FILE" >&2; exit 1; }
+
+# --- minimal .env get/set (self-contained so this script stands alone) -------
+get_env() {
+  local key="$1"
+  grep -E "^${key}=" "$ENV_FILE" 2>/dev/null | head -n1 | cut -d= -f2- || true
+}
+
+set_env() {
+  local key="$1" val="$2"
+  if grep -qE "^${key}=" "$ENV_FILE"; then
+    awk -v k="$key" -v v="$val" 'BEGIN{FS="="} $1==k{print k"="v; next} {print}' \
+      "$ENV_FILE" > "$ENV_FILE.tmp" && mv "$ENV_FILE.tmp" "$ENV_FILE"
+  else
+    printf '%s=%s\n' "$key" "$val" >> "$ENV_FILE"
+  fi
+}
+
+URL="$(get_env DIRECTUS_URL)";            URL="${URL:-http://localhost:8056}"
+EMAIL="$(get_env DIRECTUS_ADMIN_EMAIL)";  EMAIL="${EMAIL:-admin@example.com}"
+PASSWORD="$(get_env DIRECTUS_ADMIN_PASSWORD)"
+EXISTING="$(get_env DIRECTUS_ADMIN_TOKEN)"
+
+# --- idempotency: a token already present and working? -----------------------
+if [ -n "$EXISTING" ]; then
+  if curl -sf -o /dev/null -H "Authorization: Bearer ${EXISTING}" "${URL}/users/me?fields=id" 2>/dev/null; then
+    echo "[bootstrap] admin static token already present and valid — skipping mint."
+    exit 0
+  fi
+  echo "[bootstrap] existing DIRECTUS_ADMIN_TOKEN did not authenticate — re-minting."
+fi
+
+if [ -z "$PASSWORD" ]; then
+  echo "[bootstrap] DIRECTUS_ADMIN_PASSWORD is empty in .env — cannot log in." >&2
+  exit 1
+fi
+
+# --- 1. log in for a short-lived access token --------------------------------
+LOGIN_BODY=$(printf '{"email":"%s","password":"%s"}' "$EMAIL" "$PASSWORD")
+LOGIN_RESP=$(curl -sf -X POST "${URL}/auth/login" \
+  -H "Content-Type: application/json" \
+  -d "$LOGIN_BODY" 2>/dev/null) || {
+  echo "[bootstrap] login to ${URL} failed — is Directus healthy?" >&2
+  exit 1
+}
+
+ACCESS=$(printf '%s' "$LOGIN_RESP" | grep -o '"access_token":"[^"]*"' | head -n1 | cut -d'"' -f4)
+if [ -z "$ACCESS" ]; then
+  echo "[bootstrap] could not parse access_token from login response." >&2
+  exit 1
+fi
+
+# --- 2. resolve the admin user id --------------------------------------------
+ME=$(curl -sf -H "Authorization: Bearer ${ACCESS}" "${URL}/users/me?fields=id" 2>/dev/null) || {
+  echo "[bootstrap] /users/me lookup failed." >&2; exit 1; }
+USER_ID=$(printf '%s' "$ME" | grep -o '"id":"[^"]*"' | head -n1 | cut -d'"' -f4)
+if [ -z "$USER_ID" ]; then
+  echo "[bootstrap] could not resolve admin user id." >&2
+  exit 1
+fi
+
+# --- 3. generate + assign a strong static token ------------------------------
+NEW_TOKEN=$(openssl rand -hex 32)
+curl -sf -o /dev/null -X PATCH "${URL}/users/${USER_ID}" \
+  -H "Authorization: Bearer ${ACCESS}" \
+  -H "Content-Type: application/json" \
+  -d "{\"token\":\"${NEW_TOKEN}\"}" 2>/dev/null || {
+  echo "[bootstrap] failed to PATCH static token onto admin user." >&2
+  exit 1
+}
+
+# --- 4. verify the static token, then persist to .env ------------------------
+if ! curl -sf -o /dev/null -H "Authorization: Bearer ${NEW_TOKEN}" "${URL}/users/me?fields=id" 2>/dev/null; then
+  echo "[bootstrap] minted token did not authenticate — aborting without writing .env." >&2
+  exit 1
+fi
+
+set_env DIRECTUS_ADMIN_TOKEN "$NEW_TOKEN"
+unset NEW_TOKEN ACCESS
+echo "[bootstrap] admin static token minted and written to .env (value hidden)."
