@@ -14,6 +14,11 @@ dist/
 # portal/prepare-context.sh; never committed.
 portal/.build/
 
+# Claude-side OS rendered by `elk-os wire` — per-deployment, bakes absolute
+# local paths into hook commands + run-claude.sh. Regenerated on demand; its
+# .mcp.json references the token by env name only, but never commit this dir.
+wire/
+
 # Docker / data volumes (when bind-mounted locally)
 data/
 uploads/

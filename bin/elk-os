@@ -32,6 +32,7 @@ PROFILES_DIR="${ROOT}/profiles"
 BOOTSTRAP="${ROOT}/directus/bootstrap/mint-token.sh"
 SCHEMA_SNAPSHOT="${ROOT}/directus/schema/snapshot.json"
 SEED_DIR="${ROOT}/directus/seed"
+CLAUDE_OS_DIR="${ROOT}/claude-os"
 
 # ---------------------------------------------------------------------------
 # Colour / logging helpers
@@ -463,6 +464,25 @@ cmd_doctor() {
     doctor_row "Seeded os_task" 2 "no admin token yet" "Run ./bin/elk-os up (mints token), then migrate && seed"
   fi
 
+  # 7b. Native Directus MCP server (the agent's door to the os_* board).
+  #     Enabled by `wire` (settings.mcp_enabled). WARN (not red) when disabled
+  #     so a valid pre-wire stack stays green; the loop only needs it post-wire.
+  if [ -n "$stok" ]; then
+    local mcp_code
+    mcp_code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
+      -X POST -H "Authorization: Bearer ${stok}" -H 'Content-Type: application/json' \
+      -H 'Accept: application/json, text/event-stream' \
+      -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
+      "${url%/}/mcp" 2>/dev/null || echo 000)
+    case "$mcp_code" in
+      200) doctor_row "Directus MCP" 0 "${url%/}/mcp → tools/list 200 (loop endpoint live)" ;;
+      403) doctor_row "Directus MCP" 2 "${url%/}/mcp → disabled (settings.mcp_enabled=false)" "Run ./bin/elk-os wire to enable the native MCP server." ;;
+      *)   doctor_row "Directus MCP" 2 "${url%/}/mcp → HTTP ${mcp_code}" "Native MCP not reachable — check ./bin/elk-os logs directus." ;;
+    esac
+  else
+    doctor_row "Directus MCP" 2 "no admin token yet" "Run ./bin/elk-os up, then wire."
+  fi
+
   # 8. Portal HTTP (only when the overlay is enabled). Green on HTTP 200 from
   #    the auth-free /login route (falls back to /). Red otherwise.
   if with_portal; then
@@ -716,9 +736,149 @@ cmd_rebuild_portal() {
 }
 
 # ---------------------------------------------------------------------------
-# wire — P5 stub
+# wire — P5: render the Claude-side OS into a deployment config directory
 # ---------------------------------------------------------------------------
-cmd_wire()    { echo "P5: wire (CLAUDE.md + .mcp.json + hooks + memory) not yet implemented."; exit 0; }
+# Renders templates from claude-os/ into an output dir (default ./wire) so a
+# buyer can `cd` there and run Claude Code already wired to THIS deployment's
+# Directus + os_* board:
+#   .mcp.json           → the native Directus MCP server (URL substituted; token
+#                         left as the ${DIRECTUS_ADMIN_TOKEN} env reference — the
+#                         secret is NEVER written into a file).
+#   CLAUDE.md           → the profile's agency-OS constitution.
+#   README.md           → how to use the wired directory.
+#   run-claude.sh       → turnkey launcher (sources the deployment .env, exec claude).
+#   .claude/settings.json + .claude/hooks/  → SessionStart banner + os_tasks snapshot.
+#   .claude/memory/     → MEMORY.md index + the auto-memory pattern note.
+#
+# It also enables Directus's native MCP server (the `mcp_enabled` project
+# setting, off by default) so the wired .mcp.json works out of the box, then
+# proves the loop by reading seeded os_tasks back through the same endpoint+token.
+# Idempotent; marks `wire` in state. Secrets are never printed.
+
+# Render a {{PLACEHOLDER}} template to a destination. `|` is the sed delimiter,
+# so substituted values (URLs, paths, brand) must not contain `|` — they don't.
+render_tmpl() {
+  local src="$1" dest="$2"
+  sed \
+    -e "s|{{DIRECTUS_URL}}|${WIRE_DIRECTUS_URL}|g" \
+    -e "s|{{DIRECTUS_MCP_URL}}|${WIRE_MCP_URL}|g" \
+    -e "s|{{BRAND_NAME}}|${WIRE_BRAND}|g" \
+    -e "s|{{PROFILE}}|${WIRE_PROFILE}|g" \
+    -e "s|{{ENV_FILE}}|${WIRE_ENV_FILE}|g" \
+    -e "s|{{WIRE_DIR}}|${WIRE_DIR}|g" \
+    -e "s|{{GENERATED_AT}}|${WIRE_GENERATED_AT}|g" \
+    "$src" > "$dest"
+}
+
+cmd_wire() {
+  [ -f "$ENV_FILE" ] || die ".env not found. Run ./bin/elk-os init first."
+  [ -d "$CLAUDE_OS_DIR" ] || die "claude-os/ templates not found at $CLAUDE_OS_DIR"
+
+  # --- flags ---
+  local out_dir="${ROOT}/wire"
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --dir) out_dir="${2:?--dir needs a path}"; shift 2 ;;
+      *) die "Unknown wire flag: $1" ;;
+    esac
+  done
+
+  # --- resolve substitution values from .env ---
+  WIRE_PROFILE="$(get_env ELK_OS_PROFILE)"; WIRE_PROFILE="${WIRE_PROFILE:-generic}"
+  WIRE_BRAND="$(get_env ELK_OS_BRAND_NAME)"; WIRE_BRAND="${WIRE_BRAND:-Elk OS}"
+  WIRE_DIRECTUS_URL="$(get_env DIRECTUS_URL)"; WIRE_DIRECTUS_URL="${WIRE_DIRECTUS_URL:-http://localhost:8056}"
+  WIRE_MCP_URL="${WIRE_DIRECTUS_URL%/}/mcp"
+  WIRE_ENV_FILE="$ENV_FILE"
+  WIRE_GENERATED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  # absolute output dir (created below) for self-referential hook paths
+  mkdir -p "$out_dir"
+  WIRE_DIR="$(cd "$out_dir" && pwd)"
+
+  local prof_dir="${CLAUDE_OS_DIR}/profiles/${WIRE_PROFILE}"
+  [ -d "$prof_dir" ] || die "No claude-os profile templates for '${WIRE_PROFILE}' at $prof_dir"
+
+  info "Wiring the Claude-side OS for profile '${WIRE_PROFILE}' → ${WIRE_DIR}"
+
+  # --- 1. enable the native Directus MCP server (settings.mcp_enabled) ---
+  local tok url; tok="$(get_env DIRECTUS_ADMIN_TOKEN)"; url="$WIRE_DIRECTUS_URL"
+  if [ -n "$tok" ]; then
+    local code
+    code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 \
+      -X PATCH -H "Authorization: Bearer ${tok}" -H 'Content-Type: application/json' \
+      -d '{"mcp_enabled":true}' "${url%/}/settings" 2>/dev/null || echo 000)
+    if [ "$code" = "200" ]; then
+      success "Directus native MCP server enabled (settings.mcp_enabled=true)."
+    else
+      warn "Could not enable the Directus MCP setting (HTTP ${code}). The .mcp.json"
+      warn "is still written; enable MCP in Directus Settings or re-run wire once up."
+    fi
+  else
+    warn "DIRECTUS_ADMIN_TOKEN is empty — skipping MCP enable + loop verify."
+    warn "Run ./bin/elk-os up to mint the token, then re-run ./bin/elk-os wire."
+  fi
+
+  # --- 2. render top-level files ---
+  render_tmpl "${prof_dir}/CLAUDE.md.tmpl"    "${WIRE_DIR}/CLAUDE.md"
+  render_tmpl "${CLAUDE_OS_DIR}/mcp.json.tmpl" "${WIRE_DIR}/.mcp.json"
+  render_tmpl "${CLAUDE_OS_DIR}/README.tmpl.md" "${WIRE_DIR}/README.md"
+  render_tmpl "${CLAUDE_OS_DIR}/run-claude.sh.tmpl" "${WIRE_DIR}/run-claude.sh"
+  chmod +x "${WIRE_DIR}/run-claude.sh"
+
+  # --- 3. .claude/ : settings (rendered) + hooks (verbatim) + memory (verbatim) ---
+  mkdir -p "${WIRE_DIR}/.claude/hooks" "${WIRE_DIR}/.claude/memory"
+  render_tmpl "${CLAUDE_OS_DIR}/settings.json.tmpl" "${WIRE_DIR}/.claude/settings.json"
+  cp "${CLAUDE_OS_DIR}/hooks/session-banner.sh"     "${WIRE_DIR}/.claude/hooks/"
+  cp "${CLAUDE_OS_DIR}/hooks/cms-task-snapshot.sh"  "${WIRE_DIR}/.claude/hooks/"
+  chmod +x "${WIRE_DIR}/.claude/hooks/"*.sh
+  cp "${CLAUDE_OS_DIR}/memory-seed/MEMORY.md"               "${WIRE_DIR}/.claude/memory/"
+  cp "${CLAUDE_OS_DIR}/memory-seed/auto-memory-pattern.md"  "${WIRE_DIR}/.claude/memory/"
+
+  echo ""
+  echo -e "${BOLD}Wired files${RESET} (${WIRE_DIR})"
+  printf "  %s\n" "CLAUDE.md                      ${WIRE_PROFILE} constitution"
+  printf "  %s\n" ".mcp.json                      elk-os-cms → ${WIRE_MCP_URL}"
+  printf "  %s\n" "README.md                      usage"
+  printf "  %s\n" "run-claude.sh                  turnkey launcher"
+  printf "  %s\n" ".claude/settings.json          SessionStart hook registration"
+  printf "  %s\n" ".claude/hooks/                 session-banner.sh + cms-task-snapshot.sh"
+  printf "  %s\n" ".claude/memory/                MEMORY.md + auto-memory-pattern.md"
+  echo ""
+  info "In .mcp.json the credential is the ${BOLD}\${DIRECTUS_ADMIN_TOKEN}${RESET} env"
+  info "reference — the real token is never written into the wired directory."
+
+  # --- 4. prove the loop: read seeded os_tasks back through the wired endpoint ---
+  if [ -n "$tok" ]; then
+    echo ""
+    info "Loop check — reading os_tasks back through the wired Directus + token…"
+    local tasks_json
+    if tasks_json=$(curl -sf --max-time 8 -H "Authorization: Bearer ${tok}" \
+        "${url%/}/items/os_tasks?fields=name,status,priority&sort=priority&limit=8" 2>/dev/null); then
+      if printf '%s' "$tasks_json" | grep -q '"name"'; then
+        if command -v python3 >/dev/null 2>&1; then
+          # Payload via env, not stdin: the heredoc already owns stdin (program text).
+          ELK_TASKS_JSON="$tasks_json" python3 - <<'PY'
+import os, json
+rows = json.loads(os.environ.get("ELK_TASKS_JSON", "")).get("data", [])
+print("  \033[0;32m●\033[0m loop closed - a wired Claude session reads %d os_task(s):" % len(rows))
+for r in rows:
+    print("      [%s] %-36s %s" % (r.get("priority") or "--", (r.get("name") or "")[:36], r.get("status") or "?"))
+PY
+        else
+          local n; n=$(printf '%s' "$tasks_json" | grep -o '"name"' | wc -l | tr -d ' ')
+          success "loop closed — wired endpoint returns ${n} os_task row(s)."
+        fi
+      else
+        warn "Loop check: os_tasks is empty. Run ./bin/elk-os migrate && ./bin/elk-os seed."
+      fi
+    else
+      warn "Loop check: could not read os_tasks (is the stack up + migrated + seeded?)."
+    fi
+  fi
+
+  state_mark wire
+  echo ""
+  success "wire complete. Launch: ${BOLD}cd ${WIRE_DIR} && ./run-claude.sh${RESET}  (or ./bin/elk-os doctor)"
+}
 
 # ---------------------------------------------------------------------------
 # usage
@@ -741,7 +901,9 @@ ${BOLD}Commands:${RESET}
   migrate             (P2) apply the pruned os_* schema snapshot (idempotent diff+apply).
   seed                (P2) load directus/seed/<profile>/*.json (idempotent upsert).
   rebuild-portal      (P4) re-prepare the pinned context + rebuild the portal image.
-  wire                (P5) write CLAUDE.md + .mcp.json + hooks + memory — stub.
+  wire [--dir PATH]   (P5) render CLAUDE.md + .mcp.json + hooks + memory into a
+                      deployment config dir (default ./wire), enable the native
+                      Directus MCP server, and prove the loop by reading os_tasks back.
   help                This message.
 
 ${BOLD}Quick start:${RESET}
