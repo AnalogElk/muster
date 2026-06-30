@@ -55,5 +55,40 @@ P7 `6367902d`; repo `elk-os` (this commit).
 
 ---
 
+## 2026-06-29 — Session 1: P0 + P1 are real and green (the first `doctor` pass)
+
+A single background agent built the runnable half of P0 and P1 and **genuinely
+booted the stack** — Postgres + Directus came up, the admin static token was
+minted non-interactively, and `elk-os doctor` reported all five checks green and
+exited 0:
+
+```
+● Docker daemon      OK   reachable
+● .env               OK   present
+● Postgres container OK   running, healthy
+● Directus health    OK   http://localhost:8056 → status ok
+● Admin API token    OK   minted, authenticates (hidden)
+```
+
+On-brand detail for the paper: the agent hit a **real** port collision (5432 and
+5433 were already taken by other Docker Postgres instances on the box) and fixed
+it by isolating elk-os Postgres to 15432 — exactly the friction a fabricated
+"green" never surfaces. Down→`doctor` honestly went red + exit 1.
+
+Commits `82f23d0..267cbe3`. P0 (`28f0cb13`) and P1 (`592489c2`) → **completed**
+in CMS, verified on disk by the orchestrator (commits, executable CLI, all
+subcommands, no `.env` committed).
+
+**Aspirational → real:** the compose core + CLI now exist and run locally.
+Still aspirational: schema/seed (P2), RAG engine (P3), portal (P4), Claude-OS
+wiring + the proven human↔agent loop (P5), cloud demo URL (P6).
+
+**New follow-up filed (not floating, §1):** CI clean-room `doctor` release gate.
+
+**Logged to:** CMS tasks `28f0cb13`, `592489c2` (completed) + new CI-gate task;
+this log; repo `main`.
+
+---
+
 <!-- Append new sessions/phases below. Each phase flips from aspirational to real
      only when `doctor` proves it. -->
