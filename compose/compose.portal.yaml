@@ -19,7 +19,10 @@ services:
       # root), the same convention compose.rag.yaml uses for ./rag-engine.
       context: ./portal/.build
       dockerfile: ../Dockerfile
-    image: elk-os/portal:local
+    # Image-or-build toggle: by default the portal builds locally and is tagged
+    # elk-os/portal:local. Layer compose.images.yaml (ELK_OS_USE_PUBLISHED_IMAGES=true)
+    # to pull a published GHCR image instead — set PORTAL_IMAGE to that ref.
+    image: ${PORTAL_IMAGE:-elk-os/portal:local}
     container_name: elk-os-portal
     restart: unless-stopped
     depends_on:

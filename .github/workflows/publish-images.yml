@@ -1,0 +1,151 @@
+# Build + push the Elk OS service images to GitHub Container Registry (GHCR) on
+# tag, so one-click deploys and `ELK_OS_USE_PUBLISHED_IMAGES=true` installs PULL
+# images instead of building them locally.
+#
+# Triggers on a release tag (vX.Y.Z, cut by release-please) and on manual
+# dispatch. Two images:
+#
+#   ghcr.io/<owner>/elk-os-rag-api   built from ./rag-engine  (fully self-contained)
+#   ghcr.io/<owner>/elk-os-portal    built from the pinned analog-elk-front-end
+#                                     commit (requires source access — see below)
+#
+# IMPORTANT — this only does anything once a GitHub remote + Actions exist.
+# Locally it is inert. The RAG image builds cleanly in CI. The PORTAL image needs
+# the analog-elk-front-end source (a private repo with private deps); the portal
+# job clones it with a PAT and runs portal/prepare-context.sh. If the secret is
+# absent the portal job is SKIPPED (honest: we cannot publish what CI cannot
+# build). The RAG image still publishes.
+name: publish-images
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag to push (defaults to the git ref / 'manual')"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # RAG API — self-contained build from ./rag-engine. Always runnable in CI.
+  # ---------------------------------------------------------------------------
+  rag-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image metadata (tags + labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/elk-os-rag-api
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=ref,event=tag
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build + push RAG API image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./rag-engine
+          file: ./rag-engine/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ---------------------------------------------------------------------------
+  # Portal — needs the analog-elk-front-end source to assemble the build context.
+  # Skipped unless AE_FRONTEND_REPO + AE_FRONTEND_PAT secrets are configured.
+  # ---------------------------------------------------------------------------
+  portal:
+    runs-on: ubuntu-latest
+    # Only attempt when the source repo + token are wired up. `vars`/`secrets`
+    # are not allowed in job-level `if`, so we gate inside the steps instead.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check portal source is configured
+        id: gate
+        env:
+          AE_FRONTEND_REPO: ${{ secrets.AE_FRONTEND_REPO }}
+          AE_FRONTEND_PAT: ${{ secrets.AE_FRONTEND_PAT }}
+        run: |
+          if [ -n "$AE_FRONTEND_REPO" ] && [ -n "$AE_FRONTEND_PAT" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Portal image skipped — set AE_FRONTEND_REPO + AE_FRONTEND_PAT secrets to publish it."
+          fi
+
+      - name: Clone the pinned portal source
+        if: steps.gate.outputs.enabled == 'true'
+        env:
+          AE_FRONTEND_REPO: ${{ secrets.AE_FRONTEND_REPO }}
+          AE_FRONTEND_PAT: ${{ secrets.AE_FRONTEND_PAT }}
+        run: |
+          PIN="$(tr -d '[:space:]' < portal/PINNED_COMMIT)"
+          git clone "https://x-access-token:${AE_FRONTEND_PAT}@${AE_FRONTEND_REPO}" "$RUNNER_TEMP/ae-frontend"
+          git -C "$RUNNER_TEMP/ae-frontend" checkout "$PIN"
+          echo "PORTAL_SOURCE_REPO=$RUNNER_TEMP/ae-frontend" >> "$GITHUB_ENV"
+
+      - name: Prepare the portal build context (frozen archive + self-host patches)
+        if: steps.gate.outputs.enabled == 'true'
+        run: bash portal/prepare-context.sh --force
+
+      - name: Log in to GHCR
+        if: steps.gate.outputs.enabled == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image metadata (tags + labels)
+        if: steps.gate.outputs.enabled == 'true'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/elk-os-portal
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=ref,event=tag
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+
+      - name: Set up Buildx
+        if: steps.gate.outputs.enabled == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build + push portal image
+        if: steps.gate.outputs.enabled == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: ./portal/.build
+          file: ./portal/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

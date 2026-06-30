@@ -77,6 +77,14 @@ with_portal() {
   [ "$v" = "true" ]
 }
 
+# Pull published images (GHCR) instead of building locally? (default off)
+# When on, the compose.images.yaml overlay drops the build sections and pins
+# PORTAL_IMAGE / RAG_IMAGE. Only useful once those images exist (post-publish).
+use_published_images() {
+  local v; v="$(get_env ELK_OS_USE_PUBLISHED_IMAGES)"; v="${v:-false}"
+  [ "$v" = "true" ]
+}
+
 # Build the compose invocation for the current target (reads .env).
 # Overlays (RAG, portal) are appended consistently for every subcommand
 # (up/down/logs) so the same service set is always addressed.
@@ -105,6 +113,11 @@ compose() {
       files+=(-f "${COMPOSE_DIR}/compose.portal.dev.yaml")
     fi
   fi
+  # Image-or-build toggle: layered LAST so its `build: !reset null` wins, pulling
+  # published images instead of building. Off by default (build locally).
+  if use_published_images; then
+    files+=(-f "${COMPOSE_DIR}/compose.images.yaml")
+  fi
   "${DC[@]}" --project-directory "$ROOT" --env-file "$ENV_FILE" "${files[@]}" "$@"
 }
 
@@ -112,6 +125,8 @@ compose() {
 # commit. Ensure that build context exists + is patched before any compose build.
 ensure_portal_context() {
   with_portal || return 0
+  # Pulling a published portal image needs no local build context.
+  use_published_images && return 0
   local prep="${ROOT}/portal/prepare-context.sh"
   [ -f "$prep" ] || { warn "portal/prepare-context.sh missing — skipping portal prep."; return 0; }
   if [ ! -f "${ROOT}/portal/.build/package.json" ]; then

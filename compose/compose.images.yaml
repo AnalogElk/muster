@@ -1,0 +1,24 @@
+# Elk OS — published-images overlay (the image-or-build toggle)
+#
+# Layer this overlay to PULL the portal + RAG API images from a registry (GHCR)
+# instead of building them locally. bin/elk-os appends it automatically when
+# ELK_OS_USE_PUBLISHED_IMAGES=true in .env.
+#
+# `build: !reset null` drops the build section the base overlays declare (Docker
+# Compose >= 2.24), so compose pulls PORTAL_IMAGE / RAG_IMAGE rather than building.
+# Both must be set to fully-qualified refs in .env, e.g.
+#   PORTAL_IMAGE=ghcr.io/<owner>/elk-os-portal:0.1.0
+#   RAG_IMAGE=ghcr.io/<owner>/elk-os-rag-api:0.1.0
+# These images are published by .github/workflows/publish-images.yml on tag.
+#
+# This only helps once those images exist (i.e. a GitHub remote + a published
+# release). Until then, leave ELK_OS_USE_PUBLISHED_IMAGES=false and build locally.
+
+services:
+  portal:
+    build: !reset null
+    image: ${PORTAL_IMAGE:?set PORTAL_IMAGE to a published portal image ref (ELK_OS_USE_PUBLISHED_IMAGES=true)}
+
+  elkos-rag-api:
+    build: !reset null
+    image: ${RAG_IMAGE:?set RAG_IMAGE to a published rag-api image ref (ELK_OS_USE_PUBLISHED_IMAGES=true)}

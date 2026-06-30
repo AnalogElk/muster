@@ -101,6 +101,10 @@ services:
     build:
       context: ./rag-engine
       dockerfile: Dockerfile
+    # Image-or-build toggle: tagged elk-os/rag-api:local from the local build by
+    # default. Layer compose.images.yaml (ELK_OS_USE_PUBLISHED_IMAGES=true) and set
+    # RAG_IMAGE to pull a published GHCR image instead of building.
+    image: ${RAG_IMAGE:-elk-os/rag-api:local}
     container_name: elkos-rag-api
     restart: unless-stopped
     environment:
