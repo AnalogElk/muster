@@ -147,5 +147,55 @@ green but `/query` returns nothing.
 
 ---
 
+## 2026-06-29 — Session 3: P2 built BY Max Mode — and the loop-proof caught its own bugs
+
+This is the recursion's sharpest chapter. P2 (the `os_*` schema + seeds) was built
+not by a single agent but by **the system's own parallel-execution engine** — Max
+Mode, run on the Workflow fan-out — at the human's explicit request ("you should be
+using maxx mode for this"). Eight agents:
+
+**ground** (query the local RAG KB for Directus snapshot/migration guidance) →
+**fan-out** (schema snapshot+prune+`migrate`/`seed` CLI ∥ generic Demo Co seed ∥
+AE seed) → **scrub-audit** → **3 adversarial leak-verifiers** each trying to *prove*
+real client data leaked into the sellable template.
+
+- **Leak gate: clean.** Scrub-audit found + neutralized 6 cosmetic `AnalogElk`/`analogelk.com`
+  refs in UI notes; all three skeptics returned `leakProven: false`; an independent
+  orchestrator grep agreed. Schema pruned **141 → 50** collections, zero dangling refs.
+
+Then the orchestrator's **from-scratch loop-proof** — boot a clean stack, `migrate`,
+`seed`, read an `os_task` back — caught **three real bugs the agents' offline mocks
+could not**:
+
+1. **RAG API port 9100 collided** with the box's already-running elk-v3 engine — and
+   `doctor` was *fooled* into reporting that other engine healthy. (Fixed: default → 19100.)
+2. **`releases` seed missing required `repository_id`** (releases belong to a repo, which
+   carries the project). Fixed both profiles; the AE profile was even missing its
+   `repositories.json`. (Added.)
+3. **AE seed files bare-named** (`projects.json`) collided with the kept `projects`
+   UI-folder collection, so the loader seeded the wrong target. (Renamed to `os_*.json`.)
+
+**Result (both profiles, clean-install, `doctor` all green):** generic `created=17/0`,
+analogelk `created=16/0`, and on each a seeded `os_task` read back through the API. The
+human↔agent task substrate now stands up from **one command**. (The AE demo board even
+seeds tasks describing elk-os's own construction — "Stand up compose core", "Vendor the
+RAG engine overlay".)
+
+**The recursion in one line:** the system used its fan-out engine to build its own
+installer, its adversarial verifiers to check its own template for leaks, and its
+from-scratch loop-proof to catch bugs in its own packaging — including one where its
+own health check was fooled by its own other instance.
+
+Commits `de7fb05`, `5222976`. P2 (`09939f6c`) → **completed**. Robustness follow-ups
+filed (§1): `up` shouldn't let an overlay failure abort core bootstrap; `doctor` should
+confirm it's *our* engine on the port; loader `resolve()` should prefer table
+collections over UI-folder aliases.
+
+**Aspirational → real:** core + RAG + **schema + seeds + the proven loop** now run
+locally on both profiles. Still aspirational: portal (P4), Claude-OS wiring (P5), cloud
+demo URL (P6), self-host packaging (P7).
+
+---
+
 <!-- Append new sessions/phases below. Each phase flips from aspirational to real
      only when `doctor` proves it. -->
