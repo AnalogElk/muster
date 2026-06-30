@@ -1,0 +1,61 @@
+Elk OS
+Copyright (c) 2026 Michael Walliser (Analog Elk)
+
+This product includes work derived from third parties. Their notices are
+retained below as required by their licenses. (Elk OS's own license is not yet
+finalized — see LICENSE-RECOMMENDATION.md.)
+
+================================================================================
+Directus schema / data model — derived from Agency OS
+================================================================================
+
+The Directus schema and data model shipped in Elk OS
+(directus/schema/snapshot.json and the os_* collections) is DERIVED FROM
+directus-labs/agency-os (https://github.com/directus-labs/agency-os), the
+open-source agency operating system published by the Directus Community.
+
+Agency OS is licensed under the MIT License. The Elk OS schema began from the
+Agency OS data model and has been pruned, scrubbed, and extended substantially.
+Because Agency OS is MIT-licensed, that modification and redistribution —
+including resale as part of a commercial product — is expressly permitted,
+provided the upstream MIT notice below is retained.
+
+    MIT License
+
+    Copyright (c) 2023 Directus Community
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+================================================================================
+The portal — Next.js front-end (analog-elk-front-end)
+================================================================================
+
+The Elk OS portal image is built from a pinned commit of analog-elk-front-end
+(Analog Elk's own application, vendored read-only at build time; see
+portal/PINNED_COMMIT and portal/.build/ATTRIBUTION.md). It carries its own
+attribution for the same Agency OS lineage and its bundled open-source
+dependencies.
+
+================================================================================
+Bundled service images (pulled at runtime, not redistributed)
+================================================================================
+
+Elk OS orchestrates, but does not redistribute, these upstream images under
+their own licenses: Directus (directus/directus), PostgreSQL, Qdrant, Redis,
+and Caddy. See each project for its license.

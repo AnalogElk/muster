@@ -264,5 +264,58 @@ a backend host, not just Netlify. Plan revised accordingly.
 
 ---
 
+## 2026-06-29 — Session 6: P7 self-host packaging — Elk OS becomes a product
+
+The working stack is now a distributable product. No new runtime behavior — this
+phase wraps the proven loop in the machinery to ship it: a VPS provisioner, PaaS
+blueprints, image publishing, automated versioning, a landing-grade README, and a
+licensing path.
+
+What landed:
+
+- **`provision/cloud-init.sh` + README** — the reliable full-stack path. On a
+  fresh Ubuntu VPS it installs Docker, places elk-os, writes a box-target `.env`,
+  and runs `up → migrate → seed → wire → doctor` behind Caddy + auto-TLS. The box
+  Caddy routing was finished here (it was a P4 TODO): the **portal on the apex,
+  Directus on `cms.${ELK_OS_DOMAIN}`**, both TLS'd, with the prod compose origins
+  pinned to match. Recommended demo: a ~$6–12/mo VPS + a free `sslip.io` host (no
+  domain cost — `cms.<ip>.sslip.io` resolves automatically).
+- **Deploy blueprints (`deploy/`)** — `render.yaml` (primary one-click: Directus +
+  managed Postgres + portal, RAG optional), `fly/` and `railway.json` (secondary,
+  honest per-service wiring), and `netlify/` (the portal **front-end only**, with
+  the loud caveat that it needs a Directus hosted elsewhere or it won't boot).
+- **`publish-images.yml`** — builds + pushes the portal + RAG images to GHCR on
+  tag. The RAG image is self-contained and builds in CI cleanly; the portal job is
+  **honestly gated** — it needs the private front-end source, so it only runs when
+  `AE_FRONTEND_REPO` + `AE_FRONTEND_PAT` secrets exist, else it skips with a notice.
+- **Image-or-build toggle** — `compose.images.yaml` (`build: !reset null` + pinned
+  `PORTAL_IMAGE`/`RAG_IMAGE`), wired into `bin/elk-os` via
+  `ELK_OS_USE_PUBLISHED_IMAGES`. Validated both modes with `docker compose config`.
+- **Versioning per CLAUDE.md §7** — release-please **`release-type: simple`** (bash
+  repo, not Node): `version.txt` (0.1.0) + `.release-please-manifest.json` +
+  `release-please-config.json` + `release-please.yml`, plus a `CHANGELOG.md`
+  summarizing P0–P5.
+- **Licensing** — no binding `LICENSE` committed (the choice affects monetization;
+  Mike decides). `LICENSE-RECOMMENDATION.md` lays out MIT+attribution vs
+  source-available (BSL/PolyForm — recommended) vs dual-license, and `NOTICE`
+  retains the Agency OS (MIT) lineage.
+
+**Honest verification:** no box, no GitHub remote, so nothing was actually
+deployed. All artifacts were validated **syntactically + for internal
+consistency**: `bash -n` on `cloud-init.sh` and `bin/elk-os`; YAML/JSON/TOML
+parse on every blueprint + workflow; `docker compose config` green for the box
+target and for both image/build modes; ports + env cross-checked against
+`.env.example` and the compose set. The image-publish workflow and release-please
+activate only once a GitHub remote exists; the published-image one-click deploys
+work only once images are pushed. The native MCP enable stays driven by `wire`
+(`settings.mcp_enabled`); `MCP_ENABLED=true` in the PaaS env only *permits* it
+(verified against Directus docs) and is documented as a post-deploy toggle.
+
+**Aspirational → real:** P0–P5 (the loop) remain proven; P7 packaging is built and
+statically verified. Remaining: **P6 — the live public demo URL**, which needs
+real infra (a box + domain/sslip.io, or pushed images + a Render deploy).
+
+---
+
 <!-- Append new sessions/phases below. Each phase flips from aspirational to real
      only when `doctor` proves it. -->
