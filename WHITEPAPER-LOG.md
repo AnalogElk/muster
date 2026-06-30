@@ -230,5 +230,39 @@ heart), cloud demo URL (P6), self-host packaging (P7).
 
 ---
 
+## 2026-06-29 — Session 5: P5 Claude-OS wiring — the loop closes on a from-scratch install (the capstone)
+
+The thesis is now executable end to end. `elk-os wire` installs the Claude-side
+operating system into a deployment and connects a Claude session to the
+deployment's **own** shared task board.
+
+Key finding: Directus 11.15.1 ships a **native MCP server** at `/mcp` (JSON-RPC
+streamable-HTTP; `items` + `system-prompt` tools — the same surface as the prod
+`analog-elk-cms` MCP), gated by a `settings.mcp_enabled` flag (default off). So
+`wire` flips it on and writes a `.mcp.json` pointing `elk-os-cms` at
+`http://localhost:8056/mcp` with the token as a `${DIRECTUS_ADMIN_TOKEN}` env
+reference (never a literal). It also renders a profile-switched `CLAUDE.md`
+constitution, SessionStart hooks (banner + os_tasks queue), a memory seed, and a
+`run-claude.sh` launcher — all from committed `claude-os/` templates into a
+gitignored per-deployment `wire/` dir.
+
+**The loop proof:** on a clean generic boot, `wire` read **8 seeded `os_tasks`
+back through the wired MCP config**, and the SessionStart hooks printed the banner
++ "6 open / 8 total" exactly as a buyer's Claude session would. `doctor` is green
+including a "Directus MCP → tools/list 200" row. One command stands up the
+substrate; `wire` connects Claude to it; the human↔agent loop closes on a
+from-scratch install. That is the whole thesis, reproducible.
+
+Commits `89a7261`, `ad27725`. P5 (`efb782c6`) → **completed**.
+
+**Aspirational → real:** core + RAG + schema/seed + portal + **the wired Claude-OS
+loop** — 6 of 8 phases. Remaining: cloud demo URL (P6), self-host packaging (P7).
+
+**Honest note for P6:** the portal app fail-fasts without a reachable Directus, so
+a backend-less front-end-only demo won't even boot — the live demo genuinely needs
+a backend host, not just Netlify. Plan revised accordingly.
+
+---
+
 <!-- Append new sessions/phases below. Each phase flips from aspirational to real
      only when `doctor` proves it. -->
