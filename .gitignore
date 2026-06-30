@@ -1,0 +1,17 @@
+# Secrets & local state — never commit
+.env
+.env.*
+!.env.example
+.elk-os-state.json
+
+# Dependencies / build
+node_modules/
+dist/
+*.log
+
+# Docker / data volumes (when bind-mounted locally)
+data/
+uploads/
+
+# OS noise
+.DS_Store
