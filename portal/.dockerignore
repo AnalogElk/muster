@@ -1,0 +1,24 @@
+# Elk OS — portal build-context excludes
+# The context is ./.build (a frozen archive). Keep it lean: node_modules and
+# .next are reinstalled/rebuilt in-image, and the rest is dev-only noise that
+# would only bloat the context and bust layer caching.
+
+node_modules
+.next
+.git
+.pnpm-store
+coverage
+.idea
+.vscode
+__tests__
+__fixtures__
+*.test.ts
+*.test.tsx
+playwright-report
+test-results
+.playwright-screenshots
+directus-sync-dump
+deno.lock
+package-lock.json
+*.log
+.DS_Store

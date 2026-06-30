@@ -9,6 +9,11 @@ node_modules/
 dist/
 *.log
 
+# Portal — frozen archive of the pinned analog-elk-front-end commit plus its
+# node_modules / .next build output. Reproduced on demand by
+# portal/prepare-context.sh; never committed.
+portal/.build/
+
 # Docker / data volumes (when bind-mounted locally)
 data/
 uploads/
