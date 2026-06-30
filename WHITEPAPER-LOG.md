@@ -197,5 +197,38 @@ demo URL (P6), self-host packaging (P7).
 
 ---
 
+## 2026-06-29 — Session 4: P4 portal — the human surface, containerized (it renders the thesis)
+
+The Next.js 16 portal is containerized and serving, wired to the fresh Directus. It
+was built **§9-safely** from a READ-ONLY `git archive` of pinned `origin/main`
+(`9931464`) — `analog-elk-front-end` was never touched, and at build time that repo
+had **28 active worktrees** (the agent fleet, made literal; it's why we archive
+instead of checkout — the root checkout was even sitting on a feature branch).
+
+The build agent cleared five real blockers: a private GitHub-Packages dep
+(`@analogelk/background-three-js`, lazy-imported + unused → stripped); missing
+`output: 'standalone'`; an `instrumentation.ts` crash-loop because the admin token
+mints *after* boot (so `up` now recreates the portal post-mint); a slim-image
+healthcheck with no `wget` (→ Node probe); and a compose context path.
+
+Result: `elk-os/portal:local` (413 MB) builds, `elk-os-portal` runs **healthy**,
+`/login` and `/` both return **HTTP 200**, and `doctor` shows a green Portal row. The
+§5 screenshot (committed under `docs/screenshots/p4-portal/` and uploaded to the P4
+task's `completion_screenshot`) shows the login page — whose own right-panel tagline
+reads **"The agency OS that runs itself."** The product literally renders the paper's
+thesis on its front door.
+
+**Honest gap (filed):** the portal still shows **Analog Elk branding even on the
+`generic` profile** — only data + schema are profile-switched so far, not portal
+branding. A truly sellable generic template must rebrand the portal too.
+
+Commits `c3adb38..15e99f7`. P4 (`b93307f9`) → **completed**, screenshot attached.
+
+**Aspirational → real:** core + RAG + schema/seed + **the portal** now stand up from
+one command (5 of 8 phases). Still aspirational: Claude-OS wiring (P5 — the loop's
+heart), cloud demo URL (P6), self-host packaging (P7).
+
+---
+
 <!-- Append new sessions/phases below. Each phase flips from aspirational to real
      only when `doctor` proves it. -->
