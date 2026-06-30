@@ -1,11 +1,33 @@
 # Elk OS — Caddy reverse proxy (box target)
 # Caddy substitutes {$ELK_OS_DOMAIN} from the environment at load time and
-# provisions a Let's Encrypt certificate for it automatically.
+# provisions Let's Encrypt certificates for both hosts automatically.
 #
-# P1 fronts Directus only. Later phases add the portal (:3000) and RAG API
-# (:9100) as additional site blocks / path matchers.
+# Routing (the full-stack box demo):
+#   ${ELK_OS_DOMAIN}        → the portal (the human surface)
+#   cms.${ELK_OS_DOMAIN}    → Directus (the os_* board + native MCP at /mcp)
+#
+# Both subnames resolve automatically under sslip.io (e.g. 1.2.3.4.sslip.io and
+# cms.1.2.3.4.sslip.io both point at 1.2.3.4), or add a `cms` A/CNAME record for
+# a real domain. The portal's NEXT_PUBLIC_DIRECTUS_URL + Directus PUBLIC_URL are
+# pinned to the cms.* host by the prod compose overrides.
+#
+# NOTE: the apex block proxies `portal:3000`. A Directus-only box (portal
+# disabled via ELK_OS_WITH_PORTAL=false) should remove or repoint that block.
 
+# The portal on the apex.
 {$ELK_OS_DOMAIN} {
+	encode zstd gzip
+
+	reverse_proxy portal:3000
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+# Directus — the shared os_* board and the native MCP endpoint — on cms.*
+cms.{$ELK_OS_DOMAIN} {
 	encode zstd gzip
 
 	reverse_proxy directus:8055

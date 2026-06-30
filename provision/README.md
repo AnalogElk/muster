@@ -1,0 +1,102 @@
+# Provisioning Elk OS on a VPS — the reliable full-stack path
+
+This is the **recommended way to get a live Elk OS demo**: a small VPS
+(~$6–12/mo) plus a domain — or no domain at all, using a free wildcard
+`sslip.io` hostname. `provision/cloud-init.sh` takes a fresh Ubuntu box from
+nothing to a running, TLS-terminated stack with the human↔agent loop closed.
+
+Why a box and not "just Netlify"? The portal **fail-fasts without a reachable
+Directus backend** — a front-end-only host won't even boot. The box runs the
+whole stack (Postgres + Directus + RAG + portal) in one place, so the loop is
+real. (Netlify can host *only the portal front-end* against a Directus you host
+elsewhere — see [`../deploy/netlify/`](../deploy/netlify/).)
+
+## What you need
+
+- A VPS with **2 GB+ RAM** (4 GB if you ever build images on the box), Ubuntu
+  22.04 or 24.04, root/sudo.
+- A hostname that resolves to the box's IP. Either:
+  - a real domain (point an `A` record for the apex **and** a `cms` record at the
+    IP), or
+  - **no domain** — use `sslip.io`: if your IP is `1.2.3.4`, set
+    `ELK_OS_DOMAIN=1.2.3.4.sslip.io`. Both `1.2.3.4.sslip.io` and
+    `cms.1.2.3.4.sslip.io` resolve automatically, so Caddy gets TLS for both with
+    zero DNS setup.
+- Ports **80 and 443** open (Caddy needs them for Let's Encrypt + serving).
+
+## Routing (what the box serves)
+
+| URL | Serves |
+|---|---|
+| `https://${ELK_OS_DOMAIN}` | the portal (the human surface) |
+| `https://cms.${ELK_OS_DOMAIN}` | Directus — the `os_*` board |
+| `https://cms.${ELK_OS_DOMAIN}/mcp` | the native Directus MCP endpoint (agents) |
+
+Caddy provisions and renews TLS for both hosts automatically.
+
+## Run it
+
+SSH to the box as root and:
+
+```bash
+export ELK_OS_DOMAIN=1.2.3.4.sslip.io          # your IP + .sslip.io, or your domain
+export ELK_OS_ADMIN_EMAIL=you@example.com
+export ELK_OS_PROFILE=generic                  # generic | analogelk
+export ELK_OS_REPO=https://github.com/<owner>/elk-os.git
+
+# Optional — add the portal surface using PUBLISHED images (see "The portal" below)
+# export PORTAL_IMAGE=ghcr.io/<owner>/elk-os-portal:0.1.0
+# export RAG_IMAGE=ghcr.io/<owner>/elk-os-rag-api:0.1.0
+
+curl -fsSL https://raw.githubusercontent.com/<owner>/elk-os/main/provision/cloud-init.sh | bash
+```
+
+Or, if you copied the repo to the box already
+(`ELK_OS_SOURCE_DIR=/root/elk-os`), run `bash provision/cloud-init.sh` from there.
+
+As **cloud-init user-data** at instance creation, prepend the `export` lines
+above to the script body and paste the whole thing into your provider's
+user-data field.
+
+The script: installs Docker, places elk-os at `/opt/elk-os`, writes `.env` for
+the `box` target, pins the public origins, then runs
+`up → migrate → seed → wire → doctor`. When it finishes, `doctor` should be
+green and `https://cms.${ELK_OS_DOMAIN}/mcp` answers.
+
+## The portal (honest caveat)
+
+A fresh box **cannot build the portal image** — the portal is built from the
+private `analog-elk-front-end` source plus a heavy Next build, neither of which
+lives on a bare VPS. So:
+
+- **Without `PORTAL_IMAGE`/`RAG_IMAGE`** (default): the script stands up
+  Directus + the RAG engine + the `os_*` board + the wired Claude loop, and skips
+  the portal. This already demonstrates the whole human↔agent loop — the portal
+  is just the missing human GUI.
+- **With `PORTAL_IMAGE`/`RAG_IMAGE`** pointing at **published** GHCR images (cut
+  by [`publish-images.yml`](../.github/workflows/publish-images.yml) on a release
+  tag): the box pulls them and serves the full stack, portal included, with no
+  local build.
+
+So the turnkey full-stack demo is: publish images once (needs a GitHub remote
+and access to the front-end source), then provision boxes that pull them.
+
+## Troubleshooting
+
+```bash
+cd /opt/elk-os
+./bin/elk-os doctor          # green/red board with next-action hints
+./bin/elk-os logs directus   # or: caddy, portal, elkos-rag-api
+```
+
+- **Directus health red / TLS pending:** Caddy needs DNS resolving to the box and
+  ports 80/443 reachable before Let's Encrypt issues a cert. Confirm the `A`
+  records (or that you used an `sslip.io` host) and the firewall.
+- **`doctor` portal row red but you expected no portal:** that's expected when
+  the portal was omitted — `ELK_OS_WITH_PORTAL=false` removes the row entirely;
+  if it shows, `PORTAL_IMAGE` was set without a reachable image.
+
+## Cost
+
+A 2 GB VPS (Hetzner CX22, DigitalOcean, Vultr, etc.) runs ~$6–12/mo. With an
+`sslip.io` host there is **no domain cost** — a genuinely cheap live demo.

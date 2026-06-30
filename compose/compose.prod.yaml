@@ -8,11 +8,14 @@ volumes:
 
 services:
   directus:
-    # Reachable only on the internal network, fronted by Caddy.
+    # Reachable only on the internal network, fronted by Caddy on the cms.* host.
+    # The portal takes the apex; Directus (the os_* board + native MCP) lives at
+    # https://cms.${ELK_OS_DOMAIN}. Set DIRECTUS_URL in .env to match so the host
+    # CLI (up/migrate/seed/wire) reaches Directus through the same public origin.
     expose:
       - "8055"
     environment:
-      PUBLIC_URL: https://${ELK_OS_DOMAIN:?ELK_OS_DOMAIN must be set for box target}
+      PUBLIC_URL: https://cms.${ELK_OS_DOMAIN:?ELK_OS_DOMAIN must be set for box target}
 
   caddy:
     image: caddy:2-alpine
