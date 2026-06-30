@@ -28,6 +28,13 @@
 #                      "M" monogram. Domain strings (analogelk.com) are left
 #                      untouched — they have no space and the login redirect's
 #                      prod-host check still relies on them.
+#   6. self-host      — the app is wired to the analogelk.com multi-subdomain
+#                      topology + a `.analogelk.com` cookie domain. Patch proxy.ts
+#                      so any non-analogelk host runs single-domain (path-based,
+#                      no cross-subdomain redirects) and auth.ts so cookies are
+#                      host-only unless AUTH_COOKIE_DOMAIN is set. Without this
+#                      the authed portal redirects off-box and the session never
+#                      sticks on a self-host domain.
 #
 # Idempotent: safe to re-run. Re-extract from scratch with --force.
 #
@@ -154,6 +161,28 @@ echo "[portal] rebrand: Analog Elk -> Muster (portal surface)"
 find . -type f \( -name '*.tsx' -o -name '*.ts' -o -name '*.json' -o -name '*.mdx' \) \
   -not -path './node_modules/*' -print0 \
   | xargs -0 perl -pi -e 's/Analog Elk/Muster/g; s/ANALOG ELK/MUSTER/g'
+
+# --- Self-host portability: single-domain routing + host-only cookies ---------
+# The source app is wired to the analogelk.com multi-subdomain topology
+# (login./client./employee.*) and scopes auth cookies to `.analogelk.com`. On a
+# single-domain self-host box (sslip.io / a custom domain) that breaks the authed
+# portal: the proxy 301s /employee-portal/* off to employee.analogelk.com, and
+# the browser rejects the `.analogelk.com` cookies so no session ever sticks.
+#
+# Fix (both idempotent, guarded by a marker so re-runs are no-ops):
+#  a) proxy.ts — treat any host NOT ending in analogelk.com as single-domain
+#     (path-based routing, no cross-subdomain redirects). Local dev hosts already
+#     matched; this generalizes it to every non-analogelk host.
+#  b) lib/portal/auth.ts — drop the hardcoded `.analogelk.com` cookie domain;
+#     apply a domain only when AUTH_COOKIE_DOMAIN is set, else host-only cookies.
+if ! grep -q 'elk-os single-domain' proxy.ts 2>/dev/null; then
+  perl -0pi -e 's/function isDevelopment\(hostname: string\): boolean \{\n/function isDevelopment(hostname: string): boolean {\n  \/\/ [elk-os single-domain] Any host that is not the analogelk.com multi-subdomain\n  \/\/ production deployment (local dev, or a self-hosted single-domain box) uses\n  \/\/ path-based routing with no cross-subdomain redirects, so the whole portal is\n  \/\/ reachable on one origin.\n  if (!hostname.endsWith("analogelk.com")) return true;\n/' proxy.ts
+  echo "[portal] patch proxy.ts: single-domain mode for non-analogelk hosts"
+fi
+if grep -qF "domain: '.analogelk.com'" lib/portal/auth.ts 2>/dev/null; then
+  perl -0pi -e "s/\.\.\.\(isProd && \{ domain: '\.analogelk\.com' \}\),/...(process.env.AUTH_COOKIE_DOMAIN ? { domain: process.env.AUTH_COOKIE_DOMAIN } : {}), \/* [elk-os] host-only unless AUTH_COOKIE_DOMAIN set *\//" lib/portal/auth.ts
+  echo "[portal] patch lib/portal/auth.ts: env-driven (host-only) cookie domain"
+fi
 
 # Swap the Analog-Elk SVG mark for a clean geometric "Muster" M monogram. The
 # `ae-logo` / `ae-logo__primary` class hooks are preserved so existing
