@@ -1,0 +1,22 @@
+{
+  "_comment": "Rendered by `elk-os wire`. Registers the SessionStart banner + open-task snapshot so every Claude Code session opened in this directory boots with live context from THIS deployment's Directus (os_tasks board). ELK_OS_ENV_FILE points the hooks at the deployment .env (gitignored) so they can read DIRECTUS_URL + token without exporting anything.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ELK_OS_ENV_FILE='{{ENV_FILE}}' bash '{{WIRE_DIR}}/.claude/hooks/session-banner.sh'",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "ELK_OS_ENV_FILE='{{ENV_FILE}}' bash '{{WIRE_DIR}}/.claude/hooks/cms-task-snapshot.sh'",
+            "timeout": 8000
+          }
+        ]
+      }
+    ]
+  }
+}

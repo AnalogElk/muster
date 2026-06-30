@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# =============================================================================
+# Elk OS — turnkey Claude Code launcher for a wired deployment
+# =============================================================================
+# Loads the deployment .env (which holds the real DIRECTUS_ADMIN_TOKEN, kept out
+# of git) into the environment, then launches Claude Code from this directory so
+# the `elk-os-cms` MCP server authenticates with no manual export. The token is
+# never printed.
+# =============================================================================
+set -euo pipefail
+
+ENV_FILE="{{ENV_FILE}}"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+if [ -f "$ENV_FILE" ]; then
+  set -a
+  # shellcheck disable=SC1090
+  . "$ENV_FILE"
+  set +a
+else
+  echo "[run-claude] WARNING: deployment .env not found at $ENV_FILE" >&2
+  echo "[run-claude] The MCP server will have no DIRECTUS_ADMIN_TOKEN. Export it manually." >&2
+fi
+
+command -v claude >/dev/null 2>&1 || {
+  echo "[run-claude] 'claude' (Claude Code CLI) is not on PATH. Install it, then re-run." >&2
+  exit 1
+}
+
+cd "$HERE"
+exec claude "$@"
