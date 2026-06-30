@@ -1,0 +1,17 @@
+# Elk OS — Caddy reverse proxy (box target)
+# Caddy substitutes {$ELK_OS_DOMAIN} from the environment at load time and
+# provisions a Let's Encrypt certificate for it automatically.
+#
+# P1 fronts Directus only. Later phases add the portal (:3000) and RAG API
+# (:9100) as additional site blocks / path matchers.
+
+{$ELK_OS_DOMAIN} {
+	encode zstd gzip
+
+	reverse_proxy directus:8055
+
+	log {
+		output stdout
+		format console
+	}
+}

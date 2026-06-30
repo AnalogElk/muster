@@ -1,0 +1,33 @@
+# Elk OS — prod override (ELK_OS_TARGET=box)
+# Caddy terminates TLS for ELK_OS_DOMAIN and reverse-proxies Directus. No raw
+# Directus port is published to the host; only Caddy binds 80/443.
+
+volumes:
+  elk_os_caddy_data:
+  elk_os_caddy_config:
+
+services:
+  directus:
+    # Reachable only on the internal network, fronted by Caddy.
+    expose:
+      - "8055"
+    environment:
+      PUBLIC_URL: https://${ELK_OS_DOMAIN:?ELK_OS_DOMAIN must be set for box target}
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: elk-os-caddy
+    restart: unless-stopped
+    depends_on:
+      - directus
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      ELK_OS_DOMAIN: ${ELK_OS_DOMAIN:?ELK_OS_DOMAIN must be set for box target}
+    volumes:
+      - ./caddy/Caddyfile.tmpl:/etc/caddy/Caddyfile:ro
+      - elk_os_caddy_data:/data
+      - elk_os_caddy_config:/config
+    networks:
+      - elk-os

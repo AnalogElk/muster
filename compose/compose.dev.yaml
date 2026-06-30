@@ -1,0 +1,13 @@
+# Elk OS — dev override (ELK_OS_TARGET=local)
+# Expose the stack on localhost only. No TLS, no Caddy.
+
+services:
+  postgres:
+    # 15432 by default to stay isolated from a host Postgres (5432) / other
+    # docker stacks. Override with POSTGRES_PORT in .env if needed.
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-15432}:5432"
+
+  directus:
+    ports:
+      - "127.0.0.1:${DIRECTUS_PORT:-8056}:8055"

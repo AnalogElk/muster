@@ -1,0 +1,82 @@
+# Elk OS — compose core (P1)
+# Postgres + Directus, wired together. This base file declares NO host port
+# exposure; the dev/prod overrides decide how the stack is reachable:
+#   - compose.dev.yaml  → bind ports to 127.0.0.1 (laptop)
+#   - compose.prod.yaml → Caddy reverse proxy + auto-TLS (box)
+#
+# Always invoked by `bin/elk-os` with `--env-file .env --project-directory <repo>`.
+
+name: elk-os
+
+networks:
+  elk-os:
+    driver: bridge
+
+volumes:
+  elk_os_pgdata:
+  elk_os_directus_uploads:
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 15 — the shared-state database behind Directus
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: elk-os-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-directus}
+      POSTGRES_USER: ${POSTGRES_USER:-directus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set — run ./bin/elk-os init}
+    volumes:
+      - elk_os_pgdata:/var/lib/postgresql/data
+    networks:
+      - elk-os
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-directus} -d ${POSTGRES_DB:-directus}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Directus — the os_* shared-state bus (tasks, sprints, projects, releases)
+  # Admin user is auto-created from ADMIN_EMAIL/ADMIN_PASSWORD on first boot of
+  # an empty database; bootstrap then mints a static token (see directus/bootstrap).
+  # Listens on 8055 inside the container; the dev override maps it to DIRECTUS_PORT.
+  # ---------------------------------------------------------------------------
+  directus:
+    image: directus/directus:11.5.1
+    container_name: elk-os-directus
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      KEY: ${DIRECTUS_KEY:?DIRECTUS_KEY must be set — run ./bin/elk-os init}
+      SECRET: ${DIRECTUS_SECRET:?DIRECTUS_SECRET must be set — run ./bin/elk-os init}
+
+      DB_CLIENT: pg
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_DATABASE: ${POSTGRES_DB:-directus}
+      DB_USER: ${POSTGRES_USER:-directus}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set — run ./bin/elk-os init}
+
+      ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD:?DIRECTUS_ADMIN_PASSWORD must be set — run ./bin/elk-os init}
+
+      PUBLIC_URL: ${DIRECTUS_URL:-http://localhost:8056}
+      WEBSOCKETS_ENABLED: "true"
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: "true"
+    volumes:
+      - elk_os_directus_uploads:/directus/uploads
+    networks:
+      - elk-os
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8055/server/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
