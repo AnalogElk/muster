@@ -1,0 +1,35 @@
+# Automated semantic versioning for Elk OS.
+#
+# Elk OS is a bash + Docker Compose repo, NOT a Node package, so the Node release
+# type does not fit. We use release-please with `release-type: simple`: the
+# version of record lives in `version.txt` and the changelog in `CHANGELOG.md`.
+#
+# On every push to main, release-please reads the Conventional Commit history
+# since the last release and maintains a single "release PR" that bumps
+# version.txt + updates CHANGELOG.md. Merging that PR tags the commit
+# (vX.Y.Z) and cuts the GitHub Release.
+#
+#   feat:  -> minor   fix:/perf: -> patch   feat!:/BREAKING CHANGE -> major
+#
+# version.txt is NEVER hand-edited; this workflow owns it.
+# (DevProd CLAUDE.md §7: versioning is automated, all projects.)
+#
+# This activates once the repo has a GitHub remote. Until then it is inert.
+name: release-please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
