@@ -1,0 +1,31 @@
+# Analog Elk v3 — RAG engine dependencies
+# Pin major versions; allow patch-level updates.
+
+# Web framework
+fastapi>=0.111,<1.0
+uvicorn[standard]>=0.29,<1.0
+
+# Database
+asyncpg>=0.29,<1.0
+
+# Cache
+redis[hiredis]>=5.0,<6.0
+
+# Vector store
+qdrant-client>=1.9,<2.0
+
+# Local embeddings (ONNX/CPU, no external API). Replaces the Gemini layer.
+fastembed>=0.3,<1.0
+
+# HTTP client (content fetch / misc)
+httpx>=0.27,<1.0
+
+# Settings & validation
+pydantic>=2.7,<3.0
+pydantic-settings>=2.3,<3.0
+
+# Environment file loading
+python-dotenv>=1.0,<2.0
+
+# HTML parsing (for content extraction during ingestion)
+beautifulsoup4>=4.12,<5.0

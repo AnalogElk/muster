@@ -1,0 +1,26 @@
+# Elk OS — RAG overlay, dev (ELK_OS_TARGET=local)
+# Bind the RAG stack to localhost only. Ports are deliberately ISOLATED from the
+# core stack (Directus 8056, core Postgres host 15432) AND from a host-running
+# analog-elk-v3 engine, so both can coexist:
+#   rag-postgres  15433  (core Postgres is 15432)
+#   qdrant        16333  (engine default is 6333)
+#   redis         16379  (engine default is 6379)
+#   rag-api        9100  (the documented RAG contract; CLAUDE.md/.mcp.json query it here)
+# Any of these can be overridden in .env.
+
+services:
+  elkos-rag-postgres:
+    ports:
+      - "127.0.0.1:${RAG_POSTGRES_PORT:-15433}:5432"
+
+  elkos-qdrant:
+    ports:
+      - "127.0.0.1:${QDRANT_PORT:-16333}:6333"
+
+  elkos-redis:
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-16379}:6379"
+
+  elkos-rag-api:
+    ports:
+      - "127.0.0.1:${RAG_API_PORT:-9100}:9100"

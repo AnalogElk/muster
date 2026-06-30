@@ -1,0 +1,25 @@
+# Elk OS — RAG overlay, prod (ELK_OS_TARGET=box)
+# Internal-only: the KB databases (Postgres/Qdrant/Redis) are NEVER published to
+# the host. Only the RAG API is reachable, and only on loopback, so the host-side
+# Claude/MCP can query it at http://localhost:9100 while the box stays closed to
+# the public internet (Caddy fronts Directus; it does not proxy the RAG API).
+# The portal (P4) reaches the RAG API over the elkos-rag network by service name.
+
+services:
+  elkos-rag-postgres:
+    expose:
+      - "5432"
+
+  elkos-qdrant:
+    expose:
+      - "6333"
+
+  elkos-redis:
+    expose:
+      - "6379"
+
+  elkos-rag-api:
+    expose:
+      - "9100"
+    ports:
+      - "127.0.0.1:${RAG_API_PORT:-9100}:9100"

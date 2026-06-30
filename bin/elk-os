@@ -8,7 +8,7 @@
 #
 # Phases (ordered, idempotent, resumable via .elk-os-state.json):
 #   init     generate secrets + write .env from .env.example
-#   up       docker compose up the core, then bootstrap the admin token
+#   up       docker compose up the core (+ RAG engine), then bootstrap the admin token
 #   migrate  (P2) apply os_* schema snapshot
 #   seed     (P5) load profile seed data
 #   wire     (P5) write CLAUDE.md + .mcp.json + hooks + memory seed
@@ -62,7 +62,15 @@ else
   DC=(docker compose)  # resolved lazily; need_docker/up will surface errors
 fi
 
+# Is the RAG knowledge-engine overlay enabled? (default on; toggle via .env)
+with_rag() {
+  local v; v="$(get_env ELK_OS_WITH_RAG)"; v="${v:-true}"
+  [ "$v" = "true" ]
+}
+
 # Build the compose invocation for the current target (reads .env).
+# The RAG overlay (compose.rag*.yaml) is appended consistently for every
+# subcommand (up/down/logs) so the same service set is always addressed.
 compose() {
   local target files
   target="$(get_env ELK_OS_TARGET)"; target="${target:-local}"
@@ -71,6 +79,14 @@ compose() {
     files+=(-f "${COMPOSE_DIR}/compose.prod.yaml")
   else
     files+=(-f "${COMPOSE_DIR}/compose.dev.yaml")
+  fi
+  if with_rag; then
+    files+=(-f "${COMPOSE_DIR}/compose.rag.yaml")
+    if [ "$target" = "box" ]; then
+      files+=(-f "${COMPOSE_DIR}/compose.rag.prod.yaml")
+    else
+      files+=(-f "${COMPOSE_DIR}/compose.rag.dev.yaml")
+    fi
   fi
   "${DC[@]}" --project-directory "$ROOT" --env-file "$ENV_FILE" "${files[@]}" "$@"
 }
@@ -209,7 +225,13 @@ cmd_up() {
     die "ELK_OS_TARGET=box but ELK_OS_DOMAIN is empty. Set it in .env."
   fi
 
-  info "Starting the Elk OS core (target=${target})…"
+  if with_rag; then
+    info "Starting the Elk OS core + RAG engine (target=${target})…"
+    info "First run builds the RAG API image (Python + fastembed) and bakes the"
+    info "local embedding model — this can take several minutes. Subsequent runs are cached."
+  else
+    info "Starting the Elk OS core (target=${target}, RAG disabled via ELK_OS_WITH_RAG=false)…"
+  fi
   compose up -d --remove-orphans
 
   # Wait for Directus to answer /server/health from the host.
@@ -273,10 +295,14 @@ cmd_logs() {
 # ---------------------------------------------------------------------------
 DOCTOR_FAILED=0
 doctor_row() {
-  # $1 label  $2 ok(0/1)  $3 detail  $4 next-action-if-red
+  # $1 label  $2 state(0=OK green | 1=FAIL red | 2=WARN yellow)  $3 detail  $4 hint
+  # WARN is a non-blocking degraded signal — it does NOT mark the board red.
   local label="$1" ok="$2" detail="$3" action="${4:-}"
   if [ "$ok" -eq 0 ]; then
     printf "  ${GREEN}●${RESET} %-22s ${GREEN}%-8s${RESET} %s\n" "$label" "OK" "$detail"
+  elif [ "$ok" -eq 2 ]; then
+    printf "  ${YELLOW}●${RESET} %-22s ${YELLOW}%-8s${RESET} %s\n" "$label" "WARN" "$detail"
+    [ -n "$action" ] && printf "      ${DIM}→ %s${RESET}\n" "$action"
   else
     DOCTOR_FAILED=1
     printf "  ${RED}●${RESET} %-22s ${RED}%-8s${RESET} %s\n" "$label" "FAIL" "$detail"
@@ -348,6 +374,33 @@ cmd_doctor() {
     doctor_row "Admin API token" 1 "not minted yet" "Run ./bin/elk-os up (bootstrap mints it)."
   fi
 
+  # 6. RAG knowledge-engine /health (only when the overlay is enabled)
+  if with_rag; then
+    local rag_port rag_url rag_json
+    rag_port="$(get_env RAG_API_PORT)"; rag_port="${rag_port:-9100}"
+    rag_url="http://localhost:${rag_port}"
+    if rag_json=$(curl -sf --max-time 5 "${rag_url}/health" 2>/dev/null); then
+      local rstatus rreason rdocs rvecs detail
+      # `|| true` keeps a no-match grep (e.g. reason:null) from tripping pipefail.
+      rstatus=$(printf '%s' "$rag_json" | grep -o '"status":"[^"]*"' | head -n1 | cut -d'"' -f4 || true)
+      rreason=$(printf '%s' "$rag_json" | grep -o '"reason":"[^"]*"' | head -n1 | cut -d'"' -f4 || true)
+      rdocs=$(printf '%s'   "$rag_json" | grep -o '"doc_count":[0-9]*'    | head -n1 | cut -d: -f2 || true)
+      rvecs=$(printf '%s'   "$rag_json" | grep -o '"vector_count":[0-9]*' | head -n1 | cut -d: -f2 || true)
+      detail="${rag_url} → status ${rstatus:-unknown} (${rdocs:-0} docs, ${rvecs:-0} vectors)"
+      if [ "$rstatus" = "ok" ]; then
+        doctor_row "RAG API health" 0 "$detail"
+      elif [ "$rstatus" = "degraded" ]; then
+        # Preserve the engine's degraded-vs-down distinction: a yellow WARN, not red.
+        doctor_row "RAG API health" 2 "${rag_url} → degraded (${rreason:-unknown}; ${rdocs:-0} docs, ${rvecs:-0} vectors)" \
+          "Vectors missing/stale — semantic search is impaired. Ingest content or reindex the KB."
+      else
+        doctor_row "RAG API health" 2 "$detail" "Unexpected status — inspect ./bin/elk-os logs elkos-rag-api"
+      fi
+    else
+      doctor_row "RAG API health" 1 "${rag_url} unreachable" "Is RAG up? ./bin/elk-os up ; ./bin/elk-os logs elkos-rag-api"
+    fi
+  fi
+
   print_doctor_footer
 }
 
@@ -383,10 +436,10 @@ ${BOLD}Usage:${RESET}
 ${BOLD}Commands:${RESET}
   init [--profile generic|analogelk] [--target local|box] [--force]
                       Generate secrets + write .env from .env.example.
-  up                  docker compose up the core, then mint the admin token.
+  up                  docker compose up the core (+ RAG engine), then mint the admin token.
   down [--volumes]    Stop the stack (keep data unless --volumes).
   doctor              Per-subsystem green/red health board (exits nonzero if red).
-  logs [service]      Tail container logs.
+  logs [service]      Tail container logs (e.g. directus, elkos-rag-api).
   migrate             (P2) apply os_* schema snapshot — stub.
   seed                (P2/P5) load profile seed data — stub.
   wire                (P5) write CLAUDE.md + .mcp.json + hooks + memory — stub.
@@ -396,6 +449,11 @@ ${BOLD}Quick start:${RESET}
   ./bin/elk-os init --profile generic
   ./bin/elk-os up
   ./bin/elk-os doctor
+
+The RAG knowledge engine (Postgres + Qdrant + Redis + FastAPI, local
+embeddings — no external inference) is bundled into up/down/logs by default.
+Disable it by setting ELK_OS_WITH_RAG=false in .env (e.g. to skip the Python
+image build). The RAG API is served at http://localhost:\${RAG_API_PORT:-9100}.
 
 Docker is the only hard dependency. Secrets live only in .env (gitignored)
 and are never printed.

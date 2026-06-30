@@ -1,0 +1,10 @@
+# Keep the build context lean and reproducible. The Dockerfile does `COPY . ./engine/`
+# so anything here that is not application code would otherwise be baked into the image.
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
