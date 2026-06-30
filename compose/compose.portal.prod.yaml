@@ -1,0 +1,16 @@
+# Elk OS — portal prod override (ELK_OS_TARGET=box)
+# Internal-only: no host port published. Caddy reverse-proxies the portal.
+#
+# TODO(P5/P6): add a Caddy site block / path matcher for the portal. The core
+# Caddyfile (caddy/Caddyfile.tmpl) currently fronts Directus only; routing the
+# portal needs a hostname decision (e.g. portal on the apex, Directus on a
+# cms.* subdomain) that is out of scope for P4. Until then the portal is
+# reachable only on the internal `elk-os` network at http://portal:3000.
+
+services:
+  portal:
+    expose:
+      - "3000"
+    environment:
+      NEXT_PUBLIC_DIRECTUS_URL: https://${ELK_OS_DOMAIN:?ELK_OS_DOMAIN must be set for box target}
+      NEXT_PUBLIC_SITE_URL: https://${ELK_OS_DOMAIN:?ELK_OS_DOMAIN must be set for box target}

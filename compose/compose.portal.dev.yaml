@@ -1,0 +1,7 @@
+# Elk OS — portal dev override (ELK_OS_TARGET=local)
+# Publish the portal on localhost only.
+
+services:
+  portal:
+    ports:
+      - "127.0.0.1:${PORTAL_PORT:-3000}:3000"

@@ -1,0 +1,49 @@
+# Elk OS — portal overlay (P4)
+#
+# ADDITIVE. Adds the Next.js 16 portal (analog-elk-front-end, pinned + patched)
+# as a service on the core `elk-os` network, wired to the in-network Directus.
+# Build context is portal/.build (a frozen archive prepared by
+# portal/prepare-context.sh); the Dockerfile lives one level up at
+# portal/Dockerfile.
+#
+# This base file declares NO host port exposure; the dev/prod overlays decide:
+#   - compose.portal.dev.yaml  → bind 127.0.0.1:${PORTAL_PORT} (laptop)
+#   - compose.portal.prod.yaml → internal-only, behind Caddy (box)
+#
+# Inclusion is controlled by ELK_OS_WITH_PORTAL (default: true). See bin/elk-os.
+
+services:
+  portal:
+    build:
+      # Relative build contexts resolve against --project-directory (the repo
+      # root), the same convention compose.rag.yaml uses for ./rag-engine.
+      context: ./portal/.build
+      dockerfile: ../Dockerfile
+    image: elk-os/portal:local
+    container_name: elk-os-portal
+    restart: unless-stopped
+    depends_on:
+      directus:
+        condition: service_healthy
+    environment:
+      # Server-side calls reach Directus over the internal compose network.
+      DIRECTUS_URL: http://directus:8055
+      DIRECTUS_TOKEN: ${DIRECTUS_ADMIN_TOKEN:-}
+      # Browser-side calls must use a host-reachable URL (the published port).
+      NEXT_PUBLIC_DIRECTUS_URL: http://localhost:${DIRECTUS_PORT:-8056}
+      NEXT_PUBLIC_SITE_URL: http://localhost:${PORTAL_PORT:-3000}
+      # true = marketing reads committed app/data/*.json (no live Directus dep);
+      # the fresh generic Directus has no marketing collections, so leave on.
+      USE_STATIC_FALLBACK: ${USE_STATIC_FALLBACK:-true}
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+    networks:
+      - elk-os
+    healthcheck:
+      # The login route renders without auth or Directus — a stable 200 target.
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/login >/dev/null 2>&1 || wget -qO- http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
