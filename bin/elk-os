@@ -70,9 +70,15 @@ with_rag() {
   [ "$v" = "true" ]
 }
 
+# Is the portal (Next.js front-end) overlay enabled? (default on; toggle via .env)
+with_portal() {
+  local v; v="$(get_env ELK_OS_WITH_PORTAL)"; v="${v:-true}"
+  [ "$v" = "true" ]
+}
+
 # Build the compose invocation for the current target (reads .env).
-# The RAG overlay (compose.rag*.yaml) is appended consistently for every
-# subcommand (up/down/logs) so the same service set is always addressed.
+# Overlays (RAG, portal) are appended consistently for every subcommand
+# (up/down/logs) so the same service set is always addressed.
 compose() {
   local target files
   target="$(get_env ELK_OS_TARGET)"; target="${target:-local}"
@@ -90,7 +96,27 @@ compose() {
       files+=(-f "${COMPOSE_DIR}/compose.rag.dev.yaml")
     fi
   fi
+  if with_portal; then
+    files+=(-f "${COMPOSE_DIR}/compose.portal.yaml")
+    if [ "$target" = "box" ]; then
+      files+=(-f "${COMPOSE_DIR}/compose.portal.prod.yaml")
+    else
+      files+=(-f "${COMPOSE_DIR}/compose.portal.dev.yaml")
+    fi
+  fi
   "${DC[@]}" --project-directory "$ROOT" --env-file "$ENV_FILE" "${files[@]}" "$@"
+}
+
+# The portal image builds from a frozen archive of a pinned analog-elk-front-end
+# commit. Ensure that build context exists + is patched before any compose build.
+ensure_portal_context() {
+  with_portal || return 0
+  local prep="${ROOT}/portal/prepare-context.sh"
+  [ -f "$prep" ] || { warn "portal/prepare-context.sh missing — skipping portal prep."; return 0; }
+  if [ ! -f "${ROOT}/portal/.build/package.json" ]; then
+    info "Preparing the portal build context (pinned archive + self-host patches)…"
+    bash "$prep" || die "Failed to prepare the portal build context."
+  fi
 }
 
 # ---------------------------------------------------------------------------
@@ -234,6 +260,14 @@ cmd_up() {
   else
     info "Starting the Elk OS core (target=${target}, RAG disabled via ELK_OS_WITH_RAG=false)…"
   fi
+  if with_portal; then
+    ensure_portal_context
+    info "The portal (Next.js 16) overlay is enabled. First run builds the portal"
+    info "image (pnpm install + next build) — this can take several minutes."
+    info "Disable with ELK_OS_WITH_PORTAL=false in .env."
+  fi
+  # `up` auto-builds any image that does not yet exist (portal, RAG API). Use
+  # `./bin/elk-os rebuild-portal` to force a portal rebuild after a source change.
   compose up -d --remove-orphans
 
   # Wait for Directus to answer /server/health from the host.
@@ -257,6 +291,14 @@ cmd_up() {
   info "Bootstrapping admin static token…"
   if bash "$BOOTSTRAP" "$ENV_FILE"; then
     state_mark bootstrap
+    # The portal's instrumentation hook fail-fasts in production on a missing
+    # DIRECTUS_TOKEN. On a first boot the portal container started BEFORE the
+    # token was minted (empty token → crash loop). Recreate it now that .env
+    # carries the real token so it boots cleanly with the wired credentials.
+    if with_portal && [ -n "$(get_env DIRECTUS_ADMIN_TOKEN)" ]; then
+      info "Recreating the portal with the freshly minted admin token…"
+      compose up -d portal >/dev/null 2>&1 || warn "Could not recreate the portal — run ./bin/elk-os up again."
+    fi
   else
     warn "Token bootstrap did not complete — re-run ./bin/elk-os up after Directus settles."
   fi
@@ -419,6 +461,26 @@ cmd_doctor() {
     fi
   else
     doctor_row "Seeded os_task" 2 "no admin token yet" "Run ./bin/elk-os up (mints token), then migrate && seed"
+  fi
+
+  # 8. Portal HTTP (only when the overlay is enabled). Green on HTTP 200 from
+  #    the auth-free /login route (falls back to /). Red otherwise.
+  if with_portal; then
+    local pport purl code
+    pport="$(get_env PORTAL_PORT)"; pport="${pport:-3000}"
+    purl="http://localhost:${pport}"
+    code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 "${purl}/login" 2>/dev/null || true)
+    if [ "$code" != "200" ]; then
+      # Fall back to the marketing root before declaring red.
+      code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 "${purl}/" 2>/dev/null || true)
+      if [ "$code" = "200" ]; then
+        doctor_row "Portal HTTP" 0 "${purl}/ → HTTP 200"
+      else
+        doctor_row "Portal HTTP" 1 "${purl} → HTTP ${code:-no-response}" "Is the portal up/built? ./bin/elk-os logs portal"
+      fi
+    else
+      doctor_row "Portal HTTP" 0 "${purl}/login → HTTP 200"
+    fi
   fi
 
   print_doctor_footer
@@ -636,6 +698,24 @@ PY
 }
 
 # ---------------------------------------------------------------------------
+# rebuild-portal — re-prepare the pinned context and rebuild the portal image
+# ---------------------------------------------------------------------------
+cmd_rebuild_portal() {
+  need_docker
+  [ -f "$ENV_FILE" ] || die ".env not found. Run ./bin/elk-os init first."
+  with_portal || die "Portal overlay disabled (ELK_OS_WITH_PORTAL=false). Enable it in .env first."
+  local prep="${ROOT}/portal/prepare-context.sh"
+  [ -f "$prep" ] || die "portal/prepare-context.sh missing."
+  info "Re-preparing the portal build context (force re-extract + patch)…"
+  bash "$prep" --force || die "prepare-context.sh failed."
+  info "Rebuilding the portal image (no cache)…"
+  compose build --no-cache portal || die "portal build failed."
+  info "Recreating the portal container…"
+  compose up -d portal
+  success "portal rebuilt. Next: ${BOLD}./bin/elk-os doctor${RESET}"
+}
+
+# ---------------------------------------------------------------------------
 # wire — P5 stub
 # ---------------------------------------------------------------------------
 cmd_wire()    { echo "P5: wire (CLAUDE.md + .mcp.json + hooks + memory) not yet implemented."; exit 0; }
@@ -660,6 +740,7 @@ ${BOLD}Commands:${RESET}
   logs [service]      Tail container logs (e.g. directus, elkos-rag-api).
   migrate             (P2) apply the pruned os_* schema snapshot (idempotent diff+apply).
   seed                (P2) load directus/seed/<profile>/*.json (idempotent upsert).
+  rebuild-portal      (P4) re-prepare the pinned context + rebuild the portal image.
   wire                (P5) write CLAUDE.md + .mcp.json + hooks + memory — stub.
   help                This message.
 
@@ -672,6 +753,11 @@ The RAG knowledge engine (Postgres + Qdrant + Redis + FastAPI, local
 embeddings — no external inference) is bundled into up/down/logs by default.
 Disable it by setting ELK_OS_WITH_RAG=false in .env (e.g. to skip the Python
 image build). The RAG API is served at http://localhost:\${RAG_API_PORT:-9100}.
+
+The portal (Next.js 16 front-end, built from a pinned analog-elk-front-end
+commit) is bundled into up/down/logs by default and served at
+http://localhost:\${PORTAL_PORT:-3000}. Disable it with ELK_OS_WITH_PORTAL=false
+in .env (e.g. to skip the heavy Next build).
 
 Docker is the only hard dependency. Secrets live only in .env (gitignored)
 and are never printed.
@@ -691,6 +777,7 @@ case "$COMMAND" in
   logs)    cmd_logs "$@" ;;
   migrate) cmd_migrate "$@" ;;
   seed)    cmd_seed "$@" ;;
+  rebuild-portal) cmd_rebuild_portal "$@" ;;
   wire)    cmd_wire "$@" ;;
   help|--help|-h) usage ;;
   *) error "Unknown command: $COMMAND"; usage; exit 1 ;;
