@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muster — the operating system for agentic software teams</title>
+<meta name="description" content="The governance layer that lets AI agents ship production software — and shipped itself. An empty repo became a live, self-hostable product in ~2.5 hours, built by a governed fleet of ~30 AI subagents that used the system's own task board as their spine.">
+<link rel="canonical" href="https://muster.dev/">
+
+<!-- Open Graph / Twitter -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Muster — the software that built itself, and shipped">
+<meta property="og:description" content="Governance is the product. A governed fleet of ~30 AI subagents took an empty repo to a live HTTPS demo in ~2.5 hours, using the system's own task board as the coordination spine.">
+<meta property="og:image" content="og.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Muster — the software that built itself, and shipped">
+<meta name="twitter:description" content="Muster the agents. Keep the receipts. This page is the build log; the links are the live system.">
+<meta name="twitter:image" content="og.svg">
+
+<!-- favicon: three steps + one ember, the Build-Trail at 16px -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Cpolyline points='6,58 18,58 18,44 30,44 30,30 42,30' fill='none' stroke='%2325402F' stroke-width='5' stroke-linecap='square'/%3E%3Cpolyline points='30,30 30,16 42,16' fill='none' stroke='%23DE7330' stroke-width='5' stroke-linecap='square'/%3E%3Ccircle cx='42' cy='16' r='5' fill='%23DE7330'/%3E%3C/svg%3E">
+
+<!-- fonts: Fraunces (display), Hanken Grotesk (body), IBM Plex Mono (mono), display:swap -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#abstract">Skip to content</a>
+
+<!-- ===================== STICKY TOP BAR ===================== -->
+<header class="topbar" id="topbar" hidden>
+  <a class="topbar__brand" href="#top" aria-label="Muster — top of page">
+    <svg viewBox="0 0 48 64" aria-hidden="true"><polyline points="6,58 18,58 18,44 30,44 30,30 42,30" fill="none" stroke="var(--pine)" stroke-width="4.5" stroke-linecap="square"/><polyline points="30,30 30,16 42,16" fill="none" stroke="var(--ember)" stroke-width="4.5" stroke-linecap="square"/><circle cx="42" cy="16" r="4.5" fill="var(--ember)"/></svg>
+    Muster
+  </a>
+  <nav class="topbar__nav" aria-label="Section jump links">
+    <a href="#thesis">Thesis</a>
+    <a href="#receipt">Receipt</a>
+    <a href="#build">Build</a>
+    <a href="#bugs">Proof</a>
+    <a href="#try">Run it</a>
+  </nav>
+  <span class="topbar__spacer"></span>
+  <div class="topbar__cta">
+    <a class="btn btn--live btn--sm" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Live portal ↗</a>
+    <a class="btn btn--sm" href="paper.html">Whitepaper</a>
+  </div>
+</header>
+
+<!-- ===================== LEDGER RAIL (desktop telemetry margin) ===================== -->
+<aside class="rail" aria-hidden="true">
+  <div class="rail__inner">
+    <div class="rail__title">build telemetry</div>
+    <div class="rail__item" data-rail="time"><span>start</span><span class="v">17:56 PT</span></div>
+    <div class="rail__item" data-rail="dur"><span>wall-clock</span><span class="v">~2.5 hrs</span></div>
+    <div class="rail__item" data-rail="agents"><span>subagents</span><span class="v">30+</span></div>
+    <div class="rail__item" data-rail="tokens"><span>tokens</span><span class="v">2M+</span></div>
+    <div class="rail__item" data-rail="fanout"><span>fan-outs</span><span class="v">6</span></div>
+    <div class="rail__item" data-rail="commits"><span>commits</span><span class="v">27</span></div>
+    <div class="rail__item" data-rail="files"><span>files</span><span class="v">90</span></div>
+    <div class="rail__item" data-rail="leaks"><span>secret leaks</span><span class="v">0</span></div>
+    <div class="rail__item" data-rail="worktrees"><span>worktrees</span><span class="v">28 · 0 hits</span></div>
+    <div class="rail__item" data-rail="cost"><span>run cost</span><span class="v">$2–4/mo</span></div>
+    <div class="rail__phase" id="railPhase">
+      <span class="lbl">now reading</span>
+      <span id="railPhaseText">the build log</span>
+    </div>
+  </div>
+</aside>
+
+<main>
+<!-- ===================== HERO ===================== -->
+<section class="band band-paper hero" id="top">
+  <div class="doc">
+    <svg class="hero__mark trail-draw" viewBox="0 0 48 64" role="img" aria-label="The Build-Trail: stacked verified steps, the top step ember and live">
+      <polyline points="4,60 16,60 16,48 28,48 28,36 40,36" fill="none" stroke="var(--pine)" stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter" style="--len:120"/>
+      <polyline class="ember-step" points="28,36 28,22 40,22" fill="none" stroke="var(--ember)" stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter" style="--len:40"/>
+      <circle cx="40" cy="22" r="3.4" fill="var(--ember)"/>
+    </svg>
+
+    <h1 class="hero__wordmark">Muster</h1>
+    <p class="hero__lede">The operating system for agentic software teams — that built itself.</p>
+
+    <p class="hero__pitch">A self-hostable agency OS — <b>Claude-side governance</b>, a <b>Directus shared-task bus</b>, local RAG, and a Next.js portal — went from empty repo to a live, public, HTTPS demo in about <b>2.5 hours</b>, built by a fleet of ~30 AI subagents that used the system's own task board as their spine, caught their own bugs, and scrubbed their own shipping artifacts.</p>
+
+    <p class="hero__sub mono">This page is the build log. The links are the live system.</p>
+
+    <div class="hero__cta">
+      <a class="btn btn--solid" href="#abstract">Read the log ↓</a>
+      <a class="btn btn--live" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Open the live portal ↗</a>
+      <a class="btn btn--live" href="https://cms.34.220.64.149.sslip.io" target="_blank" rel="noopener">See the build board ↗</a>
+      <a class="btn" href="paper.html">Read the whitepaper</a>
+      <a class="btn" href="#try" title="Repository opening soon">GitHub (soon) ↗</a>
+    </div>
+
+    <!-- metric strip: ground-truth numbers, plain mono, renders CSS-off -->
+    <div class="metricstrip" id="metricstrip" aria-label="Build metrics">
+      <div class="metric"><span class="metric__n" data-count="2.5" data-suffix=" hrs" data-decimals="1">~2.5 hrs</span><span class="metric__l">empty repo → live HTTPS demo</span></div>
+      <div class="metric"><span class="metric__n" data-count="30" data-prefix="" data-suffix="+">30+</span><span class="metric__l">AI subagents · 6 parallel fan-outs</span></div>
+      <div class="metric"><span class="metric__n" data-count="2" data-suffix="M+">2M+</span><span class="metric__l">tokens consumed</span></div>
+      <div class="metric"><span class="metric__n" data-count="27" data-suffix="">27</span><span class="metric__l">commits · 90 files · 8 phases</span></div>
+      <div class="metric"><span class="metric__n">~13</span><span class="metric__l">defects caught by machines, not humans</span></div>
+      <div class="metric"><span class="metric__n" data-count="0" data-suffix="">0</span><span class="metric__l">secret leaks · 0 collisions / 28 worktrees</span></div>
+      <div class="metric"><span class="metric__n">$2–4</span><span class="metric__l">per month to run</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== §1 ABSTRACT ===================== -->
+<section class="band band-paper" id="abstract">
+  <div class="doc">
+    <p class="kicker">§1 · Abstract</p>
+    <p class="lead">On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock, spanned 8 phases, 27 commits and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations consuming over 2 million tokens. It runs on a single AWS instance for about $2–4 per month, and you can open it right now.</p>
+    <p>That an agent fleet emits files quickly is not the interesting part — volume is unfalsifiable and ages badly. The interesting part is the apparatus that let a long, multi-session, ship-grade build hold together without a human reviewing every diff, and the fact that the system used that apparatus on itself. The thesis: <strong>the value is the architecture, not the prompt.</strong></p>
+    <p class="note">Three costs, kept apart on purpose: hosting (~$3/mo) is not the one-time build model-spend, and neither is the ongoing cost of running the fleet on your next project. The cheap number is only the box.</p>
+  </div>
+</section>
+
+<!-- ===================== §2 THESIS ===================== -->
+<section class="band band-paper band-paper--alt" id="thesis">
+  <div class="doc">
+    <p class="kicker">§2 · Governance is the product</p>
+    <h2 class="h2 secnum">The system built itself.</h2>
+    <p class="lead">The system that ships the system used its own task board as the build's spine, its own governed fan-out to construct one of its own subsystems, its own adversarial verifiers to keep its sellable template clean, and its own loop-proofs to catch bugs in its own packaging.</p>
+    <p>Call this <strong>dogfooding</strong>, not proof of necessity. Self-use shows the apparatus is coherent and usable — that it can carry its own non-trivial build — not that it is necessary or net-positive in dollars. The honesty is the point.</p>
+    <p>The single architectural claim this rests on:</p>
+    <div class="ledger">
+      <div class="ledger__row ledger__head"><div>The bottleneck is not the model</div><div>It is shared coordination state</div></div>
+      <div class="ledger__row"><div>The task record — not the chat transcript —</div><div>is the coordination substrate between a human and a fleet of agents.</div></div>
+    </div>
+    <p>The board is still browsable, read-only, exactly as the agents left it.
+      <a class="livechip" href="https://cms.34.220.64.149.sslip.io" target="_blank" rel="noopener">cms.34.220.64.149.sslip.io</a></p>
+    <p class="fineprint">Origin clause: Muster began as the internal OS of one agency, Analog&nbsp;Elk. That lineage is now just the first profile (<code>analogelk</code>) shipped alongside a generic one — a demonstrated feature, not the headline.</p>
+  </div>
+</section>
+
+<!-- ===================== §3 WHAT MUSTER IS ===================== -->
+<section class="band band-paper" id="what">
+  <div class="doc">
+    <p class="kicker">§3 · What Muster is</p>
+    <h2 class="h2">Four planes around a task board.</h2>
+    <p>Read it as a transferable mental model — you can build all four on any vendor's stack. The architecture figure:</p>
+    <div class="planes" role="list" aria-label="The four planes of Muster">
+      <div class="plane" role="listitem"><p class="plane__h">Governance · Claude-side constitution</p><p class="plane__d">A numbered, versioned ruleset (CLAUDE.md §1–§10) loaded into every session: secrets are env-only, one trunk equals production, never edit a contested worktree. Plain-English code that makes a stateless model behave like a long-lived teammate.</p></div>
+      <div class="plane" role="listitem"><p class="plane__h">Task bus · the Directus os_* board</p><p class="plane__d">A shared board every agent reads, claims, updates and closes over Directus's native MCP endpoint. The <strong>task record is the coordination atom</strong> — claimable units of work.</p></div>
+      <div class="plane" role="listitem"><p class="plane__h">Memory + RAG · the local engine</p><p class="plane__d">On-disk memory files are the <strong>knowledge substrate</strong> (lessons not derivable from code or git); the append-only log is the <strong>narrative substrate</strong> (what happened, in order). Three substrates, three cadences.</p></div>
+      <div class="plane plane--live" role="listitem"><p class="plane__h">Portal · the human read-side</p><p class="plane__d">A Next.js surface where a human watches the same rows the fleet works. Ships two profiles — <code>generic | analogelk</code> — the detail that makes "it's a product, not an internal tool" true at the code level.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== §4 ONE RECEIPT ===================== -->
+<section class="band band-paper band-paper--alt" id="receipt">
+  <div class="doc">
+    <p class="kicker">§4 · One receipt, end to end</p>
+    <h2 class="h2">A paper about receipts should show one.</h2>
+    <p>The RAG service claimed port <code class="mono">:9100</code>. A naive health check reported "healthy." It was lying — a <em>different</em> engine, already running, was answering on that port, and the check passed for the wrong reason. Here is the whole trail, on the board:</p>
+    <div class="receipt" aria-label="One defect walked from board row to fix commit">
+      <div class="receipt__step"><div class="receipt__k">the symptom</div><div class="receipt__v">RAG <span class="mono">:9100</span> health check reports green</div></div>
+      <div class="receipt__step"><div class="receipt__k">board row</div><div class="receipt__v">a task opened for the RAG bring-up — claimed, worked, status tracked</div></div>
+      <div class="receipt__step"><div class="receipt__k">verifier's claim</div><div class="receipt__v">a co-located engine on the same port was flattering the check; "tests pass" ≠ "the system works"</div></div>
+      <div class="receipt__step"><div class="receipt__k">what caught it</div><div class="receipt__v">a from-zero clean-room loop-proof, where the impostor process was not present — flipped the row red</div></div>
+      <div class="receipt__step"><div class="receipt__k">closing note</div><div class="receipt__v">root cause recorded as a co-located listener</div></div>
+      <div class="receipt__step receipt__step--fix"><div class="receipt__k">fix commit</div><div class="receipt__v"><span class="hash">pin the port + assert identity, not just a 200</span></div></div>
+    </div>
+    <p>The thing that caught it was not a smarter agent. It was a from-zero environment. Every other proof section can stay summary because this one is concrete.</p>
+  </div>
+</section>
+
+<!-- ===================== §5 THE BUILD ===================== -->
+<section class="band band-paper" id="build">
+  <div class="doc">
+    <p class="kicker">§5 · The build, in 8 phases</p>
+    <h2 class="h2">17:56 → 20:23 PT · 2026-06-29</h2>
+    <p>The Build-Trail: stacked steps, each a verified phase accreting upward, the top step the live system.</p>
+    <div class="phases">
+      <div class="phase" data-phase="P0 · scaffold"><span class="phase__id">P0</span><span class="phase__name">Scaffold + env</span><span class="phase__meta">empty repo</span></div>
+      <div class="phase" data-phase="P1 · compose core"><span class="phase__id">P1</span><span class="phase__name">Compose core topology</span><span class="phase__meta">Docker</span></div>
+      <div class="phase" data-phase="P2 · schema + seed"><span class="phase__id">P2</span><span class="phase__name">Schema + seed · 8-agent fan-out</span><span class="phase__meta">546k tok</span></div>
+      <div class="phase" data-phase="P3 · RAG"><span class="phase__id">P3</span><span class="phase__name">RAG engine</span><span class="phase__meta">:9100 fix</span></div>
+      <div class="phase" data-phase="P4 · portal"><span class="phase__id">P4</span><span class="phase__name">Next.js portal</span><span class="phase__meta">human read-side</span></div>
+      <div class="phase" data-phase="P5 · Claude-OS wiring"><span class="phase__id">P5</span><span class="phase__name">Claude-OS wiring · native MCP</span><span class="phase__meta">env-token</span></div>
+      <div class="phase" data-phase="P6 · live demo"><span class="phase__id">P6</span><span class="phase__name">Live demo on the box</span><span class="phase__meta">arm64 fix, live</span></div>
+      <div class="phase" data-phase="P7 · packaging"><span class="phase__id">P7</span><span class="phase__name">Packaging · scrub-audit</span><span class="phase__meta">20:23 PT</span></div>
+    </div>
+    <p class="fineprint">27 commits · 90 files · the spine of every phase was the <code>os_tasks</code> board — deep-linkable, still live.</p>
+  </div>
+</section>
+
+<!-- ===================== §6 THE FLEET ===================== -->
+<section class="band band-paper band-paper--alt" id="fleet">
+  <div class="doc">
+    <p class="kicker">§6 · The agent fleet</p>
+    <h2 class="h2">30+ invocations, 6 fan-outs, 2M+ tokens.</h2>
+    <p>Two named set-pieces carry the number:</p>
+    <ul class="tight">
+      <li>The <strong>8-agent schema build</strong> — <span class="mono">546k tokens</span> — ground → fan-out → scrub-audit → 3 adversarial leak-verifiers.</li>
+      <li>The <strong>5-agent live-AWS-pricing cost panel</strong> — <span class="mono">256k tokens</span>.</li>
+    </ul>
+    <p>The rest were parallel explorers, builders and verifiers spread across P0–P7, several single-shot. Honestly: not all produced kept work. Some fan-outs returned partial or discarded output that was retried or dropped — and that wasted production is part of the real token cost in §7. The discard rate was not instrumented; that is itself a measurement gap.</p>
+  </div>
+</section>
+
+<!-- ===================== §7 BUGS (PROOF) ===================== -->
+<section class="band band-paper" id="bugs">
+  <div class="doc">
+    <p class="kicker">§7 · Bugs the machines caught</p>
+    <h2 class="h2">~7 functional bugs, 6 brand leaks. No human caught any of them.</h2>
+    <div class="table-wrap">
+      <table class="proof">
+        <thead><tr><th scope="col">Defect / risk</th><th scope="col">What caught it</th><th scope="col">Needed the fleet?</th></tr></thead>
+        <tbody>
+          <tr><td>RAG <span class="mono">:9100</span> port collision</td><td>from-scratch loop-proof</td><td class="no">No — any disciplined agent</td></tr>
+          <tr><td>Health check fooled by a co-located engine</td><td>clean-room reproduction</td><td class="no">No — single-agent reachable</td></tr>
+          <tr><td>Missing <span class="mono">releases.repository_id</span> FK</td><td>loop-proof</td><td class="no">No</td></tr>
+          <tr><td><span class="mono">set -e</span> / <span class="mono">pipefail</span> bug in <span class="mono">doctor</span></td><td>loop-proof</td><td class="no">No</td></tr>
+          <tr><td>arm64-vs-amd64 portal-image mismatch (fixed live)</td><td>live deploy</td><td class="no">No</td></tr>
+          <tr><td>Compose RAG-off abort</td><td>loop-proof</td><td class="no">No</td></tr>
+          <tr><td>AE seed files colliding with a kept UI collection</td><td>scrub-audit</td><td class="no">Partly (seam)</td></tr>
+          <tr><td><strong>6 real <span class="mono">AnalogElk</span> references</strong> in the sellable template</td><td>scrub-audit + 3 adversarial leak-verifiers</td><td class="yes">Yes — multi-tenant policing</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fineprint">Most functional catches are loop-proof wins a single disciplined agent could reach. The genuinely fleet-dependent win is the system policing its own multi-tenancy before shipping a sellable generic template. Honestly: the brand leaks are string-checkable — a grep catches those too. The fleet's marginal value is the seam and the semantic cases. The scrub is a capability, not a confession.</p>
+  </div>
+</section>
+
+<!-- ===================== §8 GOVERNANCE & SAFETY (PROOF) ===================== -->
+<section class="band band-paper band-paper--alt" id="governance">
+  <div class="doc">
+    <p class="kicker">§8 · Governance &amp; safety</p>
+    <h2 class="h2">The honesty ledger is the design feature.</h2>
+    <p><strong>0 secret leaks.</strong> DB and admin tokens were always env-referenced, never echoed, never committed — grep-verified, not assumed. On the 28 worktrees: we avoided the contested checkout entirely by building read-only from a frozen snapshot. <strong>0 collisions by not participating in the contention, not by handling it.</strong></p>
+    <div class="ledger" aria-label="Shipped versus aspirational ledger">
+      <div class="ledger__row ledger__head"><div>shipped — demonstrated</div><div>aspirational — not yet</div></div>
+      <div class="ledger__row"><div>self-built in ~2.5 hrs, live + reachable</div><div>a measured A/B against the control</div></div>
+      <div class="ledger__row"><div>0 secret leaks (grep-verified)</div><div>real claim atomicity at scale (§9)</div></div>
+      <div class="ledger__row"><div>0 known-shipped defects as of writing</div><div>graceful degradation if the board dies</div></div>
+      <div class="ledger__row"><div>generic profile scrubbed of origin</div><div>decorrelated (cross-model) verifiers</div></div>
+    </div>
+    <p class="fineprint">Defects shipped: <strong>0 known-shipped as of writing</strong> — not a hard zero. I can count catches; I cannot enumerate misses, so "0 shipped" is survivorship, stated as such.</p>
+  </div>
+</section>
+
+<!-- ===================== §9 DURABILITY ===================== -->
+<section class="band band-paper" id="durability">
+  <div class="doc">
+    <p class="kicker">§9 · Durability across sessions</p>
+    <h2 class="h2">7+ sessions, zero context loss.</h2>
+    <p>State held across three substrates: the board (coordination spine), on-disk memory files (knowledge), and the append-only log (narrative). A single rolling window cannot physically hold a 2M-token build — it compacts, forgets, re-reads, re-litigates. Externalizing state turned an impossible-for-one-window task into a resumable one. That is the cleanest win, because it is categorical.</p>
+    <h3 class="h3">The spine has its own coordination problem</h3>
+    <p>The board is shared mutable state and a single point of coupling — the first thing a CTO probes, so here it is straight. A row carries <code>assigned_to</code> and <code>status</code>; the protocol is a compare-and-set. But Directus gives no true row lock by default, and the build <em>observed</em> version collisions across parallel sessions — re-check before write. Contention was actually controlled one level up, by <strong>disjoint dispatch</strong> plus worktree isolation, not by the board being magically atomic. Scale past human-arbitrated dispatch and you need real claim semantics (optimistic concurrency, or a queue in front of the board). That is not built, and the row does not give it to you for free.</p>
+  </div>
+</section>
+
+<!-- ===================== §10 VS (PROOF) ===================== -->
+<section class="band band-paper band-paper--alt" id="vs">
+  <div class="doc">
+    <p class="kicker">§10 · vs. an ungoverned single-agent workflow</p>
+    <h2 class="h2">No strawman. A workflow, not a product.</h2>
+    <div class="table-wrap">
+      <table class="proof">
+        <thead><tr><th scope="col">Ungoverned single-agent workflow</th><th scope="col">Muster</th></tr></thead>
+        <tbody>
+          <tr><td>one rolling context window</td><td>durable task board + on-disk memory + append-only log (7+ sessions, no loss)</td></tr>
+          <tr><td>serial work, no coordination substrate</td><td>30+ subagents across 6 fan-outs around a shared board</td></tr>
+          <tr><td>trusts its own output</td><td>loop-proofs + adversarial verifiers, with honest attribution of which catches needed the fleet</td></tr>
+          <tr><td>ad-hoc, no written rules</td><td>a written §1–§10 constitution loaded every session</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Prior-art, stated so the win isn't rigged: the real alternatives aren't a chat transcript — they're git branches/PRs, markdown plan-files in a repo (this kit uses those too), and framework state (LangGraph / CrewAI / Swarm). Muster's bet is a queryable, multi-writer, cross-session task board as the durable coordination atom — used alongside files, not instead of them.</p>
+  </div>
+</section>
+
+<!-- ===================== §11 RUN IT (CONSOLE) ===================== -->
+<section class="band band-console" id="try">
+  <div class="doc">
+    <p class="kicker">§11 · Run it yourself</p>
+    <h2 class="h2">One command. The doctor board is the proof.</h2>
+    <p class="lead">The apparatus is open and self-hostable. <code>bin/elk-os</code> is a resumable, idempotent phase machine whose only hard dependency is Docker.</p>
+    <pre class="code" aria-label="One-command install"><span class="c"># scaffold → live, from an empty volume</span>
+bin/elk-os <span class="e">init</span>      <span class="c"># scaffold + env</span>
+bin/elk-os <span class="e">up</span>        <span class="c"># compose core (Directus, Postgres, RAG, portal)</span>
+bin/elk-os <span class="e">migrate</span>   <span class="c"># apply os_* schema</span>
+bin/elk-os <span class="e">seed</span>      <span class="c"># profile data (generic | analogelk)</span>
+bin/elk-os <span class="e">wire</span>      <span class="c"># enable native MCP, mint env-referenced token</span>
+bin/elk-os <span class="e">doctor</span>    <span class="c"># green/red from-scratch acceptance board</span></pre>
+
+    <p>The exhibits — the only outbound destinations that matter. Anything ember is a seam into the running system:</p>
+
+    <p>
+      <a class="btn btn--live" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">The running product ↗</a>
+      &nbsp;<span class="fineprint">the portal · generic profile · view the Analog&nbsp;Elk case study from inside</span><br>
+      <a class="snapchip" href="assets/live-portal-snapshot.png" target="_blank" rel="noopener">archived snapshot (P6 live capture)</a>
+    </p>
+
+    <p>
+      <a class="btn btn--live" href="https://cms.34.220.64.149.sslip.io" target="_blank" rel="noopener">The build board ↗</a>
+      &nbsp;<span class="fineprint">the actual task spine the agents used — public, read-only; browse the receipts, you can't write to them</span><br>
+      <a class="snapchip" href="assets/portal-login-snapshot.png" target="_blank" rel="noopener">archived snapshot</a>
+    </p>
+
+    <p>
+      <a class="btn" href="paper.html">Read the whitepaper →</a>
+      &nbsp;
+      <a class="btn" href="#" title="Repository opening soon" aria-disabled="true">GitHub repo — opening soon ↗</a>
+    </p>
+
+    <p class="note">TLS note: the demo runs on a <code>sslip.io</code> host, so your browser will warn once before letting you through. That warning is the cost of a $3/mo box, not a security claim — treat the cert as "reachable," not "trusted."</p>
+  </div>
+</section>
+
+<!-- ===================== §12 AUTHOR ===================== -->
+<section class="band band-paper" id="author">
+  <div class="doc">
+    <p class="kicker">§12 · Author &amp; judgment calls</p>
+    <h2 class="h2 author__name">Mike Walliser</h2>
+    <p class="lead">Creative technologist and AI-systems builder. The system is the protagonist; the architect is in the margins.</p>
+    <p>Here is what no agent decided. The reframe — "this is a product; Analog Elk is just the case study" — was a product call. The honesty ledger exists because a human insisted on it and defined what counts as shipped; agents optimize toward "done," and only a human reliably separates done from claimed-done. Bounding the fan-out — "this is enough verification" — is human ROI governance; the machine fans out forever. The arm64/amd64 fix happened live on metal, human-diagnosed. <strong>Mike designed this page and the system architecture</strong> — the page's craft is the portfolio piece.</p>
+    <p class="fineprint">n=1, self-built, author-run, same-base-model verifiers — these limitations are trust assets, stated plainly throughout. Read it as an existence proof and a reasoned playbook, not a controlled study.</p>
+  </div>
+</section>
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+  <div class="doc">
+    <div>Muster · built by agents · origin &amp; case study: Analog Elk</div>
+    <div>Design &amp; system architecture: Mike Walliser · 2026-06-29</div>
+    <div class="footer__links">
+      <a href="paper.html">Whitepaper</a>
+      <a href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Live portal ↗</a>
+      <a href="https://cms.34.220.64.149.sslip.io" target="_blank" rel="noopener">Build board ↗</a>
+      <a href="#" title="Repository opening soon">GitHub (soon) ↗</a>
+      <a href="#" onclick="window.print();return false;">Download PDF / Print</a>
+    </div>
+    <div class="fineprint" style="margin-top:1rem;">Muster the agents. Keep the receipts. The model is stateless; the organization around it does not have to be.</div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---- topbar reveal after hero ---- */
+  var topbar = document.getElementById("topbar");
+  var hero = document.getElementById("top");
+  if (topbar) topbar.hidden = false;
+  if (topbar && "IntersectionObserver" in window) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        topbar.classList.toggle("is-visible", !e.isIntersecting);
+      });
+    }, { rootMargin: "-120px 0px 0px 0px" }).observe(hero);
+  } else if (topbar) {
+    topbar.classList.add("is-visible");
+  }
+
+  /* ---- metric count-up (one-shot) ---- */
+  function animateCount(el) {
+    var target = parseFloat(el.getAttribute("data-count"));
+    if (isNaN(target)) return;
+    var decimals = parseInt(el.getAttribute("data-decimals") || "0", 10);
+    var prefix = el.getAttribute("data-prefix") || "";
+    var suffix = el.getAttribute("data-suffix") || "";
+    if (reduce || target === 0) { el.textContent = prefix + target.toFixed(decimals) + suffix; return; }
+    var start = null, dur = 900;
+    function step(ts) {
+      if (!start) start = ts;
+      var p = Math.min((ts - start) / dur, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      var val = target * eased;
+      el.textContent = prefix + (decimals ? val.toFixed(decimals) : Math.round(val)) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = prefix + target.toFixed(decimals) + suffix;
+    }
+    requestAnimationFrame(step);
+  }
+  var strip = document.getElementById("metricstrip");
+  if (strip && "IntersectionObserver" in window) {
+    var done = false;
+    new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting && !done) {
+          done = true;
+          strip.querySelectorAll("[data-count]").forEach(animateCount);
+          obs.disconnect();
+        }
+      });
+    }, { threshold: 0.4 }).observe(strip);
+  }
+
+  /* ---- Ledger Rail: highlight phase + telemetry per active section ---- */
+  var phaseText = document.getElementById("railPhaseText");
+  var sectionLabels = {
+    top: "the build log", abstract: "abstract", thesis: "governance is the product",
+    what: "the four planes", receipt: "one receipt, walked", build: "the build · P0→P7",
+    fleet: "the agent fleet", bugs: "bugs the machines caught", governance: "governance & safety",
+    durability: "durability across sessions", vs: "vs. ungoverned single-agent",
+    try: "run it yourself", author: "judgment calls"
+  };
+  var railMap = {
+    build: "commits", fleet: "agents", bugs: "leaks", governance: "leaks",
+    durability: "worktrees", thesis: "tokens", try: "cost", receipt: "commits"
+  };
+  function setRail(id) {
+    if (phaseText) phaseText.textContent = sectionLabels[id] || "the build log";
+    document.querySelectorAll(".rail__item").forEach(function (it) { it.classList.remove("is-active"); });
+    var key = railMap[id];
+    if (key) {
+      var item = document.querySelector('.rail__item[data-rail="' + key + '"]');
+      if (item) item.classList.add("is-active");
+    }
+  }
+  if ("IntersectionObserver" in window) {
+    var secs = document.querySelectorAll("main section[id]");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) setRail(e.target.id);
+      });
+    }, { rootMargin: "-45% 0px -45% 0px" });
+    secs.forEach(function (s) { io.observe(s); });
+  }
+})();
+</script>
+</body>
+</html>

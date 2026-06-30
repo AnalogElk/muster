@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Muster — the software that built itself, and shipped">
+  <rect width="1200" height="630" fill="#F4EFE4"/>
+  <rect x="0" y="0" width="1200" height="14" fill="#25402F"/>
+  <!-- Build-Trail mark -->
+  <g transform="translate(96,150)">
+    <polyline points="0,150 36,150 36,108 72,108 72,66 108,66" fill="none" stroke="#25402F" stroke-width="9" stroke-linecap="square"/>
+    <polyline points="72,66 72,24 108,24" fill="none" stroke="#DE7330" stroke-width="9" stroke-linecap="square"/>
+    <circle cx="108" cy="24" r="9" fill="#DE7330"/>
+  </g>
+  <text x="260" y="210" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="118" fill="#221F1A" letter-spacing="-3">Muster</text>
+  <text x="262" y="282" font-family="Georgia, serif" font-style="italic" font-size="40" fill="#25402F">The software that built itself — and shipped.</text>
+
+  <line x1="96" y1="360" x2="1104" y2="360" stroke="#221F1A" stroke-width="3"/>
+  <g font-family="'IBM Plex Mono', ui-monospace, monospace" fill="#25402F">
+    <text x="96"  y="440" font-size="58" font-weight="600">~2.5 hrs</text>
+    <text x="96"  y="478" font-size="24" fill="#4A463D">empty repo → live HTTPS</text>
+
+    <text x="430" y="440" font-size="58" font-weight="600">30+ · 2M+</text>
+    <text x="430" y="478" font-size="24" fill="#4A463D">subagents · tokens</text>
+
+    <text x="820" y="440" font-size="58" font-weight="600">$2–4<tspan font-size="34">/mo</tspan></text>
+    <text x="820" y="478" font-size="24" fill="#4A463D">to run · 0 secret leaks</text>
+  </g>
+  <line x1="96" y1="520" x2="1104" y2="520" stroke="#221F1A" stroke-width="3"/>
+  <text x="96" y="576" font-family="'IBM Plex Mono', monospace" font-size="26" fill="#221F1A">The operating system for agentic software teams.</text>
+  <text x="96" y="610" font-family="'IBM Plex Mono', monospace" font-size="22" fill="#B9551C">Muster the agents. Keep the receipts.</text>
+</svg>
