@@ -1,0 +1,12 @@
+[
+  {
+    "id": "repo-elk-os",
+    "name": "elk-os",
+    "url": "https://github.com/analogelk/elk-os",
+    "default_branch": "main",
+    "status": "active",
+    "project": "proj-elk-os-platform",
+    "description": "Self-host agency-OS installer — Analog Elk's reference platform repo. Synthetic showcase data.",
+    "is_test_data": true
+  }
+]
