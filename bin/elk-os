@@ -1,0 +1,421 @@
+#!/usr/bin/env bash
+# =============================================================================
+# Elk OS — resumable phased installer CLI
+# =============================================================================
+# One-command, self-hostable repackaging of the Analog Elk agency-OS.
+# Docker is the ONLY hard runtime dependency; everything else is POSIX bash +
+# standard unix tools (curl, openssl, awk, grep, sed).
+#
+# Phases (ordered, idempotent, resumable via .elk-os-state.json):
+#   init     generate secrets + write .env from .env.example
+#   up       docker compose up the core, then bootstrap the admin token
+#   migrate  (P2) apply os_* schema snapshot
+#   seed     (P5) load profile seed data
+#   wire     (P5) write CLAUDE.md + .mcp.json + hooks + memory seed
+#   doctor   green/red health board (the runtime acceptance test)
+#   down     stop the stack
+#
+# Secrets are NEVER echoed to stdout/stderr; they live only in .env (gitignored).
+# =============================================================================
+set -euo pipefail
+
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+ENV_FILE="${ROOT}/.env"
+ENV_EXAMPLE="${ROOT}/.env.example"
+STATE_FILE="${ROOT}/.elk-os-state.json"
+COMPOSE_DIR="${ROOT}/compose"
+PROFILES_DIR="${ROOT}/profiles"
+BOOTSTRAP="${ROOT}/directus/bootstrap/mint-token.sh"
+
+# ---------------------------------------------------------------------------
+# Colour / logging helpers
+# ---------------------------------------------------------------------------
+if [ -t 1 ]; then
+  RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
+  CYAN='\033[0;36m'; BOLD='\033[1m'; DIM='\033[2m'; RESET='\033[0m'
+else
+  RED=''; GREEN=''; YELLOW=''; CYAN=''; BOLD=''; DIM=''; RESET=''
+fi
+
+info()    { echo -e "${CYAN}[elk-os]${RESET} $*"; }
+success() { echo -e "${GREEN}[elk-os]${RESET} $*"; }
+warn()    { echo -e "${YELLOW}[elk-os]${RESET} $*"; }
+error()   { echo -e "${RED}[elk-os]${RESET} $*" >&2; }
+die()     { error "$*"; exit 1; }
+
+# ---------------------------------------------------------------------------
+# Docker / compose detection
+# ---------------------------------------------------------------------------
+need_docker() {
+  command -v docker >/dev/null 2>&1 || die "Docker is required but not on PATH. Install Docker Desktop."
+}
+
+if docker compose version >/dev/null 2>&1; then
+  DC=(docker compose)
+elif command -v docker-compose >/dev/null 2>&1; then
+  DC=(docker-compose)
+else
+  DC=(docker compose)  # resolved lazily; need_docker/up will surface errors
+fi
+
+# Build the compose invocation for the current target (reads .env).
+compose() {
+  local target files
+  target="$(get_env ELK_OS_TARGET)"; target="${target:-local}"
+  files=(-f "${COMPOSE_DIR}/compose.yaml")
+  if [ "$target" = "box" ]; then
+    files+=(-f "${COMPOSE_DIR}/compose.prod.yaml")
+  else
+    files+=(-f "${COMPOSE_DIR}/compose.dev.yaml")
+  fi
+  "${DC[@]}" --project-directory "$ROOT" --env-file "$ENV_FILE" "${files[@]}" "$@"
+}
+
+# ---------------------------------------------------------------------------
+# .env helpers
+# ---------------------------------------------------------------------------
+get_env() {
+  local key="$1"
+  [ -f "$ENV_FILE" ] || { echo ""; return 0; }
+  grep -E "^${key}=" "$ENV_FILE" 2>/dev/null | head -n1 | cut -d= -f2- || true
+}
+
+set_env() {
+  local key="$1" val="$2"
+  if grep -qE "^${key}=" "$ENV_FILE"; then
+    awk -v k="$key" -v v="$val" 'BEGIN{FS="="} $1==k{print k"="v; next} {print}' \
+      "$ENV_FILE" > "$ENV_FILE.tmp" && mv "$ENV_FILE.tmp" "$ENV_FILE"
+  else
+    printf '%s=%s\n' "$key" "$val" >> "$ENV_FILE"
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# State helpers (.elk-os-state.json) — minimal JSON, no jq dependency
+# ---------------------------------------------------------------------------
+state_has() {
+  [ -f "$STATE_FILE" ] || return 1
+  grep -q "\"$1\"" "$STATE_FILE" 2>/dev/null
+}
+
+state_mark() {
+  local phase="$1"
+  state_has "$phase" && return 0
+  local existing=""
+  if [ -f "$STATE_FILE" ]; then
+    existing="$(sed -n 's/.*"completed":\[\(.*\)\].*/\1/p' "$STATE_FILE")"
+  fi
+  local joined
+  if [ -n "$existing" ]; then
+    joined="${existing},\"${phase}\""
+  else
+    joined="\"${phase}\""
+  fi
+  printf '{"completed":[%s],"updated":"%s"}\n' "$joined" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$STATE_FILE"
+}
+
+# ---------------------------------------------------------------------------
+# Secret masking for status output
+# ---------------------------------------------------------------------------
+mask_status() {
+  # echoes "set (hidden)" or "(empty)" — never the value itself
+  local val="$1"
+  if [ -n "$val" ]; then echo "set (hidden)"; else echo "(empty)"; fi
+}
+
+# ---------------------------------------------------------------------------
+# init
+# ---------------------------------------------------------------------------
+cmd_init() {
+  local profile="generic" target="local" force=0
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --profile) profile="${2:?--profile needs a value}"; shift 2 ;;
+      --target)  target="${2:?--target needs a value}"; shift 2 ;;
+      --force)   force=1; shift ;;
+      *) die "Unknown init flag: $1" ;;
+    esac
+  done
+
+  case "$profile" in generic|analogelk) ;; *) die "Unknown profile '$profile' (expected: generic|analogelk)";; esac
+  case "$target"  in local|box) ;;        *) die "Unknown target '$target' (expected: local|box)";; esac
+
+  [ -f "$ENV_EXAMPLE" ] || die ".env.example not found at $ENV_EXAMPLE"
+
+  if [ -f "$ENV_FILE" ] && [ "$force" -ne 1 ]; then
+    die ".env already exists. Refusing to clobber it. Re-run with --force to overwrite."
+  fi
+
+  command -v openssl >/dev/null 2>&1 || die "openssl is required to generate secrets."
+
+  info "Writing .env from .env.example (profile=${profile}, target=${target})…"
+  cp "$ENV_EXAMPLE" "$ENV_FILE"
+
+  set_env ELK_OS_PROFILE "$profile"
+  set_env ELK_OS_TARGET  "$target"
+
+  # Auto-generate secrets (only if empty — re-running --force keeps existing).
+  local k
+  for k in POSTGRES_PASSWORD DIRECTUS_KEY DIRECTUS_SECRET DIRECTUS_ADMIN_PASSWORD; do
+    if [ -z "$(get_env "$k")" ]; then
+      set_env "$k" "$(openssl rand -hex 32)"
+    fi
+  done
+  # Admin token is minted at bootstrap, never here.
+  set_env DIRECTUS_ADMIN_TOKEN ""
+
+  # Merge profile defaults (non-secret overrides).
+  local defaults="${PROFILES_DIR}/${profile}/env.defaults"
+  if [ -f "$defaults" ]; then
+    info "Merging profile defaults from profiles/${profile}/env.defaults…"
+    while IFS= read -r line || [ -n "$line" ]; do
+      case "$line" in ''|\#*) continue ;; esac
+      [ "${line#*=}" = "$line" ] && continue   # skip lines without '='
+      set_env "${line%%=*}" "${line#*=}"
+    done < "$defaults"
+  fi
+
+  state_mark init
+
+  echo ""
+  echo -e "${BOLD}Elk OS — .env written${RESET}"
+  printf "  %-26s %s\n" "Profile"                 "$(get_env ELK_OS_PROFILE)"
+  printf "  %-26s %s\n" "Target"                  "$(get_env ELK_OS_TARGET)"
+  printf "  %-26s %s\n" "Brand"                   "$(get_env ELK_OS_BRAND_NAME)"
+  printf "  %-26s %s\n" "Admin email"             "$(get_env DIRECTUS_ADMIN_EMAIL)"
+  printf "  %-26s %s\n" "POSTGRES_PASSWORD"       "$(mask_status "$(get_env POSTGRES_PASSWORD)")"
+  printf "  %-26s %s\n" "DIRECTUS_KEY"            "$(mask_status "$(get_env DIRECTUS_KEY)")"
+  printf "  %-26s %s\n" "DIRECTUS_SECRET"         "$(mask_status "$(get_env DIRECTUS_SECRET)")"
+  printf "  %-26s %s\n" "DIRECTUS_ADMIN_PASSWORD" "$(mask_status "$(get_env DIRECTUS_ADMIN_PASSWORD)")"
+  printf "  %-26s %s\n" "DIRECTUS_ADMIN_TOKEN"    "minted at bootstrap (elk-os up)"
+  echo ""
+  success "init complete. Next: ${BOLD}./bin/elk-os up${RESET}"
+}
+
+# ---------------------------------------------------------------------------
+# up
+# ---------------------------------------------------------------------------
+cmd_up() {
+  need_docker
+  [ -f "$ENV_FILE" ] || die ".env not found. Run ./bin/elk-os init first."
+  docker info >/dev/null 2>&1 || die "Docker daemon is not reachable. Start Docker and retry."
+
+  local target; target="$(get_env ELK_OS_TARGET)"; target="${target:-local}"
+  if [ "$target" = "box" ] && [ -z "$(get_env ELK_OS_DOMAIN)" ]; then
+    die "ELK_OS_TARGET=box but ELK_OS_DOMAIN is empty. Set it in .env."
+  fi
+
+  info "Starting the Elk OS core (target=${target})…"
+  compose up -d --remove-orphans
+
+  # Wait for Directus to answer /server/health from the host.
+  local url; url="$(get_env DIRECTUS_URL)"; url="${url:-http://localhost:8056}"
+  info "Waiting for Directus at ${url}/server/health …"
+  local tries=0 max=60
+  until curl -sf -o /dev/null "${url}/server/health" 2>/dev/null; do
+    tries=$((tries+1))
+    if [ "$tries" -ge "$max" ]; then
+      error "Directus did not become healthy within $((max*3))s."
+      error "Inspect logs: ./bin/elk-os logs directus"
+      state_mark up   # containers are up even if health lagged; doctor will gate
+      exit 1
+    fi
+    sleep 3
+  done
+  success "Directus is healthy."
+  state_mark up
+
+  # Bootstrap: mint the admin static token (idempotent).
+  info "Bootstrapping admin static token…"
+  if bash "$BOOTSTRAP" "$ENV_FILE"; then
+    state_mark bootstrap
+  else
+    warn "Token bootstrap did not complete — re-run ./bin/elk-os up after Directus settles."
+  fi
+
+  echo ""
+  success "Core is up. Next: ${BOLD}./bin/elk-os doctor${RESET}"
+}
+
+# ---------------------------------------------------------------------------
+# down
+# ---------------------------------------------------------------------------
+cmd_down() {
+  need_docker
+  [ -f "$ENV_FILE" ] || die ".env not found — nothing to bring down."
+  local with_volumes=0
+  [ "${1:-}" = "--volumes" ] && with_volumes=1
+  if [ "$with_volumes" -eq 1 ]; then
+    warn "Bringing the stack down AND removing data volumes…"
+    compose down --volumes
+  else
+    info "Stopping the Elk OS core (data volumes preserved)…"
+    compose down
+  fi
+  success "Stack stopped."
+}
+
+# ---------------------------------------------------------------------------
+# logs (convenience)
+# ---------------------------------------------------------------------------
+cmd_logs() {
+  need_docker
+  [ -f "$ENV_FILE" ] || die ".env not found. Run ./bin/elk-os init first."
+  if [ -n "${1:-}" ]; then compose logs -f "$1"; else compose logs -f; fi
+}
+
+# ---------------------------------------------------------------------------
+# doctor — per-subsystem green/red board
+# ---------------------------------------------------------------------------
+DOCTOR_FAILED=0
+doctor_row() {
+  # $1 label  $2 ok(0/1)  $3 detail  $4 next-action-if-red
+  local label="$1" ok="$2" detail="$3" action="${4:-}"
+  if [ "$ok" -eq 0 ]; then
+    printf "  ${GREEN}●${RESET} %-22s ${GREEN}%-8s${RESET} %s\n" "$label" "OK" "$detail"
+  else
+    DOCTOR_FAILED=1
+    printf "  ${RED}●${RESET} %-22s ${RED}%-8s${RESET} %s\n" "$label" "FAIL" "$detail"
+    [ -n "$action" ] && printf "      ${DIM}→ %s${RESET}\n" "$action"
+  fi
+}
+
+container_health() {
+  # echoes: running|healthy  /  running|none  /  exited  /  absent ...
+  local name="$1" state health
+  if state=$(docker inspect --format '{{.State.Status}}' "$name" 2>/dev/null) && [ -n "$state" ]; then :; else echo "absent"; return; fi
+  health=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$name" 2>/dev/null || echo "none")
+  echo "${state}|${health}"
+}
+
+cmd_doctor() {
+  echo ""
+  echo -e "${BOLD}Elk OS — doctor${RESET}  ${DIM}$(date '+%Y-%m-%d %H:%M:%S')${RESET}"
+  echo ""
+
+  # 1. Docker daemon
+  if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+    doctor_row "Docker daemon" 0 "reachable"
+  else
+    doctor_row "Docker daemon" 1 "not reachable" "Start Docker Desktop / the docker service, then retry."
+    print_doctor_footer; return
+  fi
+
+  # 2. .env present
+  if [ -f "$ENV_FILE" ]; then
+    doctor_row ".env" 0 "present"
+  else
+    doctor_row ".env" 1 "missing" "Run ./bin/elk-os init --profile generic"
+    print_doctor_footer; return
+  fi
+
+  # 3. Postgres container healthy
+  local pg; pg="$(container_health elk-os-postgres)"
+  case "$pg" in
+    running\|healthy) doctor_row "Postgres container" 0 "running, healthy" ;;
+    running\|none)    doctor_row "Postgres container" 0 "running (no healthcheck)" ;;
+    running\|*)       doctor_row "Postgres container" 1 "running but ${pg##*|}" "Wait for the healthcheck, or ./bin/elk-os logs postgres" ;;
+    absent)           doctor_row "Postgres container" 1 "not created" "Run ./bin/elk-os up" ;;
+    *)                doctor_row "Postgres container" 1 "$pg" "Run ./bin/elk-os up ; ./bin/elk-os logs postgres" ;;
+  esac
+
+  # 4. Directus /server/health
+  local url; url="$(get_env DIRECTUS_URL)"; url="${url:-http://localhost:8056}"
+  local health_json
+  if health_json=$(curl -sf --max-time 5 "${url}/server/health" 2>/dev/null); then
+    if printf '%s' "$health_json" | grep -q '"status":"ok"'; then
+      doctor_row "Directus health" 0 "${url} → status ok"
+    else
+      local st; st=$(printf '%s' "$health_json" | grep -o '"status":"[^"]*"' | head -n1 | cut -d'"' -f4)
+      doctor_row "Directus health" 1 "${url} → status ${st:-unknown}" "Check dependencies: ./bin/elk-os logs directus"
+    fi
+  else
+    doctor_row "Directus health" 1 "${url} unreachable" "Is the stack up? Run ./bin/elk-os up ; ./bin/elk-os logs directus"
+  fi
+
+  # 5. Admin static token (informational — green when minted)
+  if [ -n "$(get_env DIRECTUS_ADMIN_TOKEN)" ]; then
+    if curl -sf -o /dev/null --max-time 5 -H "Authorization: Bearer $(get_env DIRECTUS_ADMIN_TOKEN)" "${url}/users/me?fields=id" 2>/dev/null; then
+      doctor_row "Admin API token" 0 "minted, authenticates (hidden)"
+    else
+      doctor_row "Admin API token" 1 "present but does not authenticate" "Re-run ./bin/elk-os up to re-mint."
+    fi
+  else
+    doctor_row "Admin API token" 1 "not minted yet" "Run ./bin/elk-os up (bootstrap mints it)."
+  fi
+
+  print_doctor_footer
+}
+
+print_doctor_footer() {
+  echo ""
+  if [ "$DOCTOR_FAILED" -eq 0 ]; then
+    success "All required subsystems green."
+    exit 0
+  else
+    error "One or more subsystems are red (see → next actions above)."
+    exit 1
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Later-phase stubs
+# ---------------------------------------------------------------------------
+cmd_migrate() { echo "P2: migrate (apply os_* schema snapshot) not yet implemented."; exit 0; }
+cmd_seed()    { echo "P2/P5: seed (load profile seed data) not yet implemented."; exit 0; }
+cmd_wire()    { echo "P5: wire (CLAUDE.md + .mcp.json + hooks + memory) not yet implemented."; exit 0; }
+
+# ---------------------------------------------------------------------------
+# usage
+# ---------------------------------------------------------------------------
+usage() {
+  cat <<EOF
+
+${BOLD}elk-os${RESET} — self-host agency-OS installer (resumable phased CLI)
+
+${BOLD}Usage:${RESET}
+  ./bin/elk-os <command> [flags]
+
+${BOLD}Commands:${RESET}
+  init [--profile generic|analogelk] [--target local|box] [--force]
+                      Generate secrets + write .env from .env.example.
+  up                  docker compose up the core, then mint the admin token.
+  down [--volumes]    Stop the stack (keep data unless --volumes).
+  doctor              Per-subsystem green/red health board (exits nonzero if red).
+  logs [service]      Tail container logs.
+  migrate             (P2) apply os_* schema snapshot — stub.
+  seed                (P2/P5) load profile seed data — stub.
+  wire                (P5) write CLAUDE.md + .mcp.json + hooks + memory — stub.
+  help                This message.
+
+${BOLD}Quick start:${RESET}
+  ./bin/elk-os init --profile generic
+  ./bin/elk-os up
+  ./bin/elk-os doctor
+
+Docker is the only hard dependency. Secrets live only in .env (gitignored)
+and are never printed.
+
+EOF
+}
+
+# ---------------------------------------------------------------------------
+# Dispatch
+# ---------------------------------------------------------------------------
+COMMAND="${1:-help}"; shift || true
+case "$COMMAND" in
+  init)    cmd_init "$@" ;;
+  up)      cmd_up "$@" ;;
+  down)    cmd_down "$@" ;;
+  doctor)  cmd_doctor "$@" ;;
+  logs)    cmd_logs "$@" ;;
+  migrate) cmd_migrate "$@" ;;
+  seed)    cmd_seed "$@" ;;
+  wire)    cmd_wire "$@" ;;
+  help|--help|-h) usage ;;
+  *) error "Unknown command: $COMMAND"; usage; exit 1 ;;
+esac
