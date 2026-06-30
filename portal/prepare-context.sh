@@ -21,6 +21,13 @@
 #                      CI-verified on main — we're packaging, not re-vetting).
 #   4. three-background-wrapper.tsx — stub to a no-op so the removed private pkg
 #                      is never imported.
+#   5. rebrand        — the self-host portal ships as "Muster", not "Analog Elk".
+#                      Replace the user-visible brand NAME (login wordmark +
+#                      page titles/metadata, header/nav + sidebar brand, footer,
+#                      JSON-LD org name) and swap the AE logo mark for a clean
+#                      "M" monogram. Domain strings (analogelk.com) are left
+#                      untouched — they have no space and the login redirect's
+#                      prod-host check still relies on them.
 #
 # Idempotent: safe to re-run. Re-extract from scratch with --force.
 #
@@ -134,7 +141,64 @@ TSX
 fi
 
 # ---------------------------------------------------------------------------
-# 6. Drop the build-context .dockerignore in place (docker reads it from the
+# 6. Rebrand "Analog Elk" -> "Muster" across the portal surface (idempotent)
+# ---------------------------------------------------------------------------
+# Replace the spaced wordmark "Analog Elk" wherever it renders: the login
+# wordmark + tagline footer, the <title>/metadata on every login sub-page, the
+# header/nav + dashboard sidebar brand, the site footer, and the JSON-LD org
+# name (which is server-rendered into /login via the root layout). Re-running
+# is a no-op once no "Analog Elk" remains. Domain strings like "analogelk.com"
+# have no space, so they are intentionally NOT touched (the login redirect logic
+# still checks `hostname.endsWith("analogelk.com")` for prod routing).
+echo "[portal] rebrand: Analog Elk -> Muster (portal surface)"
+find . -type f \( -name '*.tsx' -o -name '*.ts' -o -name '*.json' -o -name '*.mdx' \) \
+  -not -path './node_modules/*' -print0 \
+  | xargs -0 perl -pi -e 's/Analog Elk/Muster/g; s/ANALOG ELK/MUSTER/g'
+
+# Swap the Analog-Elk SVG mark for a clean geometric "Muster" M monogram. The
+# `ae-logo` / `ae-logo__primary` class hooks are preserved so existing
+# fill-override utilities (e.g. the login wordmark's [&_.ae-logo__primary]:fill-primary)
+# keep coloring it. Square aspect; honors the width prop.
+cat > components/logo.tsx <<'TSX'
+interface LogoProps {
+  className?: string
+  width?: number
+  height?: number
+}
+
+/**
+ * Muster logo — a clean geometric "M" monogram.
+ *
+ * Keeps the `ae-logo` / `ae-logo__primary` class hooks from the original mark
+ * so callers that override the fill (e.g. the login wordmark applying
+ * `[&_.ae-logo__primary]:fill-primary`) continue to color it. Defaults to
+ * `currentColor` so it inherits text color anywhere else.
+ */
+export function Logo({ className = "", width = 64, height }: LogoProps) {
+  const finalHeight = height ?? width
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      width={width}
+      height={finalHeight}
+      className={`ae-logo ${className}`.trim()}
+      role="img"
+      aria-label="Muster logo"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        className="ae-logo__primary"
+        fill="currentColor"
+        d="M8 52 V12 H21 L32 33 L43 12 H56 V52 H44 V28 L32 49 L20 28 V52 Z"
+      />
+    </svg>
+  )
+}
+TSX
+echo "[portal] rebrand: replaced AE logo mark with Muster M monogram"
+
+# ---------------------------------------------------------------------------
+# 7. Drop the build-context .dockerignore in place (docker reads it from the
 #    context root = .build). Committed source of truth lives at ../.dockerignore.
 # ---------------------------------------------------------------------------
 if [ -f "${HERE}/.dockerignore" ]; then
