@@ -90,5 +90,62 @@ this log; repo `main`.
 
 ---
 
+## 2026-06-29 — Session 2: P3 RAG engine is real and green
+
+The third subsystem — the **local RAG knowledge engine** — is now vendored,
+wired, and **genuinely booted**. The Analog Elk v3 engine (FastAPI + Qdrant +
+Redis + Postgres, local `bge-small` embeddings, **no external inference**) was
+copied into `rag-engine/` at source commit `02a38e5e`, made self-contained
+(`PROVENANCE.md` records the lineage and the P7 published-image path), and added
+as an **additive, namespaced, port-isolated** compose overlay
+(`compose/compose.rag*.yaml`). The core Postgres/Directus services were not
+touched.
+
+`./bin/elk-os up` built the RAG image (Python + fastembed, model baked at build
+time, ~695 MB) and brought all four RAG containers up **healthy**. The new
+`doctor` row reports the engine honestly:
+
+```
+● RAG API health   OK   http://localhost:9101 → status ok (0 docs, 0 vectors)
+```
+
+A fresh, never-ingested KB legitimately reports `status: ok` (0 docs / 0
+vectors) — ingestion is a separate concern (P-later). The engine's
+**degraded-vs-down** signal is preserved: `doctor` renders `degraded`
+(vectors missing/stale) as a non-blocking **yellow WARN**, and only an
+unreachable API as red. Full board went green, exit 0; `down --volumes` tore the
+overlay down cleanly.
+
+On-brand friction for the paper: the box was already running Mike's live
+analog-elk-v3 engine on `:9100`, and the first `doctor` pass exposed a **real
+`set -e`/`pipefail` bug** (a `null` `reason` field made a no-match `grep` kill
+the script before the RAG row printed) — both fixed, not papered over. RAG was
+verified on `:9101` to leave the live engine untouched; the shipped default
+stays `:9100`.
+
+Inclusion choice: a single env switch **`ELK_OS_WITH_RAG` (default on)**, read
+from `.env`, so up/down/logs always address the same service set without a flag
+to remember (mirrors the existing `ELK_OS_TARGET` pattern).
+
+Commit `4f5f5ad`. P3 (`044eb35a`) acceptance — reachable RAG `/health` with the
+vector-health signal surfaced in `doctor` — **met**.
+
+**Aspirational → real:** core + CLI + **RAG engine** now run locally. Still
+aspirational: schema/seed end-to-end (P2), portal (P4), Claude-OS wiring + the
+proven human↔agent loop (P5), cloud demo URL (P6), self-host packaging /
+published images (P7).
+
+**What P4/P5 will need from here:** the portal (P4) reaches the RAG API over the
+`elkos-rag` network by service name (`elkos-rag-api:9100`) — no host port needed
+in prod; the `.mcp.json`/`CLAUDE.md` wiring (P5) should point KB queries at
+`http://localhost:${RAG_API_PORT:-9100}/query`. A KB **ingestion** step (manifest
+load) is still owed before the KB answers substantively — until then `/health` is
+green but `/query` returns nothing.
+
+**Logged to:** CMS task `044eb35a` (orchestrator updates status); this log; repo
+`main`.
+
+---
+
 <!-- Append new sessions/phases below. Each phase flips from aspirational to real
      only when `doctor` proves it. -->
