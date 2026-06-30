@@ -1,0 +1,143 @@
+# =============================================================================
+# Elk OS — Render Blueprint (the primary one-click full-stack deploy)
+# =============================================================================
+# Render is the most compose-friendly PaaS for Elk OS: multi-service + managed
+# Postgres in one declarative file. This blueprint stands up:
+#
+#   elk-os-postgres   managed Postgres (the Directus database)
+#   elk-os-directus    Directus 11.15.1 (the os_* board + native MCP)  [official image]
+#   elk-os-portal      the Next.js portal                              [PUBLISHED image]
+#
+# The RAG knowledge engine is OPTIONAL on Render (Qdrant + Redis + the API are
+# three more services); a sketch is at the bottom — uncomment to add it.
+#
+# HONEST LIMITS (Render does NOT interpolate env vars in this file):
+#   * A few cross-service URLs and the Directus admin token are `sync: false` —
+#     you fill them in the Render dashboard AFTER the first deploy assigns URLs.
+#     See deploy/README.md → "Render" for the exact 4-step post-deploy wiring.
+#   * The portal uses a PUBLISHED GHCR image (Render can't build it — it needs the
+#     private front-end source). Publish one with publish-images.yml first and set
+#     its ref below (and make the GHCR package public, or add a registry cred).
+# =============================================================================
+
+databases:
+  - name: elk-os-postgres
+    databaseName: directus
+    user: directus
+    plan: free # 90-day free tier; upgrade to basic-256mb+ for a lasting demo
+    ipAllowList: [] # Render-internal only (no public DB access)
+
+services:
+  # ---------------------------------------------------------------------------
+  # Directus — the shared os_* board + the native MCP server
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: elk-os-directus
+    runtime: image
+    image:
+      url: directus/directus:11.15.1
+    plan: starter # 512MB free can OOM Directus; starter is the safe floor
+    healthCheckPath: /server/health
+    envVars:
+      - key: KEY
+        generateValue: true
+      - key: SECRET
+        generateValue: true
+      - key: DB_CLIENT
+        value: pg
+      - key: DB_HOST
+        fromDatabase:
+          name: elk-os-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: elk-os-postgres
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: elk-os-postgres
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: elk-os-postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: elk-os-postgres
+          property: password
+      - key: DB_SSL
+        value: "true"
+      - key: DB_SSL__REJECT_UNAUTHORIZED
+        value: "false" # Render managed PG uses a self-signed chain on the internal net
+      - key: ADMIN_EMAIL
+        sync: false # set to your email in the dashboard
+      - key: ADMIN_PASSWORD
+        generateValue: true # read it from the dashboard to log in the first time
+      - key: WEBSOCKETS_ENABLED
+        value: "true"
+      - key: CORS_ENABLED
+        value: "true"
+      - key: CORS_ORIGIN
+        value: "true"
+      - key: MCP_ENABLED
+        value: "true" # PERMITS the native MCP server; you still flip it on in
+        # Settings → AI → Model Context Protocol (or PATCH /settings
+        # {"mcp_enabled":true}) post-deploy. See deploy/README.md.
+      - key: PUBLIC_URL
+        sync: false # set to https://elk-os-directus-XXXX.onrender.com after deploy
+
+  # ---------------------------------------------------------------------------
+  # Portal — the human surface (PUBLISHED image; Render cannot build it)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: elk-os-portal
+    runtime: image
+    image:
+      url: ghcr.io/REPLACE_OWNER/elk-os-portal:latest # ← your published portal image
+    plan: starter
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: HOSTNAME
+        value: 0.0.0.0
+      - key: USE_STATIC_FALLBACK
+        value: "true" # marketing reads committed JSON (no marketing collections needed)
+      # Server-side + browser-side both point at the Directus public URL. Render
+      # has no var interpolation, so set these to the deployed Directus URL.
+      - key: DIRECTUS_URL
+        sync: false # https://elk-os-directus-XXXX.onrender.com
+      - key: NEXT_PUBLIC_DIRECTUS_URL
+        sync: false # same URL as DIRECTUS_URL
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false # https://elk-os-portal-XXXX.onrender.com
+      - key: DIRECTUS_TOKEN
+        sync: false # a static token: create it on the Directus admin user post-deploy
+
+# ---------------------------------------------------------------------------
+# OPTIONAL — the RAG knowledge engine (uncomment to add). Three services:
+# Qdrant (with a disk), Redis (Render Key Value), and the RAG API built from
+# ./rag-engine. The RAG API is self-contained and DOES build on Render.
+# ---------------------------------------------------------------------------
+#  - type: pserv            # private service — not exposed publicly
+#    name: elk-os-qdrant
+#    runtime: image
+#    image:
+#      url: qdrant/qdrant:v1.13.2
+#    disk:
+#      name: qdrant-data
+#      mountPath: /qdrant/storage
+#      sizeGB: 1
+#
+#  - type: pserv
+#    name: elk-os-rag-api
+#    runtime: docker
+#    dockerfilePath: ./rag-engine/Dockerfile
+#    dockerContext: ./rag-engine
+#    envVars:
+#      - key: QDRANT_HOST
+#        fromService: { type: pserv, name: elk-os-qdrant, property: host }
+#      - key: QDRANT_PORT
+#        value: "6333"
+#      # plus POSTGRES_* (a second managed DB) and REDIS_* — see compose.rag.yaml

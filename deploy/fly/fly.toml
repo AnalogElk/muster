@@ -1,0 +1,48 @@
+# =============================================================================
+# Elk OS on Fly.io — Directus app (secondary blueprint)
+# =============================================================================
+# HONEST LIMIT: Fly deploys ONE app per fly.toml. There is no multi-service
+# blueprint like Render's. So a full Elk OS on Fly is THREE pieces wired by hand:
+#
+#   1. Postgres   →  `fly postgres create` (managed), then `fly postgres attach`
+#   2. Directus   →  this fly.toml (the official image)
+#   3. Portal     →  a SECOND app from a PUBLISHED image (see deploy/README.md)
+#
+# This file covers piece #2. Secrets are NOT in this file — set them with
+# `fly secrets set` (see deploy/README.md → "Fly.io"). Rename the app first.
+# =============================================================================
+
+app = "elk-os-directus" # ← change to your unique app name
+primary_region = "sea"  # ← pick a region near you (fly platform regions)
+
+[build]
+  image = "directus/directus:11.15.1"
+
+# Non-secret config. Secrets (KEY, SECRET, DB_*, ADMIN_PASSWORD, ADMIN_EMAIL,
+# PUBLIC_URL) are injected via `fly secrets set` and override/extend these.
+[env]
+  DB_CLIENT = "pg"
+  WEBSOCKETS_ENABLED = "true"
+  CORS_ENABLED = "true"
+  CORS_ORIGIN = "true"
+  # PERMITS the native MCP server; flip it on in Settings → AI → MCP (or PATCH
+  # /settings {"mcp_enabled":true}) after first boot.
+  MCP_ENABLED = "true"
+
+[http_service]
+  internal_port = 8055
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1 # keep Directus warm so the board + MCP stay reachable
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/server/health"
+    interval = "15s"
+    timeout = "5s"
+    grace_period = "30s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb" # Directus is happier with 1GB than the 256MB default

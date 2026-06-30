@@ -1,0 +1,42 @@
+# =============================================================================
+# Elk OS — Netlify config for the PORTAL FRONT-END ONLY
+# =============================================================================
+# Netlify hosts the portal's Next.js FRONT-END. It does NOT host a backend, so
+# this only makes sense when you already run Directus somewhere reachable (the
+# box in provision/, Render, Fly, Railway, or any Directus host) and point the
+# portal at it via env. The portal FAIL-FASTS at boot without a reachable
+# Directus — a front-end-only Netlify deploy with no backend will not run.
+#
+# This file is a TEMPLATE: copy it into your portal source checkout (a fork of
+# analog-elk-front-end, or the vendored portal tree). elk-os itself does not
+# carry the portal source, so you cannot point Netlify at the elk-os repo and get
+# a portal — Netlify builds from the portal's own repo.
+#
+# The explicit @netlify/plugin-nextjs declaration is REQUIRED: CLI/API-created
+# Netlify sites skip the auto-installed Next plugin, and without it every route
+# 404s (no SSR function emitted).
+# =============================================================================
+
+[build]
+  command = "pnpm build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Marketing content reads committed app/data/*.json instead of live Directus,
+  # and the build does not prefetch from a Directus that isn't up at build time.
+  USE_STATIC_FALLBACK = "true"
+  SKIP_DIRECTUS_PREFETCH = "true"
+
+# ── Required runtime env (set these in the Netlify UI, NOT here — DIRECTUS_TOKEN
+#    is a secret) ──────────────────────────────────────────────────────────────
+#   NEXT_PUBLIC_DIRECTUS_URL = https://cms.your-elk-os-host        (browser-side)
+#   DIRECTUS_URL             = https://cms.your-elk-os-host        (server-side)
+#   DIRECTUS_TOKEN           = <a static token from your Directus admin user>
+#   NEXT_PUBLIC_SITE_URL     = https://your-portal.netlify.app
+#
+# Without a reachable Directus at NEXT_PUBLIC_DIRECTUS_URL the portal will not
+# boot. Netlify hosts the front-end; it is not the backend.
