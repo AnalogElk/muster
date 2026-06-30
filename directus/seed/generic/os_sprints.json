@@ -1,0 +1,12 @@
+[
+  {
+    "id": "sprint-2026-s06",
+    "name": "Sprint 6 — June",
+    "status": "active",
+    "project": "proj-website-relaunch",
+    "start_date": "2026-06-16",
+    "end_date": "2026-06-30",
+    "goal": "Ship the new homepage, navigation, and CMS content pipeline; stand up the portal invoice list.",
+    "is_test_data": true
+  }
+]

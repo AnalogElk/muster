@@ -30,6 +30,8 @@ STATE_FILE="${ROOT}/.elk-os-state.json"
 COMPOSE_DIR="${ROOT}/compose"
 PROFILES_DIR="${ROOT}/profiles"
 BOOTSTRAP="${ROOT}/directus/bootstrap/mint-token.sh"
+SCHEMA_SNAPSHOT="${ROOT}/directus/schema/snapshot.json"
+SEED_DIR="${ROOT}/directus/seed"
 
 # ---------------------------------------------------------------------------
 # Colour / logging helpers
@@ -401,6 +403,24 @@ cmd_doctor() {
     fi
   fi
 
+  # 7. Seeded data readable (os_tasks) — proves migrate + seed landed.
+  #    Non-blocking WARN before seeding so a fresh, unseeded stack stays green.
+  local stok; stok="$(get_env DIRECTUS_ADMIN_TOKEN)"
+  if [ -n "$stok" ]; then
+    local tasks_json
+    if tasks_json=$(curl -sf --max-time 5 -H "Authorization: Bearer ${stok}" "${url}/items/os_tasks?limit=1&fields=id" 2>/dev/null); then
+      if printf '%s' "$tasks_json" | grep -q '"id"'; then
+        doctor_row "Seeded os_task" 0 "os_tasks readable (>=1 row)"
+      else
+        doctor_row "Seeded os_task" 2 "os_tasks present but empty" "Run ./bin/elk-os migrate && ./bin/elk-os seed"
+      fi
+    else
+      doctor_row "Seeded os_task" 2 "os_tasks not queryable (schema not migrated?)" "Run ./bin/elk-os migrate && ./bin/elk-os seed"
+    fi
+  else
+    doctor_row "Seeded os_task" 2 "no admin token yet" "Run ./bin/elk-os up (mints token), then migrate && seed"
+  fi
+
   print_doctor_footer
 }
 
@@ -416,10 +436,208 @@ print_doctor_footer() {
 }
 
 # ---------------------------------------------------------------------------
-# Later-phase stubs
+# migrate / seed shared helper
 # ---------------------------------------------------------------------------
-cmd_migrate() { echo "P2: migrate (apply os_* schema snapshot) not yet implemented."; exit 0; }
-cmd_seed()    { echo "P2/P5: seed (load profile seed data) not yet implemented."; exit 0; }
+# The schema/data phases manipulate JSON (diff objects, row payloads, relation
+# remapping). That is impractical in pure POSIX shell, so these two phases — and
+# only these two — additionally require python3 (stdlib only, no pip installs).
+# init/up/down/doctor stay docker-only.
+require_python3() {
+  command -v python3 >/dev/null 2>&1 || \
+    die "migrate/seed require python3 (stdlib JSON handling). Install python3 and retry."
+}
+
+# ---------------------------------------------------------------------------
+# migrate — apply the pruned os_* schema snapshot (idempotent diff + apply)
+# ---------------------------------------------------------------------------
+# Strategy (Directus schema API):
+#   1. GET  /schema/snapshot         → read the target's *live* Directus version
+#      and rewrite snapshot.directus to match (so a version-skewed image, e.g.
+#      11.5.1 vs the 11.15.1 the snapshot was captured on, does not get rejected).
+#   2. POST /schema/diff?force=true  → hash-stamped diff, or 204/empty if in sync.
+#   3. POST /schema/apply            → mutate the schema with that diff.
+# Re-running is a no-op once the target already matches (diff comes back empty).
+cmd_migrate() {
+  [ -f "$ENV_FILE" ] || die ".env not found. Run ./bin/elk-os init first."
+  require_python3
+  [ -f "$SCHEMA_SNAPSHOT" ] || die "Schema snapshot not found at $SCHEMA_SNAPSHOT"
+
+  local url tok
+  url="$(get_env DIRECTUS_URL)"; url="${url:-http://localhost:8056}"
+  tok="$(get_env DIRECTUS_ADMIN_TOKEN)"
+  [ -n "$tok" ] || die "DIRECTUS_ADMIN_TOKEN is empty. Run ./bin/elk-os up to mint it first."
+
+  info "Applying schema snapshot to ${url} (diff + apply, idempotent)…"
+  if ELK_URL="$url" ELK_TOKEN="$tok" ELK_SNAPSHOT="$SCHEMA_SNAPSHOT" python3 - <<'PY'
+import os, sys, json, urllib.request, urllib.error
+url=os.environ['ELK_URL'].rstrip('/'); tok=os.environ['ELK_TOKEN']
+snap=json.load(open(os.environ['ELK_SNAPSHOT']))
+
+def req(method, path, body=None):
+    data=json.dumps(body).encode() if body is not None else None
+    r=urllib.request.Request(url+path, data=data, method=method,
+        headers={'Authorization':'Bearer '+tok, 'Content-Type':'application/json'})
+    try:
+        with urllib.request.urlopen(r) as resp:
+            raw=resp.read()
+            return resp.getcode(), (json.loads(raw) if raw else None)
+    except urllib.error.HTTPError as e:
+        raw=e.read()
+        try: j=json.loads(raw)
+        except Exception: j={'errors':[{'message':raw.decode('utf-8','replace')[:300]}]}
+        return e.code, j
+    except urllib.error.URLError as e:
+        print('[migrate] cannot reach %s: %s'%(url, e), file=sys.stderr); sys.exit(1)
+
+# 1. align snapshot version to the live target (tolerate image/version skew)
+code, cur = req('GET', '/schema/snapshot')
+if code==200 and cur and 'data' in cur and cur['data'].get('directus'):
+    snap['directus']=cur['data']['directus']
+
+# 2. diff (force=true bypasses the version/vendor guard)
+code, diff = req('POST', '/schema/diff?force=true', snap)
+if code in (204,) or diff is None or not (isinstance(diff, dict) and diff.get('data')):
+    print('[migrate] schema already in sync — no changes to apply.'); sys.exit(0)
+if code>=400:
+    print('[migrate] diff failed (%d): %s'%(code, json.dumps(diff)[:400]), file=sys.stderr); sys.exit(1)
+
+# 3. apply the diff object ({hash, diff})
+code, res = req('POST', '/schema/apply', diff['data'])
+if code>=400:
+    print('[migrate] apply failed (%d): %s'%(code, json.dumps(res)[:400]), file=sys.stderr); sys.exit(1)
+print('[migrate] schema applied.')
+PY
+  then
+    state_mark migrate
+    success "migrate complete. Next: ${BOLD}./bin/elk-os seed${RESET}"
+  else
+    die "migrate failed (see errors above)."
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# seed — load directus/seed/<profile>/*.json via the items REST API
+# ---------------------------------------------------------------------------
+# Idempotent upsert keyed on a per-collection natural key (name/email/version…).
+# Seed rows use stable string ids (e.g. "org-democo") that are NOT valid INT/UUID
+# primary keys, so the loader: drops "id", lets Directus mint the real PK,
+# remaps any relational value that points at a known seed id, and filters each
+# row down to columns that actually exist (schema drift / extra fields are
+# silently dropped). Re-running skips rows whose natural key already resolves.
+cmd_seed() {
+  [ -f "$ENV_FILE" ] || die ".env not found. Run ./bin/elk-os init first."
+  require_python3
+
+  local profile url tok dir
+  profile="$(get_env ELK_OS_PROFILE)"; profile="${profile:-generic}"
+  dir="${SEED_DIR}/${profile}"
+  [ -d "$dir" ] || die "Seed dir not found for profile '${profile}': $dir"
+  url="$(get_env DIRECTUS_URL)"; url="${url:-http://localhost:8056}"
+  tok="$(get_env DIRECTUS_ADMIN_TOKEN)"
+  [ -n "$tok" ] || die "DIRECTUS_ADMIN_TOKEN is empty. Run ./bin/elk-os up first."
+
+  info "Seeding profile '${profile}' from ${dir} (idempotent upsert)…"
+  if ELK_URL="$url" ELK_TOKEN="$tok" ELK_SEED_DIR="$dir" ELK_SCHEMA="$SCHEMA_SNAPSHOT" python3 - <<'PY'
+import os, sys, json, glob, urllib.request, urllib.error, urllib.parse
+url=os.environ['ELK_URL'].rstrip('/'); tok=os.environ['ELK_TOKEN']
+seed_dir=os.environ['ELK_SEED_DIR']
+kept={c['collection'] for c in json.load(open(os.environ['ELK_SCHEMA']))['collections']}
+
+def req(method, path, body=None):
+    data=json.dumps(body).encode() if body is not None else None
+    r=urllib.request.Request(url+path, data=data, method=method,
+        headers={'Authorization':'Bearer '+tok, 'Content-Type':'application/json'})
+    try:
+        with urllib.request.urlopen(r) as resp:
+            raw=resp.read(); return resp.getcode(), (json.loads(raw) if raw else None)
+    except urllib.error.HTTPError as e:
+        raw=e.read()
+        try: j=json.loads(raw)
+        except Exception: j={'errors':[{'message':raw.decode('utf-8','replace')[:200]}]}
+        return e.code, j
+    except urllib.error.URLError as e:
+        print('[seed] cannot reach %s: %s'%(url, e), file=sys.stderr); sys.exit(1)
+
+# Natural key per collection (verified to be real columns in the pruned schema).
+MATCH={'organizations':'name','contacts':'email','os_projects':'name',
+       'os_sprints':'name','os_tasks':'name','releases':'version','repositories':'name'}
+# Parents before children so relation remapping resolves.
+ORDER=['organizations','contacts','os_projects','os_sprints','repositories','os_tasks','releases']
+
+def resolve(stem):
+    if stem in kept: return stem
+    if 'os_'+stem in kept: return 'os_'+stem
+    return None
+
+files={}
+for p in sorted(glob.glob(os.path.join(seed_dir,'*.json'))):
+    stem=os.path.splitext(os.path.basename(p))[0]
+    if stem.lower()=='readme': continue
+    coll=resolve(stem)
+    if not coll:
+        print('[seed] skip %s (no matching kept collection)'%os.path.basename(p)); continue
+    files[coll]=p
+ordered=[c for c in ORDER if c in files]+[c for c in sorted(files) if c not in ORDER]
+
+_fcache={}
+def real_columns(coll):
+    if coll in _fcache: return _fcache[coll]
+    code,res=req('GET','/fields/'+coll)
+    cols=set()
+    if code==200 and res and 'data' in res:
+        for f in res['data']:
+            if f.get('schema') is not None:   # real DB column (skip o2m/m2m/group aliases)
+                cols.add(f['field'])
+    _fcache[coll]=cols; return cols
+
+idmap={}; created=skipped=failed=0
+for coll in ordered:
+    rows=json.load(open(files[coll]))
+    if isinstance(rows,dict): rows=[rows]
+    cols=real_columns(coll)
+    mf=MATCH.get(coll)
+    if not mf or mf not in cols:
+        mf='name' if 'name' in cols else ('email' if 'email' in cols else None)
+    for row in rows:
+        nk=row.get('id')
+        # idempotency: does a row with this natural key already exist?
+        realpk=None
+        if mf and row.get(mf) is not None:
+            q='/items/%s?limit=1&fields=id&filter[%s][_eq]=%s'%(
+                coll, mf, urllib.parse.quote(str(row[mf])))
+            code,res=req('GET',q)
+            if code==200 and res and res.get('data'):
+                realpk=res['data'][0]['id']
+        if realpk is not None:
+            if nk is not None: idmap[nk]=realpk
+            skipped+=1; continue
+        # build insert payload: real columns only, drop id, remap relation keys
+        payload={}
+        for k,v in row.items():
+            if k=='id' or k not in cols: continue
+            if isinstance(v,str) and v in idmap: v=idmap[v]
+            payload[k]=v
+        code,res=req('POST','/items/'+coll,payload)
+        if code>=400:
+            failed+=1
+            print('[seed] FAIL %s: %s'%(coll, json.dumps(res)[:200]), file=sys.stderr); continue
+        rid=res['data'].get('id') if res and 'data' in res else None
+        if nk is not None and rid is not None: idmap[nk]=rid
+        created+=1
+print('[seed] created=%d skipped(existing)=%d failed=%d'%(created,skipped,failed))
+sys.exit(1 if failed else 0)
+PY
+  then
+    state_mark seed
+    success "seed complete. Next: ${BOLD}./bin/elk-os doctor${RESET}"
+  else
+    die "seed failed (see errors above)."
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# wire — P5 stub
+# ---------------------------------------------------------------------------
 cmd_wire()    { echo "P5: wire (CLAUDE.md + .mcp.json + hooks + memory) not yet implemented."; exit 0; }
 
 # ---------------------------------------------------------------------------
@@ -440,8 +658,8 @@ ${BOLD}Commands:${RESET}
   down [--volumes]    Stop the stack (keep data unless --volumes).
   doctor              Per-subsystem green/red health board (exits nonzero if red).
   logs [service]      Tail container logs (e.g. directus, elkos-rag-api).
-  migrate             (P2) apply os_* schema snapshot — stub.
-  seed                (P2/P5) load profile seed data — stub.
+  migrate             (P2) apply the pruned os_* schema snapshot (idempotent diff+apply).
+  seed                (P2) load directus/seed/<profile>/*.json (idempotent upsert).
   wire                (P5) write CLAUDE.md + .mcp.json + hooks + memory — stub.
   help                This message.
 

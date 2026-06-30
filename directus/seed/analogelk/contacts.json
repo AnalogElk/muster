@@ -1,0 +1,41 @@
+[
+  {
+    "id": "contact-ae-founder",
+    "first_name": "Riley",
+    "last_name": "Hart",
+    "name": "Riley Hart",
+    "email": "riley@analogelk.example",
+    "title": "Founder & Principal Engineer",
+    "phone": "+1-555-0200",
+    "organization": "org-analogelk",
+    "status": "active",
+    "is_primary": true,
+    "is_test_data": true
+  },
+  {
+    "id": "contact-ae-design",
+    "first_name": "Devin",
+    "last_name": "Cole",
+    "name": "Devin Cole",
+    "email": "devin@analogelk.example",
+    "title": "Design & Front-end Lead",
+    "phone": "+1-555-0201",
+    "organization": "org-analogelk",
+    "status": "active",
+    "is_primary": false,
+    "is_test_data": true
+  },
+  {
+    "id": "contact-ae-ops",
+    "first_name": "Morgan",
+    "last_name": "Reyes",
+    "name": "Morgan Reyes",
+    "email": "morgan@analogelk.example",
+    "title": "Delivery & Infra Ops",
+    "phone": "+1-555-0202",
+    "organization": "org-analogelk",
+    "status": "active",
+    "is_primary": false,
+    "is_test_data": true
+  }
+]

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "proj-website-relaunch",
+    "name": "Website Relaunch",
+    "slug": "website-relaunch",
+    "status": "active",
+    "kind": "fixed_term",
+    "description": "Rebuild the Demo Co marketing site on a modern stack with a CMS-driven content pipeline and improved Core Web Vitals.",
+    "organization": "org-democo",
+    "start_date": "2026-05-01",
+    "target_date": "2026-08-15",
+    "is_visible_to_client": true,
+    "is_test_data": true
+  },
+  {
+    "id": "proj-customer-portal",
+    "name": "Customer Portal",
+    "slug": "customer-portal",
+    "status": "active",
+    "kind": "recurring",
+    "description": "A self-service portal where Demo Co customers can view invoices, track project status, and message the team.",
+    "organization": "org-democo",
+    "start_date": "2026-04-10",
+    "target_date": "2026-09-30",
+    "is_visible_to_client": true,
+    "is_test_data": true
+  }
+]

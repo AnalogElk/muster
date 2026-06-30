@@ -1,0 +1,20 @@
+[
+  {
+    "id": "sprint-ae-foundation",
+    "name": "Foundation Sprint",
+    "slug": "foundation-sprint",
+    "project": "proj-elk-os-platform",
+    "status": "completed",
+    "goal": "Stand up the compose core (Postgres + Directus) and the elk-os installer scaffold.",
+    "is_test_data": true
+  },
+  {
+    "id": "sprint-ae-schema-seed",
+    "name": "Schema & Seed Sprint",
+    "slug": "schema-seed-sprint",
+    "project": "proj-elk-os-platform",
+    "status": "active",
+    "goal": "Define the os_* schema and ship synthetic generic + analogelk demo seeds.",
+    "is_test_data": true
+  }
+]

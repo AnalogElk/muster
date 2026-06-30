@@ -1,0 +1,22 @@
+[
+  {
+    "id": "release-ae-v0-1-0",
+    "version": "v0.1.0",
+    "title": "Foundation: compose core + installer scaffold",
+    "status": "published",
+    "project": "proj-elk-os-platform",
+    "is_visible_to_client": true,
+    "body": "## v0.1.0 — Foundation\n\n### Added\n- Docker compose core: Postgres + Directus with admin-token bootstrap.\n- `elk-os` installer scaffold with `init` / `seed` / `wire` command surface.\n- RAG engine overlay (Postgres + Qdrant + Redis + RAG API) with a doctor health row.\n\n### Notes\n- Reference instance for Analog Elk's own delivery. All seed data is synthetic.",
+    "is_test_data": true
+  },
+  {
+    "id": "release-ae-v0-2-0",
+    "version": "v0.2.0",
+    "title": "Schema & seed: os_* substrate + demo data",
+    "status": "draft",
+    "project": "proj-elk-os-platform",
+    "is_visible_to_client": true,
+    "body": "## v0.2.0 — Schema & Seed\n\n### Added\n- `os_*` Directus schema: organizations, contacts, projects, sprints, tasks, releases.\n- Synthetic profile seeds (`generic` and `analogelk`) so a fresh install boots browsable.\n\n### Changed\n- Portal task board prepared to bind to the `os_tasks` substrate.\n\n### Security\n- Seeds contain no real secrets, tokens, or client PII — synthetic showcase only.",
+    "is_test_data": true
+  }
+]

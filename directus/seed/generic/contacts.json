@@ -1,0 +1,41 @@
+[
+  {
+    "id": "contact-avery-stone",
+    "first_name": "Avery",
+    "last_name": "Stone",
+    "name": "Avery Stone",
+    "email": "avery@democo.example",
+    "title": "Founder & CEO",
+    "phone": "+1-555-0100",
+    "organization": "org-democo",
+    "status": "active",
+    "is_primary": true,
+    "is_test_data": true
+  },
+  {
+    "id": "contact-jordan-lee",
+    "first_name": "Jordan",
+    "last_name": "Lee",
+    "name": "Jordan Lee",
+    "email": "jordan@democo.example",
+    "title": "Head of Product",
+    "phone": "+1-555-0101",
+    "organization": "org-democo",
+    "status": "active",
+    "is_primary": false,
+    "is_test_data": true
+  },
+  {
+    "id": "contact-sam-rivera",
+    "first_name": "Sam",
+    "last_name": "Rivera",
+    "name": "Sam Rivera",
+    "email": "sam@democo.example",
+    "title": "Marketing Lead",
+    "phone": "+1-555-0102",
+    "organization": "org-democo",
+    "status": "active",
+    "is_primary": false,
+    "is_test_data": true
+  }
+]

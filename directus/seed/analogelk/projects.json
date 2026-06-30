@@ -1,0 +1,22 @@
+[
+  {
+    "id": "proj-elk-os-platform",
+    "name": "Elk OS Platform",
+    "slug": "elk-os-platform",
+    "organization": "org-analogelk",
+    "status": "active",
+    "kind": "internal",
+    "description": "The self-hosting platform itself: compose stack, Directus schema, RAG engine, and the elk-os installer. Analog Elk's flagship internal-platform project — it builds the thing that ships itself.",
+    "is_test_data": true
+  },
+  {
+    "id": "proj-internal-portal",
+    "name": "Internal Delivery Portal",
+    "slug": "internal-delivery-portal",
+    "organization": "org-analogelk",
+    "status": "active",
+    "kind": "internal",
+    "description": "Employee + client portal surface: task board, sprints, releases, billing, and analytics. Synthetic showcase of Analog Elk running its own delivery on its own CMS.",
+    "is_test_data": true
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "org-analogelk",
+    "name": "Analog Elk",
+    "slug": "analog-elk",
+    "website": "https://www.analogelk.example",
+    "status": "active",
+    "industry": "Software & Digital Products",
+    "description": "Analog Elk is the reference organization for Elk OS — a small product studio that runs its own delivery, billing, and infrastructure on the platform it ships. All data in this seed is synthetic and safe to display in demos.",
+    "is_test_data": true
+  }
+]

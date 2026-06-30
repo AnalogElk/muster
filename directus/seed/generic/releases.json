@@ -1,0 +1,14 @@
+[
+  {
+    "id": "release-v1-0-0",
+    "version": "v1.0.0",
+    "title": "Website Relaunch — Public Beta",
+    "status": "published",
+    "repository": "repo-democo-web",
+    "project": "proj-website-relaunch",
+    "is_visible_to_client": true,
+    "released_at": "2026-06-22",
+    "body": "## v1.0.0 — Website Relaunch (Public Beta)\n\n### Added\n- New homepage hero wired to the CMS\n- Responsive primary navigation with mobile drawer\n- Blog index with category filters\n\n### Changed\n- Migrated content to a build-time CMS prefetch pipeline\n\n### Fixed\n- Layout shift on the hero image (improved CLS)\n\n_All data in this release is synthetic demo content._",
+    "is_test_data": true
+  }
+]

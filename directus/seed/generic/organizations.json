@@ -1,0 +1,12 @@
+[
+  {
+    "id": "org-democo",
+    "name": "Demo Co",
+    "slug": "demo-co",
+    "website": "https://www.democo.example",
+    "status": "active",
+    "industry": "Software & Digital Products",
+    "description": "Demo Co is a fictional organization used to showcase the elk-os portal. All data here is synthetic and safe to display in demos.",
+    "is_test_data": true
+  }
+]

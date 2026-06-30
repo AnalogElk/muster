@@ -46,7 +46,7 @@ services:
   # Listens on 8055 inside the container; the dev override maps it to DIRECTUS_PORT.
   # ---------------------------------------------------------------------------
   directus:
-    image: directus/directus:11.5.1
+    image: directus/directus:11.15.1
     container_name: elk-os-directus
     restart: unless-stopped
     depends_on:
