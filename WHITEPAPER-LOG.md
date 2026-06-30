@@ -317,5 +317,47 @@ real infra (a box + domain/sslip.io, or pushed images + a Render deploy).
 
 ---
 
+## 2026-06-29 — Session 7: P6 — the live demo URL. ALL 8 PHASES GREEN.
+
+Elk OS is live on the public internet. The full stack deployed to a fresh AWS EC2
+**t3.medium** — the cheapest viable host, chosen by a 4-lens **cost panel** that
+pulled *live spot pricing* off the AWS CLI (the decisive finding: at demo
+duty-cycle the instance-size debate is moot; stop-when-idle is the only lever, so
+the floor is ~$2/mo EBS and compute is pennies). It runs behind Caddy +
+Let's Encrypt TLS, reachable with **no DNS** via `sslip.io`:
+
+- Portal: **https://34.220.64.149.sslip.io** — the login renders "Analog Elk ·
+  The agency OS that runs itself," served over real HTTPS.
+- Directus board: **https://cms.34.220.64.149.sslip.io**
+
+Independently curl-verified off-box (200 + valid TLS, HTTP/2); `init → up →
+migrate → seed → wire` ran clean; the native Directus MCP is enabled and **8
+seeded `os_tasks` are readable through the public https API**. `doctor` 7/8 (the
+one red is the cosmetic box-mode localhost portal probe; the portal serves 200
+over https).
+
+On-brand friction for the paper: the portal image built locally was **arm64**
+(Apple Silicon) and the box is amd64 → `exec format error`. The deploy agent
+fixed it live with qemu binfmt emulation. (Durable fix — publish an amd64/multi-arch
+image — is filed.)
+
+**THE EPIC IS COMPLETE.** All 8 phases (P0–P7) green. The system repackaged
+itself: it used its own **CMS as the build spine**, its own **Max Mode fan-out**
+to build the schema, its own **adversarial verifiers** to keep the sellable
+template leak-free, its own **from-scratch loop-proofs** to catch four real bugs
+in its own packaging, and its own **§9 worktree discipline** to build the portal
+against a 28-worktree repo — and the result is a one-command, self-hostable
+agency-OS now serving the thesis on its own front door, **live, for ~$2–4/mo**.
+
+Commits through `f95a43d`. P6 (`ae38c1b5`) + epic (`59f55f3e`) → **completed**.
+Remaining work is productization polish (GitHub repo + CI, amd64 image, portal
+branding genericization, KB ingest, hardening) — not blockers.
+
+The arc, in one line: *"whitepaper the admin panel" became "build the whole
+system as a sellable product, and make building it the whitepaper" — and the
+system did exactly that, to itself, live.*
+
+---
+
 <!-- Append new sessions/phases below. Each phase flips from aspirational to real
      only when `doctor` proves it. -->
