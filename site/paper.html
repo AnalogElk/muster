@@ -51,7 +51,7 @@
 <h3 id="how-a-governed-fleet-of-ai-agents-built-and-publicly-shipped">How a governed fleet of AI agents built, and publicly shipped, the product that packages its own governance, in roughly 2.5 hours on a $3-a-month box</h3>
 <p><strong>A field report by Mike Walliser · 2026-06-29</strong></p>
 <p><em>Working name: &quot;Muster.&quot; It began as an internal tool for my agency, Analog Elk; Analog Elk is now the case study, not the headline. This is an operating system for agentic software teams.</em></p>
-<p><em>Live: <a href="https://34.220.64.149.sslip.io">the portal</a> · <a href="https://cms.34.220.64.149.sslip.io">the build&#x27;s own task board</a>. Note on the links: the demo runs on a <code>sslip.io</code> host with a certificate your browser will warn about before letting you through. That warning is the cost of a $3 box, not a security claim. Treat the TLS as &quot;reachable,&quot; not &quot;trusted.&quot;</em></p>
+<p><em>Live: <a href="https://34.220.64.149.sslip.io">the portal</a> · <a href="https://cms.34.220.64.149.sslip.io">the build&#x27;s own task board</a>. Note on the links: the demo runs on a <code>sslip.io</code> host with a real, browser-trusted Let&#x27;s Encrypt certificate auto-provisioned by Caddy on a $3 box. The live instance may be asleep between showings to save cost; archived snapshots stand in.</em></p>
 <hr>
 <h2 id="abstract">Abstract</h2>
 <p>On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock (17:56 to 20:23 Pacific), spanned 8 phases, 27 commits, and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations that consumed over 2 million tokens. The result runs on a single AWS instance for about $2 to $4 per month, and you can open it right now.</p>
@@ -156,7 +156,7 @@ bin/elk-os doctor    # green/red from-scratch acceptance board</code></pre>
   <div class="paper-doc" style="margin-top:3rem;">
     <hr>
     <p class="fineprint">Live exhibits: <a class="livechip" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">app.34.220.64.149.sslip.io</a> &nbsp; <a class="livechip" href="https://cms.34.220.64.149.sslip.io" target="_blank" rel="noopener">cms.34.220.64.149.sslip.io</a></p>
-    <p class="fineprint">sslip.io demo cert — your browser will warn once; it's a $3/mo box. Treat the TLS as "reachable," not "trusted." &nbsp;·&nbsp; <a href="#" onclick="window.print();return false;">Print / PDF</a></p>
+    <p class="fineprint">sslip.io demo · real Let's Encrypt TLS · $3/mo box · live instance may sleep between showings. &nbsp;·&nbsp; <a href="#" onclick="window.print();return false;">Print / PDF</a></p>
     <p class="fineprint">Rendered from <code>docs/whitepaper/elk-os-whitepaper.md</code>. Product name resolved to <strong>Muster</strong> per the identity brief; "Analog Elk" (origin/case study) and <code>bin/elk-os</code> (command) are preserved verbatim.</p>
   </div>
 </main>

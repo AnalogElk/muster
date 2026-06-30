@@ -6,7 +6,7 @@
 
 *Working name: "Elk OS." It began as an internal tool for my agency, Analog Elk; Analog Elk is now the case study, not the headline. This is an operating system for agentic software teams.*
 
-*Live: [the portal](https://34.220.64.149.sslip.io) · [the build's own task board](https://cms.34.220.64.149.sslip.io). Note on the links: the demo runs on a `sslip.io` host with a certificate your browser will warn about before letting you through. That warning is the cost of a $3 box, not a security claim. Treat the TLS as "reachable," not "trusted."*
+*Live: [the portal](https://34.220.64.149.sslip.io) · [the build's own task board](https://cms.34.220.64.149.sslip.io). Note on the links: the demo runs on a `sslip.io` host with a real, browser-trusted Let's Encrypt certificate auto-provisioned by Caddy on a $3 box. (The live instance may be asleep between showings to save cost; archived snapshots stand in.)*
 
 ---
 
