@@ -30,6 +30,13 @@
 cms.{$ELK_OS_DOMAIN} {
 	encode zstd gzip
 
+	# Hide the Directus Studio (admin app UI) from the public. Only the
+	# human-facing app under /admin* is blocked; the REST/GraphQL/MCP API
+	# (/items, /graphql, /auth, /assets, /files, /server, /mcp, /fields,
+	# /users, …) stays fully open so the portal browser + MCP clients work.
+	@studio path /admin /admin/*
+	redir @studio https://{$ELK_OS_DOMAIN} 302
+
 	reverse_proxy directus:8055
 
 	log {
