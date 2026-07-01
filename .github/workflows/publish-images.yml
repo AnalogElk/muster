@@ -15,6 +15,22 @@
 # job clones it with a PAT and runs portal/prepare-context.sh. If the secret is
 # absent the portal job is SKIPPED (honest: we cannot publish what CI cannot
 # build). The RAG image still publishes.
+#
+# ENTERPRISE BLOCK + PAT FALLBACK (2026-07-01):
+# The AnalogElk enterprise policy forces the Actions GITHUB_TOKEN read-only
+# ("Write permissions for workflows are disabled by the enterprise"; the
+# repo-level PUT on /actions/permissions/workflow returns 409), so the
+# `packages: write` permission below is ignored and GHCR pushes with
+# secrets.GITHUB_TOKEN fail. Fix: mint a PAT and add it as a repo secret:
+#
+#   Secret name: GHCR_PUSH_TOKEN
+#   Token type:  CLASSIC PAT (github.com -> Settings -> Developer settings ->
+#                Personal access tokens -> Tokens (classic)). Fine-grained
+#                PATs do NOT support GHCR — it must be classic.
+#   Scopes:      write:packages (implies read:packages)
+#
+# Both GHCR login steps fall back to secrets.GITHUB_TOKEN when the secret is
+# absent, which preserves the current (blocked) behavior until it is minted.
 name: publish-images
 
 on:
@@ -48,7 +64,10 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          # Classic PAT with write:packages (GHCR_PUSH_TOKEN, see header) —
+          # enterprise policy keeps GITHUB_TOKEN read-only, so the fallback
+          # cannot push; it only preserves behavior until the PAT is minted.
+          password: ${{ secrets.GHCR_PUSH_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Image metadata (tags + labels)
         id: meta
@@ -120,7 +139,10 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          # Classic PAT with write:packages (GHCR_PUSH_TOKEN, see header) —
+          # enterprise policy keeps GITHUB_TOKEN read-only, so the fallback
+          # cannot push; it only preserves behavior until the PAT is minted.
+          password: ${{ secrets.GHCR_PUSH_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Image metadata (tags + labels)
         if: steps.gate.outputs.enabled == 'true'
