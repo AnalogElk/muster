@@ -390,5 +390,34 @@ door are live at https://34.220.64.149.sslip.io.
 
 ---
 
+## 2026-06-30 — Session 9: the public, read-only Muster demo
+
+The live demo is now safe to hand to strangers, and reads as Muster end to end.
+
+- **Portal rebranded to Muster** — M-monogram + wordmark, `Login | Muster`, **0** "analog elk"
+  in the shipped bundle; amd64-rebuilt with the correct public origin. A working demo login
+  (`demo@muster.dev` / `muster-demo`) lands on the Muster employee board (8 seeded tasks).
+  (Fixed four self-host blockers along the way: subdomain redirects, cookie scoping, test-data
+  visibility, a missing `directus_users` field.)
+- **Read-only lockdown (the safety belt).** The demo user was moved off Administrator to a
+  non-admin role named "Employee" carrying a read-only policy — the portal still renders the
+  employee board, but every write is rejected. Independently verified: `PATCH`/`DELETE`
+  `os_tasks` → **403** ("HACKED BY PUBLIC" rejected). No public-writable admin remains.
+  Reproducible via `provision/demo-readonly-role.py`.
+- **Directus hidden.** `cms.*/admin` (the Studio UI) → 302 to the apex; the API stays open for
+  the portal + native MCP.
+- **Landing updated.** The Muster board is embedded inline, the one-click demo creds are
+  surfaced ("Enter the live demo"), and every raw `cms.*` link is gone.
+
+Net: `https://34.220.64.149.sslip.io` = the whitepaper homepage; `app.*` = the Muster portal
+(one-click read-only demo login); Directus is invisible. A visitor can log in, browse the real
+board, and cannot persist anything — no content liability.
+
+**Still pending — Phase 2:** a client-side localStorage interceptor so visitor edits *feel*
+real (persist per-browser, never hit the backend) instead of the current quiet block. Commits
+`4c2e8c5`, `a4e7601`.
+
+---
+
 <!-- Append new sessions/phases below. Each phase flips from aspirational to real
      only when `doctor` proves it. -->
