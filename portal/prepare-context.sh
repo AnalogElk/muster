@@ -47,7 +47,24 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${HERE}/.build"
 PIN_FILE="${HERE}/PINNED_COMMIT"
-SOURCE_REPO="${PORTAL_SOURCE_REPO:-/Users/michaelwalliser/Desktop/DevProd/analog-elk-front-end}"
+# Portal source checkout: set PORTAL_SOURCE_REPO (env, or via .env — elk-os
+# exports it), or keep an analog-elk-front-end checkout as a SIBLING of this
+# repo (../analog-elk-front-end).
+SOURCE_REPO="${PORTAL_SOURCE_REPO:-${HERE}/../../analog-elk-front-end}"
+
+# Host-tool preflight: the patch steps below run node + perl on the HOST (the
+# build context is prepared before Docker is involved). Fail early with an
+# actionable message instead of dying mid-patch on a bare "command not found"
+# under set -e.
+for tool in git node perl; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "[portal] '$tool' is required on the host to prepare the portal build context." >&2
+    echo "[portal] Install it, or skip the local portal build: in .env set" >&2
+    echo "[portal]   ELK_OS_WITH_PORTAL=false   (Directus-only install), or" >&2
+    echo "[portal]   ELK_OS_USE_PUBLISHED_IMAGES=true + PORTAL_IMAGE/RAG_IMAGE (pull published images)." >&2
+    exit 1
+  }
+done
 
 [ -f "$PIN_FILE" ] || { echo "[portal] PINNED_COMMIT not found at $PIN_FILE" >&2; exit 1; }
 PIN="$(tr -d '[:space:]' < "$PIN_FILE")"
@@ -55,6 +72,11 @@ PIN="$(tr -d '[:space:]' < "$PIN_FILE")"
 
 force=0
 [ "${1:-}" = "--force" ] && force=1
+
+# Completion marker: written (containing $PIN) as the LAST step of this script.
+# A context without a matching marker is either half-prepared (a previous run
+# died mid-patch) or extracted from a different pin — never patch on top of it.
+MARKER="${BUILD_DIR}/.elk-os-prepared"
 
 # ---------------------------------------------------------------------------
 # 1. Extract the frozen archive (read-only; never edits the source repo)
@@ -64,9 +86,20 @@ if [ "$force" -eq 1 ]; then
   rm -rf "$BUILD_DIR"
 fi
 
+if [ -d "$BUILD_DIR" ] && [ "$(cat "$MARKER" 2>/dev/null || true)" != "$PIN" ]; then
+  echo "[portal] build context is partial or from another pin — re-extracting from scratch"
+  rm -rf "$BUILD_DIR"
+fi
+
 if [ ! -f "${BUILD_DIR}/package.json" ]; then
-  command -v git >/dev/null 2>&1 || { echo "[portal] git is required" >&2; exit 1; }
-  [ -d "$SOURCE_REPO/.git" ] || { echo "[portal] source repo not found: $SOURCE_REPO" >&2; exit 1; }
+  if [ ! -d "$SOURCE_REPO/.git" ]; then
+    echo "[portal] source repo not found: $SOURCE_REPO" >&2
+    echo "[portal] Set PORTAL_SOURCE_REPO to a local analog-elk-front-end checkout (or clone it" >&2
+    echo "[portal] as a sibling of this repo). No checkout available? In .env set" >&2
+    echo "[portal]   ELK_OS_WITH_PORTAL=false   (Directus-only install), or" >&2
+    echo "[portal]   ELK_OS_USE_PUBLISHED_IMAGES=true + PORTAL_IMAGE/RAG_IMAGE (pull published images)." >&2
+    exit 1
+  fi
   echo "[portal] extracting analog-elk-front-end @ ${PIN} → ${BUILD_DIR} (read-only archive)"
   mkdir -p "$BUILD_DIR"
   git -C "$SOURCE_REPO" archive "$PIN" | tar -x -C "$BUILD_DIR"
@@ -75,6 +108,9 @@ else
 fi
 
 cd "$BUILD_DIR"
+
+# Invalidate the marker while patching; it is re-written as the LAST step below.
+rm -f "$MARKER"
 
 # ---------------------------------------------------------------------------
 # 2. Patch .npmrc — strip the private GitHub Packages registry + authToken
@@ -276,5 +312,9 @@ if [ -f "${HERE}/.dockerignore" ]; then
   cp "${HERE}/.dockerignore" "${BUILD_DIR}/.dockerignore"
   echo "[portal] copied .dockerignore into build context"
 fi
+
+# Completion marker — LAST step, so bin/elk-os can distinguish a fully prepared
+# context (marker matches the pin) from a partial one or a pin bump.
+printf '%s\n' "$PIN" > "$MARKER"
 
 echo "[portal] build context ready at ${BUILD_DIR} (pinned ${PIN})"

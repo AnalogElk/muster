@@ -2,21 +2,29 @@
 # =============================================================================
 # Elk OS — turnkey Claude Code launcher for a wired deployment
 # =============================================================================
-# Loads the deployment .env (which holds the real DIRECTUS_ADMIN_TOKEN, kept out
-# of git) into the environment, then launches Claude Code from this directory so
-# the `elk-os-cms` MCP server authenticates with no manual export. The token is
-# never printed.
+# Reads ONLY the variables the wired session needs (DIRECTUS_URL,
+# DIRECTUS_ADMIN_TOKEN, ELK_OS_BRAND_NAME) from the deployment .env, exports
+# them, then launches Claude Code from this directory so the `elk-os-cms` MCP
+# server authenticates with no manual export.
+#
+# Deliberately NOT `set -a; . .env`: the deployment .env also carries the
+# Postgres password, the Directus SECRET, the admin password and any Stripe/
+# Resend/GitHub keys. Sourcing it wholesale would inject every one of those into
+# the agent session's process environment (and every subprocess/MCP server it
+# spawns), where a single `env` invocation would leak them into the transcript.
+# The token is never printed.
 # =============================================================================
 set -euo pipefail
 
 ENV_FILE="{{ENV_FILE}}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+env_get() { grep -E "^$1=" "$ENV_FILE" 2>/dev/null | head -n1 | cut -d= -f2-; }
+
 if [ -f "$ENV_FILE" ]; then
-  set -a
-  # shellcheck disable=SC1090
-  . "$ENV_FILE"
-  set +a
+  export DIRECTUS_URL="${DIRECTUS_URL:-$(env_get DIRECTUS_URL)}"
+  export DIRECTUS_ADMIN_TOKEN="${DIRECTUS_ADMIN_TOKEN:-$(env_get DIRECTUS_ADMIN_TOKEN)}"
+  export ELK_OS_BRAND_NAME="${ELK_OS_BRAND_NAME:-$(env_get ELK_OS_BRAND_NAME)}"
 else
   echo "[run-claude] WARNING: deployment .env not found at $ENV_FILE" >&2
   echo "[run-claude] The MCP server will have no DIRECTUS_ADMIN_TOKEN. Export it manually." >&2

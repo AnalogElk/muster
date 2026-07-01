@@ -19,6 +19,12 @@
 # =============================================================================
 set -euo pipefail
 
+# Secrets hygiene: every file this CLI creates (.env, .env.tmp during rewrites,
+# state, wired configs) is owner-only. .env holds the DB password, Directus
+# secret, admin password and admin token — it must never be group/world-readable
+# on a shared box.
+umask 077
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
@@ -129,9 +135,22 @@ ensure_portal_context() {
   use_published_images && return 0
   local prep="${ROOT}/portal/prepare-context.sh"
   [ -f "$prep" ] || { warn "portal/prepare-context.sh missing — skipping portal prep."; return 0; }
-  if [ ! -f "${ROOT}/portal/.build/package.json" ]; then
+  # prepare-context.sh writes .build/.elk-os-prepared (containing the pin) as its
+  # LAST step. A missing or mismatched marker means a half-prepared context (a
+  # prior prep died mid-patch) or a pin bump — re-prepare rather than silently
+  # docker-building an unpatched tree.
+  local pin marker
+  pin="$(cat "${ROOT}/portal/PINNED_COMMIT" 2>/dev/null | tr -d '[:space:]' || true)"
+  marker="$(cat "${ROOT}/portal/.build/.elk-os-prepared" 2>/dev/null | tr -d '[:space:]' || true)"
+  if [ -z "$marker" ] || [ "$marker" != "$pin" ]; then
     info "Preparing the portal build context (pinned archive + self-host patches)…"
-    bash "$prep" || die "Failed to prepare the portal build context."
+    # prepare-context.sh reads PORTAL_SOURCE_REPO from its environment; make the
+    # .env knob work too.
+    local src; src="$(get_env PORTAL_SOURCE_REPO)"
+    if [ -n "$src" ]; then export PORTAL_SOURCE_REPO="$src"; fi
+    bash "$prep" || die "Failed to prepare the portal build context.
+Alternatives: in .env set ELK_OS_WITH_PORTAL=false (Directus-only install), or set
+ELK_OS_USE_PUBLISHED_IMAGES=true + PORTAL_IMAGE/RAG_IMAGE to pull published images."
   fi
 }
 
@@ -213,10 +232,31 @@ cmd_init() {
   command -v openssl >/dev/null 2>&1 || die "openssl is required to generate secrets."
 
   info "Writing .env from .env.example (profile=${profile}, target=${target})…"
+  # --force must NOT rotate live secrets: postgres applies POSTGRES_PASSWORD
+  # only at initdb, and the admin password/token must keep matching the DB —
+  # regenerating them bricks an existing deployment. Snapshot them BEFORE the
+  # copy (.env.example ships them blank) and re-apply after.
+  local prev_pg prev_key prev_secret prev_pw prev_token
+  prev_pg="$(get_env POSTGRES_PASSWORD)"
+  prev_key="$(get_env DIRECTUS_KEY)"
+  prev_secret="$(get_env DIRECTUS_SECRET)"
+  prev_pw="$(get_env DIRECTUS_ADMIN_PASSWORD)"
+  prev_token="$(get_env DIRECTUS_ADMIN_TOKEN)"
+  if [ -f "$ENV_FILE" ]; then
+    local env_backup="${ENV_FILE}.bak.$(date +%Y%m%d%H%M%S)"
+    cp "$ENV_FILE" "$env_backup"
+    chmod 600 "$env_backup"
+    info "Backed up existing .env to $(basename "$env_backup")."
+  fi
   cp "$ENV_EXAMPLE" "$ENV_FILE"
+  chmod 600 "$ENV_FILE"   # owner-only: this file carries every stack secret
 
   set_env ELK_OS_PROFILE "$profile"
   set_env ELK_OS_TARGET  "$target"
+  [ -n "$prev_pg" ]     && set_env POSTGRES_PASSWORD "$prev_pg"
+  [ -n "$prev_key" ]    && set_env DIRECTUS_KEY "$prev_key"
+  [ -n "$prev_secret" ] && set_env DIRECTUS_SECRET "$prev_secret"
+  [ -n "$prev_pw" ]     && set_env DIRECTUS_ADMIN_PASSWORD "$prev_pw"
 
   # Auto-generate secrets (only if empty — re-running --force keeps existing).
   local k
@@ -225,8 +265,8 @@ cmd_init() {
       set_env "$k" "$(openssl rand -hex 32)"
     fi
   done
-  # Admin token is minted at bootstrap, never here.
-  set_env DIRECTUS_ADMIN_TOKEN ""
+  # Admin token is minted at bootstrap, never here (kept across --force re-runs).
+  set_env DIRECTUS_ADMIN_TOKEN "$prev_token"
 
   # Merge profile defaults (non-secret overrides).
   local defaults="${PROFILES_DIR}/${profile}/env.defaults"
@@ -593,10 +633,10 @@ if code==200 and cur and 'data' in cur and cur['data'].get('directus'):
 
 # 2. diff (force=true bypasses the version/vendor guard)
 code, diff = req('POST', '/schema/diff?force=true', snap)
-if code in (204,) or diff is None or not (isinstance(diff, dict) and diff.get('data')):
-    print('[migrate] schema already in sync — no changes to apply.'); sys.exit(0)
 if code>=400:
     print('[migrate] diff failed (%d): %s'%(code, json.dumps(diff)[:400]), file=sys.stderr); sys.exit(1)
+if code in (204,) or diff is None or not (isinstance(diff, dict) and diff.get('data')):
+    print('[migrate] schema already in sync — no changes to apply.'); sys.exit(0)
 
 # 3. apply the diff object ({hash, diff})
 code, res = req('POST', '/schema/apply', diff['data'])
@@ -624,6 +664,7 @@ PY
 cmd_seed() {
   [ -f "$ENV_FILE" ] || die ".env not found. Run ./bin/elk-os init first."
   require_python3
+  [ -f "$SCHEMA_SNAPSHOT" ] || die "Schema snapshot not found at $SCHEMA_SNAPSHOT"
 
   local profile url tok dir
   profile="$(get_env ELK_OS_PROFILE)"; profile="${profile:-generic}"
@@ -761,7 +802,10 @@ cmd_rebuild_portal() {
 #                         secret is NEVER written into a file).
 #   CLAUDE.md           → the profile's agency-OS constitution.
 #   README.md           → how to use the wired directory.
-#   run-claude.sh       → turnkey launcher (sources the deployment .env, exec claude).
+#   run-claude.sh       → turnkey launcher (exports ONLY DIRECTUS_URL /
+#                         DIRECTUS_ADMIN_TOKEN / ELK_OS_BRAND_NAME from the
+#                         deployment .env — never sources it wholesale — then
+#                         exec claude).
 #   .claude/settings.json + .claude/hooks/  → SessionStart banner + os_tasks snapshot.
 #   .claude/memory/     → MEMORY.md index + the auto-memory pattern note.
 #

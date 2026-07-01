@@ -1,21 +1,36 @@
 # Elk OS — Caddy reverse proxy (box target)
 # Caddy substitutes {$ELK_OS_DOMAIN} from the environment at load time and
-# provisions Let's Encrypt certificates for both hosts automatically.
+# provisions Let's Encrypt certificates for all three hosts automatically.
 #
 # Routing (the full-stack box demo):
-#   ${ELK_OS_DOMAIN}        → the portal (the human surface)
+#   ${ELK_OS_DOMAIN}        → the static whitepaper landing (site/, mounted at /srv/site)
+#   app.${ELK_OS_DOMAIN}    → the portal (the human surface)
 #   cms.${ELK_OS_DOMAIN}    → Directus (the os_* board + native MCP at /mcp)
 #
-# Both subnames resolve automatically under sslip.io (e.g. 1.2.3.4.sslip.io and
-# cms.1.2.3.4.sslip.io both point at 1.2.3.4), or add a `cms` A/CNAME record for
-# a real domain. The portal's NEXT_PUBLIC_DIRECTUS_URL + Directus PUBLIC_URL are
-# pinned to the cms.* host by the prod compose overrides.
+# All subnames resolve automatically under sslip.io (e.g. 1.2.3.4.sslip.io,
+# app.1.2.3.4.sslip.io and cms.1.2.3.4.sslip.io all point at 1.2.3.4), or add
+# `app` + `cms` A/CNAME records for a real domain. The portal's
+# NEXT_PUBLIC_DIRECTUS_URL + Directus PUBLIC_URL are pinned to the cms.* host by
+# the prod compose overrides.
 #
-# NOTE: the apex block proxies `portal:3000`. A Directus-only box (portal
+# NOTE: the app.* block proxies `portal:3000`. A Directus-only box (portal
 # disabled via ELK_OS_WITH_PORTAL=false) should remove or repoint that block.
 
-# The portal on the apex.
+# The whitepaper landing (site/) on the apex.
 {$ELK_OS_DOMAIN} {
+	encode zstd gzip
+
+	root * /srv/site
+	file_server
+
+	log {
+		output stdout
+		format console
+	}
+}
+
+# The portal (the human surface) on app.*
+app.{$ELK_OS_DOMAIN} {
 	encode zstd gzip
 
 	reverse_proxy portal:3000

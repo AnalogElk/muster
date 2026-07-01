@@ -18,6 +18,9 @@
 # =============================================================================
 set -euo pipefail
 
+# Owner-only perms for the .env rewrite (the awk tmp file inherits this umask).
+umask 077
+
 ENV_FILE="${1:?usage: mint-token.sh <path-to-.env>}"
 [ -f "$ENV_FILE" ] || { echo "[bootstrap] env file not found: $ENV_FILE" >&2; exit 1; }
 
@@ -57,10 +60,13 @@ if [ -z "$PASSWORD" ]; then
 fi
 
 # --- 1. log in for a short-lived access token --------------------------------
+# The body is piped over stdin (--data @-), NOT passed as an argv literal: curl
+# arguments are visible to every user on the host via `ps`/procfs, and this body
+# carries the admin password.
 LOGIN_BODY=$(printf '{"email":"%s","password":"%s"}' "$EMAIL" "$PASSWORD")
-LOGIN_RESP=$(curl -sf -X POST "${URL}/auth/login" \
+LOGIN_RESP=$(printf '%s' "$LOGIN_BODY" | curl -sf -X POST "${URL}/auth/login" \
   -H "Content-Type: application/json" \
-  -d "$LOGIN_BODY" 2>/dev/null) || {
+  --data @- 2>/dev/null) || {
   echo "[bootstrap] login to ${URL} failed — is Directus healthy?" >&2
   exit 1
 }
@@ -81,11 +87,12 @@ if [ -z "$USER_ID" ]; then
 fi
 
 # --- 3. generate + assign a strong static token ------------------------------
+# Token travels over stdin for the same reason as the login body above.
 NEW_TOKEN=$(openssl rand -hex 32)
-curl -sf -o /dev/null -X PATCH "${URL}/users/${USER_ID}" \
+printf '{"token":"%s"}' "$NEW_TOKEN" | curl -sf -o /dev/null -X PATCH "${URL}/users/${USER_ID}" \
   -H "Authorization: Bearer ${ACCESS}" \
   -H "Content-Type: application/json" \
-  -d "{\"token\":\"${NEW_TOKEN}\"}" 2>/dev/null || {
+  --data @- 2>/dev/null || {
   echo "[bootstrap] failed to PATCH static token onto admin user." >&2
   exit 1
 }

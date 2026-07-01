@@ -1,21 +1,32 @@
-<h1 align="center">Elk OS</h1>
+<h1 align="center">Muster</h1>
 
 <p align="center">
-  <strong>An entire agency operating system, in one command.</strong><br>
-  A human and a fleet of AI agents share one task substrate — Elk OS packages the
+  <strong>The operating system for agentic software teams, in one command.</strong><br>
+  A human and a fleet of AI agents share one task substrate — Muster packages the
   whole loop so you can run it on a fresh box or a laptop.
 </p>
 
+<p align="center">
+  <a href="https://34.220.64.149.sslip.io">Live demo &amp; whitepaper</a> ·
+  <a href="https://app.34.220.64.149.sslip.io">Live portal</a>
+  (read-only demo login <code>demo@muster.dev</code> / <code>muster-demo</code>)
+</p>
+
+> **Naming note:** the public product name is **Muster**; **Elk OS** is the
+> project's working name and survives in the CLI (`bin/elk-os`), env vars
+> (`ELK_OS_*`), and some internal docs. Renaming those is a tracked decision,
+> not an accident — the two names refer to the same thing.
+
 ---
 
-Most "AI for work" tools bolt a chatbot onto the side of your real system. Elk OS
+Most "AI for work" tools bolt a chatbot onto the side of your real system. Muster
 inverts that: the **shared task board is the substrate**, and both the human and
 the agents are first-class users of it. The row a human drags on a board is the
-row an agent picks up over MCP — and writes back when it's done. Elk OS ships
+row an agent picks up over MCP — and writes back when it's done. Muster ships
 that loop, wired and reproducible, as a self-hostable product.
 
 ```bash
-git clone <repo> elk-os && cd elk-os
+git clone https://github.com/AnalogElk/muster.git && cd muster
 ./bin/elk-os init --profile generic   # generate secrets + .env
 ./bin/elk-os up                       # docker compose up the whole stack
 ./bin/elk-os doctor                   # green/red health board — the loop proof
@@ -97,6 +108,12 @@ the reliable full-stack path. And the portal image is published to GHCR (it can'
 be built on a bare PaaS) — see [`provision/`](./provision/) and
 [`deploy/README.md`](./deploy/README.md).
 
+The live demo *is* the box path: [`site/`](./site/) is the whitepaper homepage
+Caddy serves at the demo root, and [`provision/`](./provision/) includes the
+scripts that make the public demo real — `seed-demo.py` (seed the actual Muster
+build board), `re-add-kb.py` (restore + seed the knowledge base), and
+`demo-readonly-role.py` (lock the `demo@muster.dev` login to read-only).
+
 ## What's regenerated post-clone (not shipped pre-rendered)
 
 - **`portal/.build/`** — the portal's Docker build context is a *frozen archive*
@@ -110,7 +127,7 @@ be built on a bare PaaS) — see [`provision/`](./provision/) and
 ## Versioning & releases
 
 Versioning is automated via [release-please](https://github.com/googleapis/release-please)
-(`release-type: simple` — Elk OS is a bash/compose repo, not a Node package). The
+(`release-type: simple` — Muster is a bash/compose repo, not a Node package). The
 version of record lives in [`version.txt`](./version.txt); the narrative in
 [`CHANGELOG.md`](./CHANGELOG.md). Every commit/PR title must be a valid
 [Conventional Commit](https://www.conventionalcommits.org/) (`feat:` → minor,
@@ -122,12 +139,13 @@ version of record lives in [`version.txt`](./version.txt); the narrative in
 Full spec: [`docs/superpowers/specs/2026-06-29-elk-os-installer-design.md`](./docs/superpowers/specs/2026-06-29-elk-os-installer-design.md).
 Per-phase real status (shipped vs aspirational) is tracked honestly in
 [`WHITEPAPER-LOG.md`](./WHITEPAPER-LOG.md). The loop — core + RAG + schema/seed +
-portal + the wired Claude-OS — is proven on a from-scratch install; the live
-public demo URL is the remaining piece.
+portal + the wired Claude-OS — is proven on a from-scratch install, and the live
+public demo is up: [the whitepaper homepage](https://34.220.64.149.sslip.io) with
+[the portal](https://app.34.220.64.149.sslip.io) one link away.
 
 ## License
 
-Not yet finalized — Elk OS's `os_*` schema derives from
+Not yet finalized — Muster's `os_*` schema derives from
 [directus-labs/agency-os](https://github.com/directus-labs/agency-os) (MIT, see
 [`NOTICE`](./NOTICE)). The license choice affects monetization, so the options and
 a recommendation are laid out in

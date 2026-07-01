@@ -11,11 +11,11 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Muster — the software that built itself, and shipped">
 <meta property="og:description" content="Governance is the product. A governed fleet of ~30 AI subagents took an empty repo to a live HTTPS demo in ~2.5 hours, using the system's own task board as the coordination spine.">
-<meta property="og:image" content="og.svg">
+<meta property="og:image" content="https://34.220.64.149.sslip.io/assets/muster-board.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Muster — the software that built itself, and shipped">
 <meta name="twitter:description" content="Muster the agents. Keep the receipts. This page is the build log; the links are the live system.">
-<meta name="twitter:image" content="og.svg">
+<meta name="twitter:image" content="https://34.220.64.149.sslip.io/assets/muster-board.png">
 
 <!-- favicon: three steps + one ember, the Build-Trail at 16px -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Cpolyline points='6,58 18,58 18,44 30,44 30,30 42,30' fill='none' stroke='%2325402F' stroke-width='5' stroke-linecap='square'/%3E%3Cpolyline points='30,30 30,16 42,16' fill='none' stroke='%23DE7330' stroke-width='5' stroke-linecap='square'/%3E%3Ccircle cx='42' cy='16' r='5' fill='%23DE7330'/%3E%3C/svg%3E">
@@ -95,10 +95,11 @@
       <a class="btn" href="paper.html">Read the whitepaper</a>
       <a class="btn" href="https://github.com/AnalogElk/muster" target="_blank" rel="noopener">GitHub ↗</a>
     </div>
+    <p class="fineprint mono" style="margin-top:.6rem">demo login: <code>demo@muster.dev</code> / <code>muster-demo</code> — read-only</p>
 
     <!-- metric strip: ground-truth numbers, plain mono, renders CSS-off -->
     <div class="metricstrip" id="metricstrip" aria-label="Build metrics">
-      <div class="metric"><span class="metric__n" data-count="2.5" data-suffix=" hrs" data-decimals="1">~2.5 hrs</span><span class="metric__l">empty repo → live HTTPS demo</span></div>
+      <div class="metric"><span class="metric__n" data-count="2.5" data-prefix="~" data-suffix=" hrs" data-decimals="1">~2.5 hrs</span><span class="metric__l">empty repo → live HTTPS demo</span></div>
       <div class="metric"><span class="metric__n" data-count="30" data-prefix="" data-suffix="+">30+</span><span class="metric__l">AI subagents · 6 parallel fan-outs</span></div>
       <div class="metric"><span class="metric__n" data-count="2" data-suffix="M+">2M+</span><span class="metric__l">tokens consumed</span></div>
       <div class="metric"><span class="metric__n" data-count="27" data-suffix="">27</span><span class="metric__l">commits · 90 files · 8 phases</span></div>
@@ -281,7 +282,7 @@
   <div class="doc">
     <p class="kicker">§11 · Run it yourself</p>
     <h2 class="h2">One command. The doctor board is the proof.</h2>
-    <p class="lead">The apparatus is open and self-hostable. <code>bin/elk-os</code> is a resumable, idempotent phase machine whose only hard dependency is Docker.</p>
+    <p class="lead">The apparatus is public and self-hostable. <code>bin/elk-os</code> — the CLI keeps the project's working name, Elk OS — is a resumable, idempotent phase machine whose only hard dependency is Docker.</p>
     <pre class="code" aria-label="One-command install"><span class="c"># scaffold → live, from an empty volume</span>
 bin/elk-os <span class="e">init</span>      <span class="c"># scaffold + env</span>
 bin/elk-os <span class="e">up</span>        <span class="c"># compose core (Directus, Postgres, RAG, portal)</span>
@@ -332,7 +333,6 @@ bin/elk-os <span class="e">doctor</span>    <span class="c"># green/red from-scr
     <div class="footer__links">
       <a href="paper.html">Whitepaper</a>
       <a href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Live portal ↗</a>
-      <a href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Live demo ↗</a>
       <a href="https://github.com/AnalogElk/muster" target="_blank" rel="noopener">GitHub ↗</a>
       <a href="#" onclick="window.print();return false;">Download PDF / Print</a>
     </div>

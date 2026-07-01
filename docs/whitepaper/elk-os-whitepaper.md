@@ -6,7 +6,7 @@
 
 *Working name: "Elk OS." It began as an internal tool for my agency, Analog Elk; Analog Elk is now the case study, not the headline. This is an operating system for agentic software teams.*
 
-*Live: [the portal](https://34.220.64.149.sslip.io) · [the build's own task board](https://cms.34.220.64.149.sslip.io). Note on the links: the demo runs on a `sslip.io` host with a real, browser-trusted Let's Encrypt certificate auto-provisioned by Caddy on a $3 box. (The live instance may be asleep between showings to save cost; archived snapshots stand in.)*
+*Live: [the portal, with the build's own task board inside](https://app.34.220.64.149.sslip.io) — read-only demo login `demo@muster.dev` / `muster-demo`. Note on the link: the demo runs on a `sslip.io` host with a real, browser-trusted Let's Encrypt certificate auto-provisioned by Caddy on a $3 box. Directus itself is deliberately not publicly exposed; the portal is the read window. (The live instance may be asleep between showings to save cost; archived snapshots stand in.)*
 
 ---
 
@@ -73,9 +73,9 @@ In this build, contention was controlled one level up, by **disjoint dispatch**.
 
 ---
 
-## 3. The apparatus: five organs of an agent operating system
+## 3. The apparatus: six organs of an agent operating system
 
-Elk OS is a coordination architecture with named organs. Read it as a transferable mental model; you can build all five on any vendor's stack.
+Elk OS is a coordination architecture with named organs. Read it as a transferable mental model; you can build all six on any vendor's stack.
 
 **The spine: the shared task bus.** A Directus 11 instance over Postgres 15, exposing an `os_*` schema (`os_tasks`, `os_sprints`, `os_projects`, `releases`, `repositories`, `organizations`, `contacts`). The human watches it in the portal; the agent fleet reads and writes it over Directus's **native MCP server** at `/mcp`, not custom glue, gated by a single `mcp_enabled` setting. The credential is always an environment reference (`Bearer ${DIRECTUS_ADMIN_TOKEN}`), never a literal, so the real token lives only in a gitignored `.env`.
 
@@ -193,7 +193,7 @@ Now the verdict, stated against my own interest: **the apparatus did not primari
 
 **The spine is shared mutable state, and I have no graceful-degradation story.** If the board goes down mid-build, the fleet loses its coordination substrate, and I have not built a recovery path beyond "the orchestrator notices and restarts." Two agents *can* race a row (§2a). The board is sold as the solution to coordination while having a coordination problem of its own. On a $3 single-box demo the board is also a literal SPOF, and the live exhibit can 404 if the box hiccups.
 
-**The public-demo posture, stated so you do not assume the worst.** The headline exhibit is a publicly reachable Directus instance. The board is exposed for *reading* the receipt; the admin token that can write it is env-only and not in the client. The honest risk acceptance is mine: this is a disposable demo with seed data, not production, and standing it up at a guessable URL with these specific exposures was a blast-radius judgment I made deliberately. If you self-host past a demo, lock the public read surface and never expose the admin instance.
+**The public-demo posture, stated so you do not assume the worst.** The headline exhibit is a public, read-only window onto a real Directus instance. Directus itself — Studio and the admin surface — is deliberately not publicly exposed; the board is read through the portal's demo login, and the admin token that can write it is env-only and never in the client. The honest risk acceptance is mine: this is a disposable demo with seed data, not production, and standing it up at a guessable URL with these specific exposures was a blast-radius judgment I made deliberately. If you self-host past a demo, lock the public read surface and never expose the admin instance.
 
 **What still needs a human, non-negotiably.** This is the part I most want a hiring manager to read, so I am putting it in the body rather than a footnote. The reframe, "this is a product, Analog Elk is just the case study," was a product call no agent made. The shipped-vs-aspirational ledger exists because a human insisted on honesty and defined what counts as shipped; agents optimize toward "done" and only a human reliably separates done from claimed-done. The arm64/amd64 fix happened live on metal with a human diagnosing. Bounding the fan-out, deciding "this is enough verification," is human ROI governance; the machine will fan out forever. These judgment calls are the leadership content of this build, not a caveat to it.
 
@@ -205,7 +205,7 @@ The break-even rule: the apparatus pays off when the work is **multi-session** (
 
 One loud caveat first, because every confound in this paper points the same way: this is **one anecdote, self-built, on the most favorable possible case**. The playbook below is reasoned extrapolation, untested elsewhere. Treat it as a hypothesis to falsify on your own work, not a proven method.
 
-With that stated, the five organs are transferable, and none of it is vendor magic:
+With that stated, the six organs are transferable, and none of it is vendor magic:
 
 1. **Pick a durable store.** Any ticket system or database with an API. Make the task row the unit of work, the thing agents operate *on*. Prefer it over markdown-plan-files once more than one agent updates status concurrently (§3).
 2. **Give every agent the protocol:** claim → work → verify → close, and build *real* claim semantics if you scale past human-arbitrated dispatch (§2a). Do not assume the row is atomic.
@@ -220,7 +220,7 @@ Separate **state** (the task bus) from **lessons** (memory files) from **narrati
 
 ## 10. Run it yourself, and watch the spine
 
-The apparatus is open and self-hostable. The one-command flow is the whole pitch, and the `doctor` board at the end is the credibility instrument:
+The apparatus is public and self-hostable (license selection is in progress; see the repo's `LICENSE-RECOMMENDATION.md`). The one-command flow is the whole pitch, and the `doctor` board at the end is the credibility instrument:
 
 ```
 bin/elk-os init      # scaffold + env
@@ -233,7 +233,7 @@ bin/elk-os doctor    # green/red from-scratch acceptance board
 
 The repository ships `bin/elk-os`, the `CLAUDE.md` §1 to §10 constitution (the single most reusable artifact in this package, and the one I would copy first), the two profiles, and the compose topology. The repo link lives on the demo homepage alongside this paper.
 
-An empty repository became a live, self-hostable product in about 2.5 hours, governed end to end by its own task board, hosted for a few dollars a month, and you can poke the real thing now. The [portal](https://34.220.64.149.sslip.io) is the human read-side of the loop. The [Directus board](https://cms.34.220.64.149.sslip.io) is the spine itself: open it and you are looking at the actual coordination substrate of *this build*, the same `os_tasks` rows the fleet claimed, worked, and closed to bring the system into existence.
+An empty repository became a live, self-hostable product in about 2.5 hours, governed end to end by its own task board, hosted for a few dollars a month, and you can poke the real thing now. The [portal](https://app.34.220.64.149.sslip.io) is the human read-side of the loop, and the board it renders is the spine itself: sign in with the read-only demo login (`demo@muster.dev` / `muster-demo`) and you are looking at the actual coordination substrate of *this build*, the same `os_tasks` rows the fleet claimed, worked, and closed to bring the system into existence. (Directus itself is not publicly exposed; the portal is the read window.)
 
 The model is stateless; the organization around it does not have to be. That is the whole argument. The next generation of dev tools will not compete on model quality, which commoditizes. They will compete on the operating system around the model, and the task record is its coordination substrate. Make the ticket the unit of work, and the chat becomes disposable.
 
