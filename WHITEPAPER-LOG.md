@@ -419,5 +419,31 @@ real (persist per-browser, never hit the backend) instead of the current quiet b
 
 ---
 
+## 2026-06-30 — Session 10: the demo made real (recursive board, working KB, full sections) + the repo goes public
+
+Three moves turned the public demo from "seeded" to real, and the code went public.
+
+- **The board is now the actual build.** The synthetic "Demo Co" starter was replaced by a
+  "Muster" project holding the **18 real `os_tasks` that built this demo** — the epic + P0–P7 +
+  follow-ups, exported live from the CMS, hierarchy and statuses preserved (11 completed / 6
+  pending / 1 in progress). A visitor now sees the very tasks that built what they're looking at.
+  The recursion, made visible.
+- **The KB works.** Root cause was our own P2 pruning of `kb_spaces`/`kb_pages`; re-added both
+  (`provision/re-add-kb.py`) + seeded an Engineering space with 5 real Muster pages
+  (architecture, the loop, gotchas, self-hosting, the whitepaper), and granted the read-only demo
+  user read access. Verified through the portal's own API (`/employee-portal/kb` → 200).
+- **The bare parts are filled.** A deal pipeline, invoices + line items + a payment, a proposal,
+  CRM activities, products, releases — synthetic, tasteful; all 14 employee-portal sections now
+  return 200 for the demo user.
+- Read-only + login intact (writes still 403). A DB backup was taken first; the seed/KB scripts
+  merged via **PR #1** (branch protection honored).
+
+- **Public repo:** `github.com/AnalogElk/muster` (public, `main`, topics, homepage = demo URL),
+  linked from the landing + a CMS `repositories` row; the push triggered release-please (v0.1.0
+  PR pending). Filed the roadmap for a project-scoped **queryable KB** (kb_pages + the bundled RAG
+  `/query` + auto-reingest on feature-ship — the "knowledge substrate" as a live loop).
+
+---
+
 <!-- Append new sessions/phases below. Each phase flips from aspirational to real
      only when `doctor` proves it. -->
