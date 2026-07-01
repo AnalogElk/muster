@@ -96,6 +96,48 @@ cd /opt/elk-os
   the portal was omitted — `ELK_OS_WITH_PORTAL=false` removes the row entirely;
   if it shows, `PORTAL_IMAGE` was set without a reachable image.
 
+## Seeding demo content (a full, on-thesis portal)
+
+A fresh box comes up with the pruned `os_*` schema and a small generic seed. Two
+scripts turn that into a rich, coherent demo where every portal section is
+populated and the Knowledge Base works. Both are **idempotent** — safe to re-run.
+
+```bash
+cd /opt/elk-os   # or ~/elk-os
+export DIRECTUS_URL=https://cms.${ELK_OS_DOMAIN}
+export DIRECTUS_ADMIN_TOKEN=...        # from .env (never print it)
+
+# 1. Read-only public demo user (Employee role + read-only policy)
+DEMO_EMAIL=demo@muster.dev python3 provision/demo-readonly-role.py
+
+# 2. Restore the Knowledge Base (kb_spaces + kb_pages) that the schema prune
+#    dropped, seed real Muster docs, and grant the demo policy READ on them.
+python3 provision/re-add-kb.py
+
+# 3. Seed the board + CRM/billing so nothing looks empty:
+#    - PRIORITY A: a "Muster" project + the REAL os_tasks that built the demo
+#      (provision/seed/muster-tasks.json — epic + phases P0–P7 + follow-ups,
+#      hierarchy + statuses preserved), and removes the synthetic starter rows.
+#    - PRIORITY B: a deal pipeline, a proposal, CRM activities, two invoices
+#      (one paid + a payment) with line items, products, project updates,
+#      and Muster releases. All synthetic, is_test_data=false so they render.
+python3 provision/seed-demo.py
+```
+
+**Data files** (`provision/seed/`):
+
+| File | Purpose |
+|---|---|
+| `kb-schema.json` | `kb_spaces` + `kb_pages` collection/field/relation snapshot (from the prod CMS) that `re-add-kb.py` applies. |
+| `kb-pages.json` | The seeded Engineering space + KB pages (architecture, the human↔agent loop, gotchas, self-hosting, the whitepaper). |
+| `muster-tasks.json` | The real Muster build tasks exported from the CMS, sanitized (prod-specific relations stripped, hierarchy + statuses kept). |
+
+> **Reproducibility follow-up:** these three steps are run manually against the
+> live box today. To make a fresh box come up demo-ready automatically, fold them
+> into `cloud-init.sh` (after `elk-os up` + `migrate`/`seed`), gated behind a
+> `ELK_OS_SEED_DEMO=true` env flag, and add `kb_spaces`/`kb_pages` back into the
+> profile schema snapshot so `re-add-kb.py` becomes a no-op on new boxes.
+
 ## Cost
 
 A 2 GB VPS (Hetzner CX22, DigitalOcean, Vultr, etc.) runs ~$6–12/mo. With an

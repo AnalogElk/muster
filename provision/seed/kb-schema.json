@@ -1,0 +1,1082 @@
+{
+  "kb_spaces": {
+    "collection": "kb_spaces",
+    "meta": {
+      "accountability": "all",
+      "archive_app_filter": true,
+      "archive_field": "status",
+      "archive_value": "archived",
+      "collapse": "open",
+      "collection": "kb_spaces",
+      "color": "#6366F1",
+      "display_template": "{{name}}",
+      "group": null,
+      "hidden": false,
+      "icon": "folder_special",
+      "item_duplication_fields": null,
+      "note": "Knowledge Base spaces (categories/page-tree roots), role-gated",
+      "preview_url": null,
+      "singleton": false,
+      "sort": null,
+      "sort_field": "order",
+      "translations": null,
+      "unarchive_value": "published",
+      "versioning": false
+    },
+    "schema": {
+      "name": "kb_spaces"
+    },
+    "fields": [
+      {
+        "field": "id",
+        "type": "uuid",
+        "meta": {
+          "collection": "kb_spaces",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "id",
+          "group": null,
+          "hidden": true,
+          "interface": "input",
+          "note": null,
+          "options": null,
+          "readonly": true,
+          "required": false,
+          "searchable": true,
+          "sort": 1,
+          "special": [
+            "uuid"
+          ],
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "full"
+        },
+        "schema": {
+          "name": "id",
+          "table": "kb_spaces",
+          "data_type": "uuid",
+          "default_value": null,
+          "max_length": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": false,
+          "is_unique": true,
+          "is_indexed": false,
+          "is_primary_key": true,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "status",
+        "type": "string",
+        "meta": {
+          "collection": "kb_spaces",
+          "conditions": null,
+          "display": "labels",
+          "display_options": null,
+          "field": "status",
+          "group": null,
+          "hidden": false,
+          "interface": "select-dropdown",
+          "note": null,
+          "options": {
+            "choices": [
+              {
+                "text": "Published",
+                "value": "published"
+              },
+              {
+                "text": "Draft",
+                "value": "draft"
+              },
+              {
+                "text": "Archived",
+                "value": "archived"
+              }
+            ]
+          },
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 2,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "status",
+          "table": "kb_spaces",
+          "data_type": "character varying",
+          "default_value": "draft",
+          "max_length": 255,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": false,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "order",
+        "type": "integer",
+        "meta": {
+          "collection": "kb_spaces",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "order",
+          "group": null,
+          "hidden": true,
+          "interface": "input",
+          "note": null,
+          "options": null,
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 3,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "full"
+        },
+        "schema": {
+          "name": "order",
+          "table": "kb_spaces",
+          "data_type": "integer",
+          "default_value": 0,
+          "max_length": null,
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "is_nullable": true,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "name",
+        "type": "string",
+        "meta": {
+          "collection": "kb_spaces",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "name",
+          "group": null,
+          "hidden": false,
+          "interface": "input",
+          "note": null,
+          "options": null,
+          "readonly": false,
+          "required": true,
+          "searchable": true,
+          "sort": 4,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "name",
+          "table": "kb_spaces",
+          "data_type": "character varying",
+          "default_value": null,
+          "max_length": 255,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": false,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "slug",
+        "type": "string",
+        "meta": {
+          "collection": "kb_spaces",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "slug",
+          "group": null,
+          "hidden": false,
+          "interface": "input",
+          "note": "Unique slug used in URLs",
+          "options": null,
+          "readonly": false,
+          "required": true,
+          "searchable": true,
+          "sort": 5,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "slug",
+          "table": "kb_spaces",
+          "data_type": "character varying",
+          "default_value": null,
+          "max_length": 255,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": false,
+          "is_unique": true,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "description",
+        "type": "text",
+        "meta": {
+          "collection": "kb_spaces",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "description",
+          "group": null,
+          "hidden": false,
+          "interface": "input-multiline",
+          "note": null,
+          "options": null,
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 6,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "full"
+        },
+        "schema": {
+          "name": "description",
+          "table": "kb_spaces",
+          "data_type": "text",
+          "default_value": null,
+          "max_length": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": true,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "icon",
+        "type": "string",
+        "meta": {
+          "collection": "kb_spaces",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "icon",
+          "group": null,
+          "hidden": false,
+          "interface": "input",
+          "note": "Material/lucide icon name",
+          "options": null,
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 7,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "icon",
+          "table": "kb_spaces",
+          "data_type": "character varying",
+          "default_value": null,
+          "max_length": 255,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": true,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "min_role",
+        "type": "string",
+        "meta": {
+          "collection": "kb_spaces",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "min_role",
+          "group": null,
+          "hidden": false,
+          "interface": "select-dropdown",
+          "note": "Minimum role tier that can view this space",
+          "options": {
+            "choices": [
+              {
+                "text": "Client",
+                "value": "client"
+              },
+              {
+                "text": "Employee",
+                "value": "employee"
+              },
+              {
+                "text": "Engineer",
+                "value": "engineer"
+              },
+              {
+                "text": "Admin",
+                "value": "admin"
+              }
+            ]
+          },
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 8,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "min_role",
+          "table": "kb_spaces",
+          "data_type": "character varying",
+          "default_value": "employee",
+          "max_length": 50,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": false,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "is_client_visible",
+        "type": "boolean",
+        "meta": {
+          "collection": "kb_spaces",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "is_client_visible",
+          "group": null,
+          "hidden": false,
+          "interface": "boolean",
+          "note": "Expose to the client portal (default off, internal-only)",
+          "options": null,
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 9,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "is_client_visible",
+          "table": "kb_spaces",
+          "data_type": "boolean",
+          "default_value": false,
+          "max_length": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": false,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      }
+    ]
+  },
+  "kb_pages": {
+    "collection": "kb_pages",
+    "meta": {
+      "accountability": "all",
+      "archive_app_filter": true,
+      "archive_field": "status",
+      "archive_value": "archived",
+      "collapse": "open",
+      "collection": "kb_pages",
+      "color": "#6366F1",
+      "display_template": "{{title}}",
+      "group": null,
+      "hidden": false,
+      "icon": "article",
+      "item_duplication_fields": null,
+      "note": "Knowledge Base pages (role-gated KB articles)",
+      "preview_url": null,
+      "singleton": false,
+      "sort": null,
+      "sort_field": "order",
+      "translations": null,
+      "unarchive_value": "published",
+      "versioning": false
+    },
+    "schema": {
+      "name": "kb_pages"
+    },
+    "fields": [
+      {
+        "field": "id",
+        "type": "uuid",
+        "meta": {
+          "collection": "kb_pages",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "id",
+          "group": null,
+          "hidden": true,
+          "interface": "input",
+          "note": null,
+          "options": null,
+          "readonly": true,
+          "required": false,
+          "searchable": true,
+          "sort": 1,
+          "special": [
+            "uuid"
+          ],
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "full"
+        },
+        "schema": {
+          "name": "id",
+          "table": "kb_pages",
+          "data_type": "uuid",
+          "default_value": null,
+          "max_length": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": false,
+          "is_unique": true,
+          "is_indexed": false,
+          "is_primary_key": true,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "status",
+        "type": "string",
+        "meta": {
+          "collection": "kb_pages",
+          "conditions": null,
+          "display": "labels",
+          "display_options": null,
+          "field": "status",
+          "group": null,
+          "hidden": false,
+          "interface": "select-dropdown",
+          "note": null,
+          "options": {
+            "choices": [
+              {
+                "text": "Published",
+                "value": "published"
+              },
+              {
+                "text": "Draft",
+                "value": "draft"
+              },
+              {
+                "text": "Archived",
+                "value": "archived"
+              }
+            ]
+          },
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 2,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "status",
+          "table": "kb_pages",
+          "data_type": "character varying",
+          "default_value": "draft",
+          "max_length": 255,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": false,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "order",
+        "type": "integer",
+        "meta": {
+          "collection": "kb_pages",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "order",
+          "group": null,
+          "hidden": true,
+          "interface": "input",
+          "note": null,
+          "options": null,
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 3,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "full"
+        },
+        "schema": {
+          "name": "order",
+          "table": "kb_pages",
+          "data_type": "integer",
+          "default_value": 0,
+          "max_length": null,
+          "numeric_precision": 32,
+          "numeric_scale": 0,
+          "is_nullable": true,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "title",
+        "type": "string",
+        "meta": {
+          "collection": "kb_pages",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "title",
+          "group": null,
+          "hidden": false,
+          "interface": "input",
+          "note": null,
+          "options": null,
+          "readonly": false,
+          "required": true,
+          "searchable": true,
+          "sort": 4,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "title",
+          "table": "kb_pages",
+          "data_type": "character varying",
+          "default_value": null,
+          "max_length": 255,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": false,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "slug",
+        "type": "string",
+        "meta": {
+          "collection": "kb_pages",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "slug",
+          "group": null,
+          "hidden": false,
+          "interface": "input",
+          "note": "Unique slug used in URLs",
+          "options": null,
+          "readonly": false,
+          "required": true,
+          "searchable": true,
+          "sort": 5,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "slug",
+          "table": "kb_pages",
+          "data_type": "character varying",
+          "default_value": null,
+          "max_length": 255,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": false,
+          "is_unique": true,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "summary",
+        "type": "text",
+        "meta": {
+          "collection": "kb_pages",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "summary",
+          "group": null,
+          "hidden": false,
+          "interface": "input-multiline",
+          "note": null,
+          "options": null,
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 6,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "full"
+        },
+        "schema": {
+          "name": "summary",
+          "table": "kb_pages",
+          "data_type": "text",
+          "default_value": null,
+          "max_length": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": true,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "body",
+        "type": "text",
+        "meta": {
+          "collection": "kb_pages",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "body",
+          "group": null,
+          "hidden": false,
+          "interface": "input-rich-text-md",
+          "note": "Markdown body",
+          "options": null,
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 7,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "full"
+        },
+        "schema": {
+          "name": "body",
+          "table": "kb_pages",
+          "data_type": "text",
+          "default_value": null,
+          "max_length": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": true,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "min_role",
+        "type": "string",
+        "meta": {
+          "collection": "kb_pages",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "min_role",
+          "group": null,
+          "hidden": false,
+          "interface": "select-dropdown",
+          "note": "Minimum role tier that can view this page",
+          "options": {
+            "choices": [
+              {
+                "text": "Client",
+                "value": "client"
+              },
+              {
+                "text": "Employee",
+                "value": "employee"
+              },
+              {
+                "text": "Engineer",
+                "value": "engineer"
+              },
+              {
+                "text": "Admin",
+                "value": "admin"
+              }
+            ]
+          },
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 8,
+          "special": null,
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "min_role",
+          "table": "kb_pages",
+          "data_type": "character varying",
+          "default_value": "employee",
+          "max_length": 50,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": false,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "tags",
+        "type": "json",
+        "meta": {
+          "collection": "kb_pages",
+          "conditions": null,
+          "display": null,
+          "display_options": null,
+          "field": "tags",
+          "group": null,
+          "hidden": false,
+          "interface": "tags",
+          "note": "Free-form tags",
+          "options": null,
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 9,
+          "special": [
+            "cast-json"
+          ],
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "full"
+        },
+        "schema": {
+          "name": "tags",
+          "table": "kb_pages",
+          "data_type": "json",
+          "default_value": null,
+          "max_length": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": true,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "space",
+        "type": "uuid",
+        "meta": {
+          "collection": "kb_pages",
+          "conditions": null,
+          "display": "related-values",
+          "display_options": {
+            "template": "{{name}}"
+          },
+          "field": "space",
+          "group": null,
+          "hidden": false,
+          "interface": "select-dropdown-m2o",
+          "note": "Parent KB space",
+          "options": {
+            "template": "{{name}}"
+          },
+          "readonly": false,
+          "required": false,
+          "searchable": true,
+          "sort": 10,
+          "special": [
+            "m2o"
+          ],
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "space",
+          "table": "kb_pages",
+          "data_type": "uuid",
+          "default_value": null,
+          "max_length": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": true,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": "kb_spaces",
+          "foreign_key_column": "id"
+        }
+      },
+      {
+        "field": "date_created",
+        "type": "timestamp",
+        "meta": {
+          "collection": "kb_pages",
+          "conditions": null,
+          "display": "datetime",
+          "display_options": {
+            "relative": true
+          },
+          "field": "date_created",
+          "group": null,
+          "hidden": true,
+          "interface": "datetime",
+          "note": null,
+          "options": null,
+          "readonly": true,
+          "required": false,
+          "searchable": true,
+          "sort": 11,
+          "special": [
+            "date-created",
+            "cast-timestamp"
+          ],
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "date_created",
+          "table": "kb_pages",
+          "data_type": "timestamp with time zone",
+          "default_value": null,
+          "max_length": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": true,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      },
+      {
+        "field": "date_updated",
+        "type": "timestamp",
+        "meta": {
+          "collection": "kb_pages",
+          "conditions": null,
+          "display": "datetime",
+          "display_options": {
+            "relative": true
+          },
+          "field": "date_updated",
+          "group": null,
+          "hidden": true,
+          "interface": "datetime",
+          "note": null,
+          "options": null,
+          "readonly": true,
+          "required": false,
+          "searchable": true,
+          "sort": 12,
+          "special": [
+            "date-updated",
+            "cast-timestamp"
+          ],
+          "translations": null,
+          "validation": null,
+          "validation_message": null,
+          "width": "half"
+        },
+        "schema": {
+          "name": "date_updated",
+          "table": "kb_pages",
+          "data_type": "timestamp with time zone",
+          "default_value": null,
+          "max_length": null,
+          "numeric_precision": null,
+          "numeric_scale": null,
+          "is_nullable": true,
+          "is_unique": false,
+          "is_indexed": false,
+          "is_primary_key": false,
+          "is_generated": false,
+          "generation_expression": null,
+          "has_auto_increment": false,
+          "foreign_key_table": null,
+          "foreign_key_column": null
+        }
+      }
+    ]
+  },
+  "_relations": [
+    {
+      "collection": "kb_pages",
+      "field": "space",
+      "related_collection": "kb_spaces",
+      "meta": {
+        "junction_field": null,
+        "many_collection": "kb_pages",
+        "many_field": "space",
+        "one_allowed_collections": null,
+        "one_collection": "kb_spaces",
+        "one_collection_field": null,
+        "one_deselect_action": "nullify",
+        "one_field": null,
+        "sort_field": null
+      },
+      "schema": {
+        "table": "kb_pages",
+        "column": "space",
+        "foreign_key_table": "kb_spaces",
+        "foreign_key_column": "id",
+        "constraint_name": "kb_pages_space_foreign",
+        "on_update": "NO ACTION",
+        "on_delete": "SET NULL"
+      }
+    }
+  ]
+}
