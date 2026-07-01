@@ -41,12 +41,17 @@ WORKDIR /app
 # Defaults target the sslip.io demo box; override per-deploy with --build-arg.
 ARG NEXT_PUBLIC_DIRECTUS_URL=https://cms.34.220.64.149.sslip.io
 ARG NEXT_PUBLIC_SITE_URL=https://app.34.220.64.149.sslip.io
+# [elk-os demo-prefill] Off by default → template/self-host builds ship EMPTY
+# login fields. The public demo image is built with --build-arg
+# NEXT_PUBLIC_DEMO_MODE=true to pre-fill the read-only demo creds (one-click).
+ARG NEXT_PUBLIC_DEMO_MODE=false
 ENV PNPM_HOME=/pnpm \
     PATH=/pnpm:$PATH \
     NEXT_TELEMETRY_DISABLED=1 \
     NODE_ENV=production \
     NEXT_PUBLIC_DIRECTUS_URL=${NEXT_PUBLIC_DIRECTUS_URL} \
     NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL} \
+    NEXT_PUBLIC_DEMO_MODE=${NEXT_PUBLIC_DEMO_MODE} \
     NODE_OPTIONS=--max-old-space-size=4096 \
     # The prebuild step prefetches marketing content from Directus, which is not
     # reachable at image-build time. Skip it → the committed app/data/*.json

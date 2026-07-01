@@ -227,6 +227,48 @@ TSX
 echo "[portal] rebrand: replaced AE logo mark with Muster M monogram"
 
 # ---------------------------------------------------------------------------
+# 6c. Demo mode — pre-fill the login credentials (idempotent, build-time gated)
+# ---------------------------------------------------------------------------
+# The public demo (cms/app.34.220.64.149.sslip.io) ships a single read-only user
+# (demo@muster.dev / muster-demo). To make that demo one-click, seed the login
+# form's email + password from a build-time flag. NEXT_PUBLIC_* is inlined at
+# `pnpm build`, so this is FULLY gated on NEXT_PUBLIC_DEMO_MODE === "true": a
+# normal self-host / template deploy builds WITHOUT that flag and ships EMPTY
+# fields (no creds baked in). Only the demo image (built with
+# --build-arg NEXT_PUBLIC_DEMO_MODE=true) prefills. The login form is a
+# controlled React component, so we seed the initial useState() and add a small
+# demo-only hint line. Idempotent via the `elk-os demo-prefill` marker.
+LOGIN="app/login/page.tsx"
+if [ -f "$LOGIN" ] && ! grep -q 'elk-os demo-prefill' "$LOGIN"; then
+  node -e '
+    const fs=require("fs");
+    const p="app/login/page.tsx";
+    let s=fs.readFileSync(p,"utf8");
+    const DEMO="process.env.NEXT_PUBLIC_DEMO_MODE === \"true\"";
+    // a) Seed the controlled inputs initial state (demo build only).
+    s=s.replace(
+      "const [email, setEmail] = useState(\"\");",
+      "// [elk-os demo-prefill] one-click public demo: creds baked in ONLY when NEXT_PUBLIC_DEMO_MODE=true at build time\n  const [email, setEmail] = useState("+DEMO+" ? \"demo@muster.dev\" : \"\");"
+    );
+    s=s.replace(
+      "const [password, setPassword] = useState(\"\");",
+      "const [password, setPassword] = useState("+DEMO+" ? \"muster-demo\" : \"\");"
+    );
+    // b) Demo-only hint line under the heading.
+    s=s.replace(
+      "          {/* Error alert */}",
+      "          {"+DEMO+" && (\n            <p className=\"text-center text-sm text-muted-foreground\" role=\"status\">\n              Demo credentials pre-filled — just click Sign in.\n            </p>\n          )}\n\n          {/* Error alert */}"
+    );
+    if (!/elk-os demo-prefill/.test(s)) {
+      console.error("[portal] demo-prefill: anchor(s) not found in "+p+" — login form shape changed");
+      process.exit(1);
+    }
+    fs.writeFileSync(p,s);
+    console.log("[portal] patch app/login/page.tsx: demo-mode credential prefill (gated on NEXT_PUBLIC_DEMO_MODE)");
+  '
+fi
+
+# ---------------------------------------------------------------------------
 # 7. Drop the build-context .dockerignore in place (docker reads it from the
 #    context root = .build). Committed source of truth lives at ../.dockerignore.
 # ---------------------------------------------------------------------------
