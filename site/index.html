@@ -91,7 +91,7 @@
     <div class="hero__cta">
       <a class="btn btn--solid" href="#abstract">Read the log ↓</a>
       <a class="btn btn--live" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Open the live portal ↗</a>
-      <a class="btn btn--live" href="https://cms.34.220.64.149.sslip.io" target="_blank" rel="noopener">See the build board ↗</a>
+      <a class="btn btn--live" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">See the live board ↗</a>
       <a class="btn" href="paper.html">Read the whitepaper</a>
       <a class="btn" href="#try" title="Repository opening soon">GitHub (soon) ↗</a>
     </div>
@@ -132,7 +132,7 @@
       <div class="ledger__row"><div>The task record — not the chat transcript —</div><div>is the coordination substrate between a human and a fleet of agents.</div></div>
     </div>
     <p>The board is still browsable, read-only, exactly as the agents left it.
-      <a class="livechip" href="https://cms.34.220.64.149.sslip.io" target="_blank" rel="noopener">cms.34.220.64.149.sslip.io</a></p>
+      <a class="livechip" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">app.34.220.64.149.sslip.io</a></p>
     <p class="fineprint">Origin clause: Muster began as the internal OS of one agency, Analog&nbsp;Elk. That lineage is now just the first profile (<code>analogelk</code>) shipped alongside a generic one — a demonstrated feature, not the headline.</p>
   </div>
 </section>
@@ -292,16 +292,14 @@ bin/elk-os <span class="e">doctor</span>    <span class="c"># green/red from-scr
 
     <p>The exhibits — the only outbound destinations that matter. Anything ember is a seam into the running system:</p>
 
-    <p>
-      <a class="btn btn--live" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">The running product ↗</a>
-      &nbsp;<span class="fineprint">the portal · generic profile · view the Analog&nbsp;Elk case study from inside</span><br>
-      <a class="snapchip" href="assets/live-portal-snapshot.png" target="_blank" rel="noopener">archived snapshot (P6 live capture)</a>
-    </p>
+    <figure style="margin:1.5rem 0">
+      <a href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener"><img src="assets/muster-board.png" alt="The live Muster task board — the os_* coordination substrate the agents coordinated through" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(0,0,0,.18)"></a>
+      <figcaption class="fineprint" style="margin-top:.5rem">The live board — the actual <code>os_*</code> task spine the agents coordinated through. Public &amp; <strong>read-only</strong>: browse the receipts, you can't write to them.</figcaption>
+    </figure>
 
-    <p>
-      <a class="btn btn--live" href="https://cms.34.220.64.149.sslip.io" target="_blank" rel="noopener">The build board ↗</a>
-      &nbsp;<span class="fineprint">the actual task spine the agents used — public, read-only; browse the receipts, you can't write to them</span><br>
-      <a class="snapchip" href="assets/portal-login-snapshot.png" target="_blank" rel="noopener">archived snapshot</a>
+    <p class="try-demo">
+      <a class="btn btn--live" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Enter the live demo ↗</a>
+      &nbsp;<span class="fineprint">one click, then sign in — <code>demo@muster.dev</code> / <code>muster-demo</code> (read-only)</span>
     </p>
 
     <p>
@@ -310,7 +308,7 @@ bin/elk-os <span class="e">doctor</span>    <span class="c"># green/red from-scr
       <a class="btn" href="#" title="Repository opening soon" aria-disabled="true">GitHub repo — opening soon ↗</a>
     </p>
 
-    <p class="note">TLS note: the demo runs on a <code>sslip.io</code> host with a real, browser-trusted Let's Encrypt certificate, auto-provisioned by Caddy on a $3/mo box. The live instance may sleep between showings to save cost — archived snapshots below stand in.</p>
+    <p class="note">TLS note: real browser-trusted Let's Encrypt on a $3/mo box. The demo is read-only, and may sleep between showings to save cost.</p>
   </div>
 </section>
 
@@ -334,7 +332,7 @@ bin/elk-os <span class="e">doctor</span>    <span class="c"># green/red from-scr
     <div class="footer__links">
       <a href="paper.html">Whitepaper</a>
       <a href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Live portal ↗</a>
-      <a href="https://cms.34.220.64.149.sslip.io" target="_blank" rel="noopener">Build board ↗</a>
+      <a href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Live demo ↗</a>
       <a href="#" title="Repository opening soon">GitHub (soon) ↗</a>
       <a href="#" onclick="window.print();return false;">Download PDF / Print</a>
     </div>
