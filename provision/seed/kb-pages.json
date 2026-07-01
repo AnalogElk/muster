@@ -1,0 +1,64 @@
+{
+  "space": {
+    "slug": "engineering",
+    "name": "Engineering",
+    "description": "How Muster is built and how it runs — architecture, the human/agent loop, deploy notes, and lessons from shipping the system with the system.",
+    "icon": "folder_special",
+    "order": 1,
+    "min_role": "employee",
+    "is_client_visible": false,
+    "status": "published"
+  },
+  "pages": [
+    {
+      "slug": "muster-architecture-four-planes",
+      "title": "Muster architecture — four planes around a task board",
+      "summary": "The whole system is four cooperating planes with one shared spine: the os_tasks record.",
+      "min_role": "employee",
+      "order": 1,
+      "tags": ["architecture", "overview"],
+      "status": "published",
+      "body": "# Muster architecture — four planes around a task board\n\nMuster is not an admin panel. It's a **loop**: a human and an autonomous agent fleet coordinating through **one task record** (`os_tasks`), under a written constitution, grounded by a local RAG knowledge base, remembering across sessions on disk.\n\nThe system is four cooperating planes, all hanging off one spine.\n\n## The spine — the CMS (`os_*` schema)\n\nA self-hosted Directus over Postgres. The `os_tasks` collection is the single record of work; everything else (projects, sprints, deals, invoices, releases, KB) is the agency operating system around it. Schema is snapshot-driven and pruned to a leak-free, sellable core (**141 → 50 collections**).\n\n## Plane 1 — the CMS / task substrate\n\nProjects, sprints, and tasks. Both humans (portal) and agents (MCP bridge) read and write the **same rows**. A task moved to `completed` by an agent looks identical to one a human closed.\n\n## Plane 2 — the portal (human surface)\n\nA containerized Next.js app rendering the board, CRM, billing, releases, and the Knowledge Base. This is what you're reading this page in. It is generic-branded per profile so the sellable template never says “Analog Elk.”\n\n## Plane 3 — the RAG knowledge engine\n\nA bundled local retrieval stack (Postgres + Qdrant + Redis + a RAG API) that grounds the agents in real docs instead of guesses. Runs on an isolated port so it never collides with another instance on the same box.\n\n## Plane 4 — Claude-OS (the agent governance layer)\n\nA written **constitution**, an **MCP** bridge to the CMS, lifecycle **hooks**, and on-disk **memory**. This is what turns a stateless model into a fleet that can pick up work, act, and hand off across sessions.\n\n## Why it holds together\n\nEvery plane touches the same `os_tasks` row. The human sees it in the portal; the agent sees it over MCP; the KB grounds what the agent does to it; the constitution governs how. One record, four planes, one loop."
+    },
+    {
+      "slug": "human-agent-loop",
+      "title": "How the human/agent loop closes",
+      "summary": "The interesting claim isn't the panel — it's the loop. Here is exactly how it closes across sessions.",
+      "min_role": "employee",
+      "order": 2,
+      "tags": ["loop", "agents", "governance"],
+      "status": "published",
+      "body": "# How the human/agent loop closes\n\nThe interesting claim of Muster is not the admin panel — it's the **loop**: a human and an autonomous agent fleet coordinating through one task record, under a written constitution, grounded by a local RAG KB, remembering across sessions on disk.\n\n## The cycle\n\n1. **Human sets intent** — a task lands in `os_tasks` (from the portal, or a one-line ask). One fork at a time; decisions are reached with the human, not around them.\n2. **Agents ground themselves** — before acting, the fleet queries the local RAG KB for real guidance (e.g. Directus snapshot/migration patterns) instead of hallucinating.\n3. **Fan-out** — the parallel-execution engine (Max Mode) splits the work across many agents, each owning a slice.\n4. **Adversarial verify** — separate skeptic agents try to *prove* the work is wrong (e.g. that real client data leaked into the sellable template). Nothing ships until they fail to break it.\n5. **From-scratch loop-proof** — a clean stack is booted and the change is exercised end to end (migrate → seed → read a task back through the API). This catches bugs offline mocks cannot.\n6. **The record updates** — the task moves to `completed`; memory is written to disk; the next session picks up from the record, not from chat history.\n\n## Why disk memory matters\n\nLLMs are stateless. The loop only closes because state lives in two durable places: the **`os_tasks` record** (what to do / what's done) and **on-disk memory** (what was learned). A fresh session re-onboards from both and continues — the loop survives the context window.\n\n## The recursion\n\nMuster was built **by** this loop: the system used its own fan-out engine to build its own installer, its own adversarial verifiers to check its own template for leaks, and its own from-scratch loop-proof to catch bugs in its own packaging. Building it was the loop's final exam."
+    },
+    {
+      "slug": "gotchas-and-lessons",
+      "title": "Gotchas & lessons from the build",
+      "summary": "The real bugs the from-scratch loop-proof caught that offline mocks missed — and the lessons.",
+      "min_role": "employee",
+      "order": 3,
+      "tags": ["gotchas", "lessons", "debugging"],
+      "status": "published",
+      "body": "# Gotchas & lessons from the build\n\nThese are the concrete bugs the **from-scratch loop-proof** caught during the P2 build (the `os_*` schema + seeds), which the agents' offline mocks could not.\n\n## 1. Port collision fooled the health check\n\nThe bundled RAG API defaulted to port **9100** — which collided with an elk-v3 engine already running on the box. Worse, `doctor` was *fooled* into reporting that other engine healthy. **Fix:** default the bundled engine to **19100**, and make `doctor` confirm it's talking to *our* engine on the port, not just any listener.\n\n> Lesson: a health check that only pings a port can be satisfied by the wrong process. Verify identity, not just liveness.\n\n## 2. `releases` seed missing required `repository_id`\n\nA `release` belongs to a repository (which carries the project). The seed omitted the required `repository_id`, so seeding failed only on a clean install. One profile was even missing its `repositories.json` entirely. **Fix:** add the repo rows and wire `repository_id` in both profiles.\n\n> Lesson: required foreign keys are invisible until you seed into an empty database. Test the empty case.\n\n## 3. Bare-named seed files hit the wrong collection\n\nSeed files named `projects.json` collided with a kept `projects` UI-folder collection, so the loader seeded the **wrong target**. **Fix:** namespace seed files as `os_*.json` and make the loader prefer real table collections over UI-folder aliases.\n\n> Lesson: name collisions between data tables and UI-only folders are silent and destructive. Namespace everything.\n\n## Meta-lesson\n\nAll three bugs share a root cause: **offline mocks lie**. Only booting a clean stack and reading a real row back through the real API surfaced them. The loop-proof — migrate, seed, read-back — is now a required gate, not a nicety."
+    },
+    {
+      "slug": "self-hosting-muster",
+      "title": "Self-hosting Muster",
+      "summary": "One command stands up the whole substrate. What runs, and how it stays leak-free and reproducible.",
+      "min_role": "employee",
+      "order": 4,
+      "tags": ["deploy", "self-host", "operations"],
+      "status": "published",
+      "body": "# Self-hosting Muster\n\nThe human/agent task substrate stands up from **one command**. This page is the operator's orientation.\n\n## What runs\n\n- **Postgres** — the database under Directus.\n- **Directus** (`os_*` schema) — the CMS spine and task record.\n- **Portal** — the containerized Next.js human surface, behind Caddy with automatic TLS (sslip.io hostnames on the live demo box).\n- **RAG engine** — the bundled local knowledge stack (isolated port so it never collides with another instance).\n\n## Reproducibility\n\nSchema is applied from a **snapshot**, not by hand. Seed data ships as versioned `os_*.json` profiles (a generic “Demo Co” profile and an Analog Elk profile). `migrate` then `seed` then a read-back through the API is the green gate. A `doctor` command checks every service and confirms it's talking to *our* engine, not a stray listener.\n\n## Staying sellable / leak-free\n\nThe schema was pruned **141 → 50 collections** and three adversarial verifier agents tried to prove real client data leaked into the template — all returned `leakProven: false`. Branding is generic per profile so the template never hard-codes “Analog Elk.”\n\n## The live demo\n\nA public, **read-only** demo runs the whole stack: a non-admin `Employee` role carrying a read-only policy (create/update/delete return 403), so anyone can explore the real board without being able to change it. Four self-host blockers were fixed to get there: subdomain redirects, cookie scoping, test-data visibility, and portal branding."
+    },
+    {
+      "slug": "the-whitepaper",
+      "title": "The whitepaper",
+      "summary": "The narrative log of the build — the thesis, the eight phases, and the recursion, session by session.",
+      "min_role": "employee",
+      "order": 5,
+      "tags": ["whitepaper", "narrative"],
+      "status": "published",
+      "body": "# The whitepaper\n\nThis is the short form. The full build log is the front door of the Muster site itself — the homepage *is* the whitepaper.\n\n## The thesis this project proves\n\nThe interesting claim of the Analog Elk system is not the admin panel — it's the **loop**: a human and an autonomous agent fleet coordinating through one task record (`os_tasks`), under a written constitution, grounded by a local RAG KB, remembering across sessions on disk. Muster is the loop, packaged. Building it was the loop's final exam: **the system used its own CMS, agents, and governance to produce the thing that ships the system.**\n\n## The eight phases (all green)\n\n- **P0** — scaffold: repo, CLI skeleton, secrets/profile layer, `doctor` framework.\n- **P1** — compose core: Postgres + Directus up green locally.\n- **P2** — `os_*` schema snapshot + seed profiles — **built by Max Mode** (the system's own fan-out engine), leak-verified by adversarial agents.\n- **P3** — the bundled RAG knowledge engine.\n- **P4** — the portal: the human surface, containerized.\n- **P5** — Claude-OS wiring: constitution + MCP + hooks + memory. The loop closes on a from-scratch install (the capstone).\n- **P6** — cloud deploy + the live demo URL.\n- **P7** — self-host packaging: deploy blueprints, published images, README/landing.\n\n## The recursion in one line\n\nThe system used its fan-out engine to build its own installer, its adversarial verifiers to check its own template for leaks, and its from-scratch loop-proof to catch bugs in its own packaging — including one where its own health check was fooled by its own other instance.\n\n## Read the full log\n\nThe complete, session-by-session narrative lives in `WHITEPAPER-LOG.md` in the repository and is rendered as the public Muster homepage."
+    }
+  ]
+}
