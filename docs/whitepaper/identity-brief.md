@@ -1,5 +1,15 @@
 # FINAL IDENTITY + HOMEPAGE SPEC — the agent-built agency OS
 
+> **Status note (2026-07-01):** this brief is the historical spec; three of its
+> prescriptions were deliberately superseded during implementation. (1) The
+> "Build board" exhibit at `cms.<host>` is NO LONGER publicly linked — Directus
+> Studio is hidden (302 to apex) and the board is read through the portal's
+> read-only demo login (`demo@muster.dev` / `muster-demo`); do not re-expose
+> raw `cms.*` links. (2) `muster.dev` is not yet registered; the canonical URL
+> stays the sslip.io host until the domain is live (see the comment in
+> `site/index.html`). (3) The name-clearance protocol in §0 remains an open
+> follow-up, not done.
+
 *This is the decisive, buildable brief. It resolves the four-lens draft against three critique passes (credibility/thesis, identity-sharpness, completeness). Every contested decision is closed here and carried consistently through every section. The product noun is set; the visual identity is decoupled from it; the demo seam is fixed; the perf budget is made real.*
 
 ---

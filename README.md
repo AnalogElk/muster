@@ -70,8 +70,12 @@ then asserts every subsystem green — including a live `tools/list` against `/m
 
 | Profile | Stands up |
 |---|---|
-| `generic` | A blank, unbranded agency-OS seeded with a synthetic "Demo Co" — make it your own. |
-| `analogelk` | Analog Elk's own branding + demo data (the reference instance). |
+| `generic` | A blank slate seeded with a synthetic "Demo Co" — schema + seed data scrubbed of origin; make it your own. |
+| `analogelk` | Analog Elk's own demo data (the reference instance). |
+
+> Honest note: the portal **UI** ships Muster-branded for *every* profile — the
+> rebrand is applied at image build (`portal/prepare-context.sh`), not switched
+> per profile. Per-profile portal branding is a tracked follow-up.
 
 ```bash
 ./bin/elk-os init --profile analogelk

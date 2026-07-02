@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Muster — the operating system for agentic software teams</title>
 <meta name="description" content="The governance layer that lets AI agents ship production software — and shipped itself. An empty repo became a live, self-hostable product in ~2.5 hours, built by a governed fleet of ~30 AI subagents that used the system's own task board as their spine.">
-<link rel="canonical" href="https://muster.dev/">
+<!-- canonical = the URL that actually serves this page. muster.dev is not yet
+     registered/live (identity-brief clearance is an open follow-up); pointing
+     canonical at an unowned domain hands the page's SEO to whoever registers it.
+     Switch back to https://muster.dev/ only once the domain is live and serving. -->
+<link rel="canonical" href="https://34.220.64.149.sslip.io/">
 
 <!-- Open Graph / Twitter -->
 <meta property="og:type" content="website">
@@ -63,7 +67,7 @@
     <div class="rail__item" data-rail="files"><span>files</span><span class="v">90</span></div>
     <div class="rail__item" data-rail="leaks"><span>secret leaks</span><span class="v">0</span></div>
     <div class="rail__item" data-rail="worktrees"><span>worktrees</span><span class="v">28 · 0 hits</span></div>
-    <div class="rail__item" data-rail="cost"><span>run cost</span><span class="v">$2–4/mo</span></div>
+    <div class="rail__item" data-rail="cost"><span>demo cost</span><span class="v">$2–4/mo</span></div>
     <div class="rail__phase" id="railPhase">
       <span class="lbl">now reading</span>
       <span id="railPhaseText">the build log</span>
@@ -84,14 +88,14 @@
     <h1 class="hero__wordmark">Muster</h1>
     <p class="hero__lede">The operating system for agentic software teams — that built itself.</p>
 
-    <p class="hero__pitch">A self-hostable agency OS — <b>Claude-side governance</b>, a <b>Directus shared-task bus</b>, local RAG, and a Next.js portal — went from empty repo to a live, public, HTTPS demo in about <b>2.5 hours</b>, built by a fleet of ~30 AI subagents that used the system's own task board as their spine, caught their own bugs, and scrubbed their own shipping artifacts.</p>
+    <p class="hero__pitch">A self-hostable stack — <b>Claude-side governance</b>, a <b>Directus shared-task bus</b>, local RAG, and a Next.js portal — went from empty repo to a live, public, HTTPS demo in about <b>2.5 hours</b>, built by a fleet of ~30 AI subagents that used the system's own task board as their spine, caught their own bugs, and scrubbed their own shipping artifacts.</p>
 
     <p class="hero__sub mono">This page is the build log. The links are the live system.</p>
 
     <div class="hero__cta">
       <a class="btn btn--solid" href="#abstract">Read the log ↓</a>
       <a class="btn btn--live" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Open the live portal ↗</a>
-      <a class="btn btn--live" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">See the live board ↗</a>
+      <a class="btn" href="assets/muster-board.png" target="_blank" rel="noopener">Board snapshot (archived)</a>
       <a class="btn" href="paper.html">Read the whitepaper</a>
       <a class="btn" href="https://github.com/AnalogElk/muster" target="_blank" rel="noopener">GitHub ↗</a>
     </div>
@@ -105,7 +109,7 @@
       <div class="metric"><span class="metric__n" data-count="27" data-suffix="">27</span><span class="metric__l">commits · 90 files · 8 phases</span></div>
       <div class="metric"><span class="metric__n">~13</span><span class="metric__l">defects caught by machines, not humans</span></div>
       <div class="metric"><span class="metric__n" data-count="0" data-suffix="">0</span><span class="metric__l">secret leaks · 0 collisions / 28 worktrees</span></div>
-      <div class="metric"><span class="metric__n">$2–4</span><span class="metric__l">per month to run</span></div>
+      <div class="metric"><span class="metric__n">$2–4</span><span class="metric__l">per month to host the demo (duty-cycled)</span></div>
     </div>
   </div>
 </section>
@@ -114,7 +118,7 @@
 <section class="band band-paper" id="abstract">
   <div class="doc">
     <p class="kicker">§1 · Abstract</p>
-    <p class="lead">On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock, spanned 8 phases, 27 commits and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations consuming over 2 million tokens. It runs on a single AWS instance for about $2–4 per month, and you can open it right now.</p>
+    <p class="lead">On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock, spanned 8 phases, 27 commits and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations consuming over 2 million tokens. It runs on a single AWS instance for about $2–4 per month at demo duty-cycle (stopped when idle), and you can open it right now.</p>
     <p>That an agent fleet emits files quickly is not the interesting part — volume is unfalsifiable and ages badly. The interesting part is the apparatus that let a long, multi-session, ship-grade build hold together without a human reviewing every diff, and the fact that the system used that apparatus on itself. The thesis: <strong>the value is the architecture, not the prompt.</strong></p>
     <p class="note">Three costs, kept apart on purpose: hosting (~$3/mo) is not the one-time build model-spend, and neither is the ongoing cost of running the fleet on your next project. The cheap number is only the box.</p>
   </div>
@@ -133,7 +137,8 @@
       <div class="ledger__row"><div>The task record — not the chat transcript —</div><div>is the coordination substrate between a human and a fleet of agents.</div></div>
     </div>
     <p>The board is still browsable, read-only, exactly as the agents left it.
-      <a class="livechip" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">app.34.220.64.149.sslip.io</a></p>
+      <a class="livechip" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">app.34.220.64.149.sslip.io</a>
+      <span class="fineprint mono">— demo login <code>demo@muster.dev</code> / <code>muster-demo</code></span></p>
     <p class="fineprint">Origin clause: Muster began as the internal OS of one agency, Analog&nbsp;Elk. That lineage is now just the first profile (<code>analogelk</code>) shipped alongside a generic one — a demonstrated feature, not the headline.</p>
   </div>
 </section>
@@ -165,7 +170,7 @@
       <div class="receipt__step"><div class="receipt__k">verifier's claim</div><div class="receipt__v">a co-located engine on the same port was flattering the check; "tests pass" ≠ "the system works"</div></div>
       <div class="receipt__step"><div class="receipt__k">what caught it</div><div class="receipt__v">a from-zero clean-room loop-proof, where the impostor process was not present — flipped the row red</div></div>
       <div class="receipt__step"><div class="receipt__k">closing note</div><div class="receipt__v">root cause recorded as a co-located listener</div></div>
-      <div class="receipt__step receipt__step--fix"><div class="receipt__k">fix commit</div><div class="receipt__v"><span class="hash">pin the port + assert identity, not just a 200</span></div></div>
+      <div class="receipt__step receipt__step--fix"><div class="receipt__k">fix commit</div><div class="receipt__v"><span class="hash">5222976</span> — isolate the port (default → <span class="mono">19100</span>) so no impostor is present to answer; asserting <em>which</em> engine replied is a filed follow-up, not a shipped fix</div></div>
     </div>
     <p>The thing that caught it was not a smarter agent. It was a from-zero environment. Every other proof section can stay summary because this one is concrete.</p>
   </div>
@@ -187,7 +192,7 @@
       <div class="phase" data-phase="P6 · live demo"><span class="phase__id">P6</span><span class="phase__name">Live demo on the box</span><span class="phase__meta">arm64 fix, live</span></div>
       <div class="phase" data-phase="P7 · packaging"><span class="phase__id">P7</span><span class="phase__name">Packaging · scrub-audit</span><span class="phase__meta">20:23 PT</span></div>
     </div>
-    <p class="fineprint">27 commits · 90 files · the spine of every phase was the <code>os_tasks</code> board — deep-linkable, still live.</p>
+    <p class="fineprint">27 commits · 90 files · the spine of every phase was the <code>os_tasks</code> board — still live, browsable behind the read-only demo login.</p>
   </div>
 </section>
 
@@ -209,7 +214,7 @@
 <section class="band band-paper" id="bugs">
   <div class="doc">
     <p class="kicker">§7 · Bugs the machines caught</p>
-    <h2 class="h2">~7 functional bugs, 6 brand leaks. No human caught any of them.</h2>
+    <h2 class="h2">~7 functional bugs, 6 brand leaks. None caught by a human running the software.</h2>
     <div class="table-wrap">
       <table class="proof">
         <thead><tr><th scope="col">Defect / risk</th><th scope="col">What caught it</th><th scope="col">Needed the fleet?</th></tr></thead>

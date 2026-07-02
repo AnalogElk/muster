@@ -1,4 +1,4 @@
-Elk OS
+Elk OS (public product name: "Muster")
 Copyright (c) 2026 Michael Walliser (Analog Elk)
 
 This product includes work derived from third parties. Their notices are
@@ -48,7 +48,9 @@ The portal — Next.js front-end (analog-elk-front-end)
 
 The Elk OS portal image is built from a pinned commit of analog-elk-front-end
 (Analog Elk's own application, vendored read-only at build time; see
-portal/PINNED_COMMIT and portal/.build/ATTRIBUTION.md). It carries its own
+portal/PINNED_COMMIT and portal/.build/ATTRIBUTION.md — note portal/.build/ is
+a regenerated build context, produced by portal/prepare-context.sh, and is not
+present in a fresh clone). It carries its own
 attribution for the same Agency OS lineage and its bundled open-source
 dependencies.
 

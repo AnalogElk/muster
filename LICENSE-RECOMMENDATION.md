@@ -1,6 +1,8 @@
 # License recommendation (for Mike to decide)
 
-Elk OS does **not** yet carry a binding `LICENSE` file — on purpose. The license
+Elk OS (public product name: **Muster** — see the naming note in
+[`README.md`](./README.md)) does **not** yet carry a binding `LICENSE` file — on
+purpose. The license
 choice directly shapes how Elk OS can be monetized, so it should be a deliberate
 decision, not a default dropped in at scaffold time. This document lays out the
 options and a recommendation. **Pick one, then add the corresponding `LICENSE`
@@ -25,7 +27,8 @@ same lineage and its own `ATTRIBUTION.md`.)
 - **What:** ship Elk OS itself under MIT; keep `NOTICE` for Agency OS.
 - **Pros:** maximum adoption and trust; zero friction for self-hosters and
   contributors; consistent with how the portal template is already licensed
-  ([`portal/.build/LICENSE`](./portal/.build/LICENSE) is MIT, © Michael Walliser).
+  (`portal/.build/LICENSE` is MIT, © Michael Walliser — `portal/.build/` is the
+  regenerated build context from `portal/prepare-context.sh`, not committed).
 - **Cons:** anyone can take Elk OS, host it, and sell it as a service with no
   obligation back to you. Monetization must come from *services* (hosting,
   support, custom builds), not from the code itself.

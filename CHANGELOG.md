@@ -1,6 +1,7 @@
 # Changelog
 
-All notable changes to Elk OS are documented here. This file is maintained
+All notable changes to Elk OS (public product name: **Muster** — see the
+naming note in [`README.md`](./README.md)) are documented here. This file is maintained
 automatically by [release-please](https://github.com/googleapis/release-please)
 (`release-type: simple`) from [Conventional Commit](https://www.conventionalcommits.org/)
 history — do not edit released sections by hand. The version of record lives in

@@ -31,8 +31,18 @@ BOARD = "https://cms.34.220.64.149.sslip.io"
 
 def product_swap(text: str) -> str:
     """Swap the working name 'Elk OS' -> 'Muster' without hitting 'Analog Elk'
-    or the lowercase 'bin/elk-os' command."""
-    return re.sub(r"\bElk OS\b", "Muster", text)
+    or the lowercase 'bin/elk-os' command.
+
+    The paper's byline note ('Working name: "Elk OS."') must NOT be blindly
+    swapped — 'Working name: "Muster."' would be false (Muster is the resolved
+    public name; Elk OS is the working name). Rewrite that sentence explicitly,
+    protecting the literal 'Elk OS' inside it from the generic swap."""
+    text = text.replace(
+        'Working name: "Elk OS."',
+        "Public name: \"Muster\" (the project's working name, \x00WN\x00, survives in the CLI and internals).",
+    )
+    text = re.sub(r"\bElk OS\b", "Muster", text)
+    return text.replace("\x00WN\x00", '"Elk OS"')
 
 
 def inline(text: str) -> str:
