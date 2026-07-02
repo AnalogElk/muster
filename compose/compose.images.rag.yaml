@@ -1,0 +1,23 @@
+# Elk OS — published-images overlay: RAG API (half of the image-or-build toggle)
+#
+# Layer this overlay to PULL the RAG API image from a registry (GHCR) instead of
+# building it locally. bin/elk-os appends it automatically when
+# ELK_OS_USE_PUBLISHED_IMAGES=true in .env AND the RAG overlay is enabled
+# (ELK_OS_WITH_RAG=true).
+#
+# It is split from the portal half (compose.images.portal.yaml) on purpose:
+# each half must only be layered when its base overlay is in the file set. A
+# single combined overlay declared BOTH services unconditionally, so disabling
+# one subsystem (e.g. ELK_OS_WITH_RAG=false) still demanded its *_IMAGE var —
+# or worse, created a stray container with no networks/env (P6 follow-up #3).
+#
+# `build: !reset null` drops the build section compose.rag.yaml declares
+# (Docker Compose >= 2.24), so compose pulls RAG_IMAGE rather than building.
+# Set it to a fully-qualified ref in .env, e.g.
+#   RAG_IMAGE=ghcr.io/<owner>/elk-os-rag-api:0.1.0
+# Images are published by .github/workflows/publish-images.yml on tag.
+
+services:
+  elkos-rag-api:
+    build: !reset null
+    image: ${RAG_IMAGE:?set RAG_IMAGE to a published rag-api image ref (ELK_OS_USE_PUBLISHED_IMAGES=true)}

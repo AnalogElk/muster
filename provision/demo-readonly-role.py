@@ -43,7 +43,11 @@ def req(method, path, body=None):
         return e.code, json.loads(e.read().decode() or "{}")
 
 # 1. collections (non-system)
-_, cols = req("GET", "/collections?limit=-1")
+s, cols = req("GET", "/collections?limit=-1")
+if s >= 300 or "data" not in cols:
+    print("COLLECTIONS FETCH FAIL", s, json.dumps(cols)[:300])
+    print("Is DIRECTUS_ADMIN_TOKEN valid for %s ?" % B)
+    sys.exit(1)
 app_cols = sorted({c["collection"] for c in cols["data"]
                    if not c["collection"].startswith("directus_")
                    and c.get("schema") is not None})  # real tables only
@@ -129,8 +133,13 @@ if s >= 300:
 print("Created", len(perms), "read permissions (read-only)")
 
 # 6. reassign demo user to Employee role
-_, u = req("GET", "/users?filter[email][_eq]=%s&fields=id,role.id,role.name" % DEMO_EMAIL)
-demo = u["data"][0]
+s, u = req("GET", "/users?filter[email][_eq]=%s&fields=id,role.id,role.name" % DEMO_EMAIL)
+demo_rows = u.get("data") or []
+if not demo_rows:
+    print("DEMO USER NOT FOUND:", DEMO_EMAIL)
+    print("Create the user first (Directus Studio or POST /users), then re-run.")
+    sys.exit(1)
+demo = demo_rows[0]
 print("Demo user current role:", demo["role"])
 s, _ = req("PATCH", "/users/%s" % demo["id"], {"role": role_id})
 if s >= 300:
