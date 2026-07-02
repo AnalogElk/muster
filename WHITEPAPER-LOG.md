@@ -460,9 +460,9 @@ Catching the ledger up (dated corrections, per the header rule — nothing above
   row).** The first post-ship self-audit — PR #3, a multi-round adversarially-verified
   audit/fix loop, merged 2026-07-02 — found and fixed **14 verified shipped defects in its
   first round alone** (among them: `init --force` silently rotating live secrets, the
-  demo role retaining app access, unpinned CORS on public deploy targets), all logged in
-  the CHANGELOG. The survivorship caveat was correct; the ledger catching its own misses
-  is the mechanism working.
+  demo role retaining app access, unpinned CORS on public deploy targets), all enumerated
+  in PR #3's commit trail. The survivorship caveat was correct; the ledger catching its
+  own misses is the mechanism working.
 - **The service record (2026-07-01/02, checkable in public repo history).** In one
   48-hour window the apparatus carried **18 PRs to production across 8 repositories**
   (10 to the agency platform, plus muster, wlsr-me, the-station-chat,
