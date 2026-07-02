@@ -1,9 +1,9 @@
 Elk OS (public product name: "Muster")
 Copyright (c) 2026 Michael Walliser (Analog Elk)
 
-This product includes work derived from third parties. Their notices are
-retained below as required by their licenses. (Elk OS's own license is not yet
-finalized — see LICENSE-RECOMMENDATION.md.)
+This product is licensed under the MIT License — see LICENSE. It includes work
+derived from third parties; their notices are retained below as required by
+their licenses.
 
 ================================================================================
 Directus schema / data model — derived from Agency OS
