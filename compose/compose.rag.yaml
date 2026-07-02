@@ -18,11 +18,14 @@
 #
 # Inclusion is controlled by ELK_OS_WITH_RAG (default: true). See bin/elk-os.
 #
-# Note on the RAG Postgres password: this isolated KB database reuses the
+# Note on the RAG Postgres password: this isolated KB database DEFAULTS to the
 # elk-os-generated POSTGRES_PASSWORD secret. It is a separate container + volume
-# from the Directus database, so sharing the random secret is safe and avoids
-# forcing an .env regeneration on existing installs. Override with
-# RAG_POSTGRES_* in .env if you want a fully distinct credential.
+# from the Directus database, so sharing the random secret is acceptable and
+# avoids forcing an .env regeneration on existing installs. Set
+# RAG_POSTGRES_PASSWORD (plus RAG_POSTGRES_DB/USER) in .env for a fully
+# distinct credential — that shrinks the blast radius if either database
+# credential ever leaks. (Nested ${A:-${B}} interpolation needs Compose >= 2.24,
+# which this stack already requires for `build: !reset null`.)
 
 networks:
   elkos-rag:
@@ -44,7 +47,7 @@ services:
     environment:
       POSTGRES_DB: ${RAG_POSTGRES_DB:-analog_elk}
       POSTGRES_USER: ${RAG_POSTGRES_USER:-analog_elk}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set — run ./bin/elk-os init}
+      POSTGRES_PASSWORD: ${RAG_POSTGRES_PASSWORD:-${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set — run ./bin/elk-os init}}
     volumes:
       - elkos_rag_pgdata:/var/lib/postgresql/data
     networks:
@@ -112,7 +115,7 @@ services:
       POSTGRES_PORT: "5432"
       POSTGRES_DB: ${RAG_POSTGRES_DB:-analog_elk}
       POSTGRES_USER: ${RAG_POSTGRES_USER:-analog_elk}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set — run ./bin/elk-os init}
+      POSTGRES_PASSWORD: ${RAG_POSTGRES_PASSWORD:-${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set — run ./bin/elk-os init}}
       REDIS_HOST: elkos-redis
       REDIS_PORT: "6379"
       QDRANT_HOST: elkos-qdrant
