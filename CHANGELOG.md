@@ -7,6 +7,13 @@ automatically by [release-please](https://github.com/googleapis/release-please)
 history — do not edit released sections by hand. The version of record lives in
 [`version.txt`](./version.txt).
 
+## [0.1.2](https://github.com/AnalogElk/muster/compare/v0.1.1...v0.1.2) (2026-07-02)
+
+
+### Added
+
+* **site:** copy sweep + musterr.dev cutover ([#6](https://github.com/AnalogElk/muster/issues/6)) ([efe4d3c](https://github.com/AnalogElk/muster/commit/efe4d3c4eea283340379721ea2871a84336865fa))
+
 ## [0.1.1](https://github.com/AnalogElk/muster/compare/v0.1.0...v0.1.1) (2026-07-02)
 
 
