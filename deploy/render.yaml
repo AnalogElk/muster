@@ -85,7 +85,7 @@ services:
         # the API with a visitor's Directus session. Same rationale as the
         # box target's compose.prod.yaml CORS pin. Only the portal's browser
         # code calls Directus cross-origin; nothing else needs CORS.
-        sync: false # set to the elk-os-portal URL after deploy (step 1b in deploy/README.md)
+        sync: false # set to the elk-os-portal URL after deploy (step 1 in deploy/README.md)
       - key: MCP_ENABLED
         value: "true" # PERMITS the native MCP server; you still flip it on in
         # Settings → AI → Model Context Protocol (or PATCH /settings

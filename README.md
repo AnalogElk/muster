@@ -72,7 +72,8 @@ One `elk-os up` stands up four wired pieces:
 `elk-os wire` enables the native MCP server (`settings.mcp_enabled`), writes a
 `.mcp.json` pointing Claude at *this* deployment's Directus, and proves the loop
 by reading seeded `os_tasks` back through the same endpoint + token. `doctor`
-then asserts every subsystem green — including a live `tools/list` against `/mcp`.
+then walks every subsystem — including a live `tools/list` probe against `/mcp`
+(a WARN until wired) — and exits nonzero on any red row.
 
 ## Profiles
 
@@ -91,8 +92,9 @@ then asserts every subsystem green — including a live `tools/list` against `/m
 
 ## The CLI
 
-A resumable, idempotent phased installer (`.elk-os-state.json` records progress;
-a re-run resumes at the first incomplete phase):
+An idempotent phased installer (`.elk-os-state.json` records completed phases;
+every phase is safe to re-run — completed work no-ops, so you can stop at any
+point and pick the sequence back up):
 
 | Command | Does |
 |---|---|

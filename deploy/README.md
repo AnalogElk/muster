@@ -28,7 +28,7 @@ full-stack demo. These help when you'd rather live on a managed platform.
    Directus user *after* first boot — no env can mint it. (On the box, `elk-os up`
    mints it automatically.)
 
-## Render — post-deploy wiring (the 5 `sync: false` values)
+## Render — post-deploy wiring (the 7 `sync: false` values)
 
 After Render's first deploy assigns URLs:
 
@@ -47,5 +47,7 @@ After Render's first deploy assigns URLs:
 4. Redeploy the portal so the new env takes effect.
 
 That's the honest cost of "one-click" across a platform with no env
-interpolation: the topology and secrets are declarative; five cross-service
-values are filled once.
+interpolation: the topology and secrets are declarative; seven values
+(3 on Directus: `PUBLIC_URL`, `ADMIN_EMAIL`, `CORS_ORIGIN`; 4 on the portal:
+`DIRECTUS_URL`, `NEXT_PUBLIC_DIRECTUS_URL`, `NEXT_PUBLIC_SITE_URL`,
+`DIRECTUS_TOKEN`) are filled once.

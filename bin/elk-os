@@ -8,7 +8,8 @@
 # else is POSIX bash + standard unix tools (curl, openssl, awk, grep, sed).
 # The migrate/seed phases additionally require python3 (stdlib only).
 #
-# Phases (ordered, idempotent, resumable via .elk-os-state.json):
+# Phases (ordered, idempotent; .elk-os-state.json records completed phases —
+# each command no-ops on work already done, so the sequence can be re-entered):
 #   init     generate secrets + write .env from .env.example
 #   up       docker compose up the core (+ RAG + portal), then bootstrap the admin token
 #   migrate  (P2) apply os_* schema snapshot
