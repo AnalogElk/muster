@@ -52,7 +52,7 @@ fly secrets set --app elk-os-portal \
   NEXT_PUBLIC_SITE_URL='https://elk-os-portal.fly.dev' \
   DIRECTUS_TOKEN='<static token from the Directus admin user>' \
   USE_STATIC_FALLBACK=true
-fly deploy --image ghcr.io/<owner>/elk-os-portal:0.1.0 --app elk-os-portal
+fly deploy --image ghcr.io/analogelk/elk-os-portal:0.1.0 --app elk-os-portal
 ```
 
 ## Caveats

@@ -6,7 +6,7 @@
 
 *Working name: "Elk OS." It began as an internal tool for my agency, Analog Elk; Analog Elk is now the case study, not the headline. This is an operating system for agentic software teams.*
 
-*Live: [the portal, with the build's own task board inside](https://app.34.220.64.149.sslip.io) — read-only demo login `demo@muster.dev` / `muster-demo`. Note on the link: the demo runs on a `sslip.io` host with a real, browser-trusted Let's Encrypt certificate auto-provisioned by Caddy on a $3 box. Directus itself is deliberately not publicly exposed; the portal is the read window. (The live instance may be asleep between showings to save cost; archived snapshots stand in.)*
+*Live: [the portal, with the build's own task board inside](https://app.34.220.64.149.sslip.io) — read-only demo login `demo@muster.dev` / `muster-demo`. Note on the link: the demo runs on a `sslip.io` host with a real, browser-trusted Let's Encrypt certificate auto-provisioned by Caddy on a $3 box. The Directus Studio (the admin surface) is deliberately not publicly exposed; the portal is the read window — its API origin is public, but everything the demo login can reach on it is the same read-only scope. (The live instance may be asleep between showings to save cost; archived snapshots stand in.)*
 
 ---
 
@@ -233,7 +233,7 @@ bin/elk-os doctor    # green/red from-scratch acceptance board
 
 The repository is public: [github.com/AnalogElk/muster](https://github.com/AnalogElk/muster). It ships `bin/elk-os`, the `CLAUDE.md` constitution templates — a distilled cut of the ten-section ruleset that governed this build (the single most reusable artifact in this package, and the one I would copy first) — the two profiles, and the compose topology.
 
-An empty repository became a live, self-hostable product in about 2.5 hours, governed end to end by its own task board, hosted for a few dollars a month, and you can poke the real thing now. The [portal](https://app.34.220.64.149.sslip.io) is the human read-side of the loop, and the board it renders is the spine itself: sign in with the read-only demo login (`demo@muster.dev` / `muster-demo`) and you are looking at the actual coordination substrate of *this build*, the same `os_tasks` rows the fleet claimed, worked, and closed to bring the system into existence. (Directus itself is not publicly exposed; the portal is the read window.)
+An empty repository became a live, self-hostable product in about 2.5 hours, governed end to end by its own task board, hosted for a few dollars a month, and you can poke the real thing now. The [portal](https://app.34.220.64.149.sslip.io) is the human read-side of the loop, and the board it renders is the spine itself: sign in with the read-only demo login (`demo@muster.dev` / `muster-demo`) and you are looking at the actual coordination substrate of *this build*, the same `os_tasks` rows the fleet claimed, worked, and closed to bring the system into existence. (The Directus Studio/admin surface is not publicly exposed; the portal is the read window, and the demo login holds the same read-only scope at the API.)
 
 The model is stateless; the organization around it does not have to be. That is the whole argument. The next generation of dev tools will not compete on model quality, which commoditizes. They will compete on the operating system around the model, and the task record is its coordination substrate. Make the ticket the unit of work, and the chat becomes disposable.
 

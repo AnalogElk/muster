@@ -26,7 +26,7 @@ path at it, or drop it at the repo root.
    Railway DOES support `${{Service.VAR}}` reference variables — a real advantage
    over Render/Fly for cross-service wiring.
 3. **Portal** — new service from a **published** GHCR image
-   (`ghcr.io/<owner>/elk-os-portal:0.1.0`; Railway can't build it from the private
+   (`ghcr.io/analogelk/elk-os-portal:0.1.0`; Railway can't build it from the private
    front-end source). Set `DIRECTUS_URL` + `NEXT_PUBLIC_DIRECTUS_URL` to the
    Directus public URL, `DIRECTUS_TOKEN` to a static admin token,
    `USE_STATIC_FALLBACK=true`.

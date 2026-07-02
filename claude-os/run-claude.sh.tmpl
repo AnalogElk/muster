@@ -30,6 +30,13 @@ else
   echo "[run-claude] The MCP server will have no DIRECTUS_ADMIN_TOKEN. Export it manually." >&2
 fi
 
+# A present .env can still carry an empty token (wire ran before `up` minted
+# it). Say so now — otherwise the failure surfaces later as an opaque MCP 401.
+if [ -z "${DIRECTUS_ADMIN_TOKEN:-}" ]; then
+  echo "[run-claude] WARNING: DIRECTUS_ADMIN_TOKEN is empty — the elk-os-cms MCP server" >&2
+  echo "[run-claude] will not authenticate. Run ./bin/elk-os up (mints the token), then retry." >&2
+fi
+
 command -v claude >/dev/null 2>&1 || {
   echo "[run-claude] 'claude' (Claude Code CLI) is not on PATH. Install it, then re-run." >&2
   exit 1

@@ -150,7 +150,7 @@
     <h2 class="h2">Four planes around a task board.</h2>
     <p>Read it as a transferable mental model — you can build all four on any vendor's stack. The architecture figure:</p>
     <div class="planes" role="list" aria-label="The four planes of Muster">
-      <div class="plane" role="listitem"><p class="plane__h">Governance · Claude-side constitution</p><p class="plane__d">A numbered, versioned ruleset (CLAUDE.md §1–§10) loaded into every session: secrets are env-only, one trunk equals production, never edit a contested worktree. Plain-English code that makes a stateless model behave like a long-lived teammate.</p></div>
+      <div class="plane" role="listitem"><p class="plane__h">Governance · Claude-side constitution</p><p class="plane__d">A numbered, versioned ruleset (CLAUDE.md) loaded into every session: secrets are env-only, one trunk equals production, never edit a contested worktree. The build ran under the author's ten-section constitution; the repo ships a distilled per-profile cut. Plain-English code that makes a stateless model behave like a long-lived teammate.</p></div>
       <div class="plane" role="listitem"><p class="plane__h">Task bus · the Directus os_* board</p><p class="plane__d">A shared board every agent reads, claims, updates and closes over Directus's native MCP endpoint. The <strong>task record is the coordination atom</strong> — claimable units of work.</p></div>
       <div class="plane" role="listitem"><p class="plane__h">Memory + RAG · the local engine</p><p class="plane__d">On-disk memory files are the <strong>knowledge substrate</strong> (lessons not derivable from code or git); the append-only log is the <strong>narrative substrate</strong> (what happened, in order). Three substrates, three cadences.</p></div>
       <div class="plane plane--live" role="listitem"><p class="plane__h">Portal · the human read-side</p><p class="plane__d">A Next.js surface where a human watches the same rows the fleet works. Ships two profiles — <code>generic | analogelk</code> — the detail that makes "it's a product, not an internal tool" true at the code level.</p></div>
@@ -274,7 +274,7 @@
           <tr><td>one rolling context window</td><td>durable task board + on-disk memory + append-only log (7+ sessions, no loss)</td></tr>
           <tr><td>serial work, no coordination substrate</td><td>30+ subagents across 6 fan-outs around a shared board</td></tr>
           <tr><td>trusts its own output</td><td>loop-proofs + adversarial verifiers, with honest attribution of which catches needed the fleet</td></tr>
-          <tr><td>ad-hoc, no written rules</td><td>a written §1–§10 constitution loaded every session</td></tr>
+          <tr><td>ad-hoc, no written rules</td><td>a written, §-numbered constitution loaded every session</td></tr>
         </tbody>
       </table>
     </div>
@@ -287,13 +287,13 @@
   <div class="doc">
     <p class="kicker">§11 · Run it yourself</p>
     <h2 class="h2">One command. The doctor board is the proof.</h2>
-    <p class="lead">The apparatus is public and self-hostable. <code>bin/elk-os</code> — the CLI keeps the project's working name, Elk OS — is a resumable, idempotent phase machine whose only hard dependency is Docker.</p>
+    <p class="lead">The apparatus is public and self-hostable. <code>bin/elk-os</code> — the CLI keeps the project's working name, Elk OS — is a resumable, idempotent phase machine whose only hard dependency is Docker (<code>migrate</code>/<code>seed</code> additionally use stdlib <code>python3</code>).</p>
     <pre class="code" aria-label="One-command install"><span class="c"># scaffold → live, from an empty volume</span>
 bin/elk-os <span class="e">init</span>      <span class="c"># scaffold + env</span>
 bin/elk-os <span class="e">up</span>        <span class="c"># compose core (Directus, Postgres, RAG, portal)</span>
 bin/elk-os <span class="e">migrate</span>   <span class="c"># apply os_* schema</span>
 bin/elk-os <span class="e">seed</span>      <span class="c"># profile data (generic | analogelk)</span>
-bin/elk-os <span class="e">wire</span>      <span class="c"># enable native MCP, mint env-referenced token</span>
+bin/elk-os <span class="e">wire</span>      <span class="c"># enable native MCP, wire Claude to the board (env-referenced token)</span>
 bin/elk-os <span class="e">doctor</span>    <span class="c"># green/red from-scratch acceptance board</span></pre>
 
     <p>The exhibits — the only outbound destinations that matter. Anything ember is a seam into the running system:</p>

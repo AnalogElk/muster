@@ -43,13 +43,14 @@ SSH to the box as root and:
 export ELK_OS_DOMAIN=1.2.3.4.sslip.io          # your IP + .sslip.io, or your domain
 export ELK_OS_ADMIN_EMAIL=you@example.com
 export ELK_OS_PROFILE=generic                  # generic | analogelk
-export ELK_OS_REPO=https://github.com/<owner>/elk-os.git
+export ELK_OS_REPO=https://github.com/AnalogElk/muster.git
 
-# Optional — add the portal surface using PUBLISHED images (see "The portal" below)
-# export PORTAL_IMAGE=ghcr.io/<owner>/elk-os-portal:0.1.0
-# export RAG_IMAGE=ghcr.io/<owner>/elk-os-rag-api:0.1.0
+# Optional — add the portal surface using PUBLISHED images (see "The portal" below;
+# only once images are published via publish-images.yml)
+# export PORTAL_IMAGE=ghcr.io/analogelk/elk-os-portal:0.1.0
+# export RAG_IMAGE=ghcr.io/analogelk/elk-os-rag-api:0.1.0
 
-curl -fsSL https://raw.githubusercontent.com/<owner>/elk-os/main/provision/cloud-init.sh | bash
+curl -fsSL https://raw.githubusercontent.com/AnalogElk/muster/main/provision/cloud-init.sh | bash
 ```
 
 Or, if you copied the repo to the box already

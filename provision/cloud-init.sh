@@ -12,10 +12,10 @@
 #   export ELK_OS_ADMIN_EMAIL=you@example.com    # optional (default admin@<domain>)
 #   export ELK_OS_PROFILE=generic                # generic | analogelk
 #   # --- full-stack portal (optional) — needs PUBLISHED images (see README) ---
-#   export PORTAL_IMAGE=ghcr.io/<owner>/elk-os-portal:0.1.0
-#   export RAG_IMAGE=ghcr.io/<owner>/elk-os-rag-api:0.1.0
+#   export PORTAL_IMAGE=ghcr.io/analogelk/elk-os-portal:0.1.0
+#   export RAG_IMAGE=ghcr.io/analogelk/elk-os-rag-api:0.1.0
 #   # --- where to get elk-os ---
-#   export ELK_OS_REPO=https://github.com/<owner>/elk-os.git   # git source, OR
+#   export ELK_OS_REPO=https://github.com/AnalogElk/muster.git  # git source, OR
 #   export ELK_OS_SOURCE_DIR=/root/elk-os                      # a pre-copied tree
 #   bash cloud-init.sh
 #

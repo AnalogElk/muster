@@ -40,6 +40,14 @@ set_env() {
   fi
 }
 
+# curl with a Bearer token — the Authorization header travels via a /dev/fd
+# header file (process substitution, curl's `-H @file`), NEVER argv, for the
+# same `ps`/procfs reason the request bodies below travel over stdin.
+curl_tok() {
+  local tok="$1"; shift
+  curl -H @<(printf 'Authorization: Bearer %s\n' "$tok") "$@"
+}
+
 URL="$(get_env DIRECTUS_URL)";            URL="${URL:-http://localhost:8056}"
 EMAIL="$(get_env DIRECTUS_ADMIN_EMAIL)";  EMAIL="${EMAIL:-admin@example.com}"
 PASSWORD="$(get_env DIRECTUS_ADMIN_PASSWORD)"
@@ -47,7 +55,7 @@ EXISTING="$(get_env DIRECTUS_ADMIN_TOKEN)"
 
 # --- idempotency: a token already present and working? -----------------------
 if [ -n "$EXISTING" ]; then
-  if curl -sf -o /dev/null -H "Authorization: Bearer ${EXISTING}" "${URL}/users/me?fields=id" 2>/dev/null; then
+  if curl_tok "$EXISTING" -sf -o /dev/null "${URL}/users/me?fields=id" 2>/dev/null; then
     echo "[bootstrap] admin static token already present and valid — skipping mint."
     exit 0
   fi
@@ -63,7 +71,11 @@ fi
 # The body is piped over stdin (--data @-), NOT passed as an argv literal: curl
 # arguments are visible to every user on the host via `ps`/procfs, and this body
 # carries the admin password.
-LOGIN_BODY=$(printf '{"email":"%s","password":"%s"}' "$EMAIL" "$PASSWORD")
+# JSON-escape backslash + double-quote: init auto-generates a hex password, but
+# a user-set DIRECTUS_ADMIN_PASSWORD containing either character would corrupt
+# the body and turn a good password into a login failure.
+json_escape() { printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'; }
+LOGIN_BODY=$(printf '{"email":"%s","password":"%s"}' "$(json_escape "$EMAIL")" "$(json_escape "$PASSWORD")")
 LOGIN_RESP=$(printf '%s' "$LOGIN_BODY" | curl -sf -X POST "${URL}/auth/login" \
   -H "Content-Type: application/json" \
   --data @- 2>/dev/null) || {
@@ -78,7 +90,7 @@ if [ -z "$ACCESS" ]; then
 fi
 
 # --- 2. resolve the admin user id --------------------------------------------
-ME=$(curl -sf -H "Authorization: Bearer ${ACCESS}" "${URL}/users/me?fields=id" 2>/dev/null) || {
+ME=$(curl_tok "$ACCESS" -sf "${URL}/users/me?fields=id" 2>/dev/null) || {
   echo "[bootstrap] /users/me lookup failed." >&2; exit 1; }
 USER_ID=$(printf '%s' "$ME" | grep -o '"id":"[^"]*"' | head -n1 | cut -d'"' -f4)
 if [ -z "$USER_ID" ]; then

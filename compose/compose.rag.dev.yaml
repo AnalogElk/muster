@@ -5,7 +5,9 @@
 #   rag-postgres  15433  (core Postgres is 15432)
 #   qdrant        16333  (engine default is 6333)
 #   redis         16379  (engine default is 6379)
-#   rag-api        9100  (the documented RAG contract; CLAUDE.md/.mcp.json query it here)
+#   rag-api       19100  (.env.example default — clear of a host-running
+#                          analog-elk-v3 engine on 9100; the fallback below is
+#                          9100 only when RAG_API_PORT is unset in .env)
 # Any of these can be overridden in .env.
 
 services:

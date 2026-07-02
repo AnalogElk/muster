@@ -32,8 +32,16 @@ git clone https://github.com/AnalogElk/muster.git && cd muster
 ./bin/elk-os doctor                   # green/red health board — the loop proof
 ```
 
-Docker is the only hard dependency. Secrets are generated into a gitignored
+Docker is the only hard dependency (`migrate`/`seed` additionally use stdlib
+`python3` — see the CLI table below). Secrets are generated into a gitignored
 `.env` and never printed.
+
+> **Fresh-clone note:** the portal image builds from a *local checkout* of
+> `analog-elk-front-end` (see [`portal/`](./portal/)), which a fresh clone
+> won't have — `up` stops with the alternatives spelled out. Either set
+> `ELK_OS_WITH_PORTAL=false` in `.env` (Directus + RAG + the board still stand
+> up) or pull published images (`ELK_OS_USE_PUBLISHED_IMAGES=true` +
+> `PORTAL_IMAGE`/`RAG_IMAGE`).
 
 ## The four subsystems
 
