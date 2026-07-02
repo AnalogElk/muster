@@ -2,15 +2,18 @@
 # =============================================================================
 # Elk OS — resumable phased installer CLI
 # =============================================================================
-# One-command, self-hostable repackaging of the Analog Elk agency-OS.
-# Docker is the ONLY hard runtime dependency; everything else is POSIX bash +
-# standard unix tools (curl, openssl, awk, grep, sed).
+# One-command, self-hostable packaging of Muster (working name: Elk OS), the
+# operating system for agentic software teams, derived from Analog Elk's stack.
+# Docker is the ONLY hard runtime dependency for init/up/doctor/down; everything
+# else is POSIX bash + standard unix tools (curl, openssl, awk, grep, sed).
+# The migrate/seed phases additionally require python3 (stdlib only).
 #
-# Phases (ordered, idempotent, resumable via .elk-os-state.json):
+# Phases (ordered, idempotent; .elk-os-state.json records completed phases —
+# each command no-ops on work already done, so the sequence can be re-entered):
 #   init     generate secrets + write .env from .env.example
-#   up       docker compose up the core (+ RAG engine), then bootstrap the admin token
+#   up       docker compose up the core (+ RAG + portal), then bootstrap the admin token
 #   migrate  (P2) apply os_* schema snapshot
-#   seed     (P5) load profile seed data
+#   seed     (P2) load profile seed data
 #   wire     (P5) write CLAUDE.md + .mcp.json + hooks + memory seed
 #   doctor   green/red health board (the runtime acceptance test)
 #   down     stop the stack
@@ -18,6 +21,12 @@
 # Secrets are NEVER echoed to stdout/stderr; they live only in .env (gitignored).
 # =============================================================================
 set -euo pipefail
+
+# Secrets hygiene: every file this CLI creates (.env, .env.tmp during rewrites,
+# state, wired configs) is owner-only. .env holds the DB password, Directus
+# secret, admin password and admin token — it must never be group/world-readable
+# on a shared box.
+umask 077
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -55,6 +64,19 @@ die()     { error "$*"; exit 1; }
 # ---------------------------------------------------------------------------
 need_docker() {
   command -v docker >/dev/null 2>&1 || die "Docker is required but not on PATH. Install Docker Desktop."
+  # Compose v2 is required: the compose files use spec features (top-level
+  # `name:`, `!reset` overlay nulling, healthcheck-gated depends_on) that the
+  # python docker-compose v1 cannot parse. Fail here with the fix instead of
+  # with a YAML traceback mid-`up`.
+  if ! docker compose version >/dev/null 2>&1; then
+    if command -v docker-compose >/dev/null 2>&1; then
+      case "$(docker-compose version --short 2>/dev/null || true)" in
+        1.*) die "docker-compose v1 detected — Elk OS needs Compose v2 (the compose files use \`name:\` and \`!reset\`). Install the compose plugin: https://docs.docker.com/compose/install/" ;;
+      esac
+    else
+      die "Docker Compose not found (neither 'docker compose' nor 'docker-compose'). Install the Compose v2 plugin: https://docs.docker.com/compose/install/"
+    fi
+  fi
 }
 
 if docker compose version >/dev/null 2>&1; then
@@ -78,8 +100,10 @@ with_portal() {
 }
 
 # Pull published images (GHCR) instead of building locally? (default off)
-# When on, the compose.images.yaml overlay drops the build sections and pins
-# PORTAL_IMAGE / RAG_IMAGE. Only useful once those images exist (post-publish).
+# When on, the compose.images.{portal,rag}.yaml overlays drop the build sections
+# and pin PORTAL_IMAGE / RAG_IMAGE. Each half is layered ONLY when its subsystem
+# overlay is enabled, so ELK_OS_WITH_RAG=false never demands RAG_IMAGE (and vice
+# versa). Only useful once those images exist (post-publish).
 use_published_images() {
   local v; v="$(get_env ELK_OS_USE_PUBLISHED_IMAGES)"; v="${v:-false}"
   [ "$v" = "true" ]
@@ -97,12 +121,21 @@ compose() {
   else
     files+=(-f "${COMPOSE_DIR}/compose.dev.yaml")
   fi
+  # Image-or-build toggle: each images overlay is layered LAST *within its
+  # subsystem's branch* so its `build: !reset null` wins, pulling the published
+  # image instead of building. Gated on the subsystem being enabled — a combined
+  # overlay used to declare BOTH services unconditionally, so ELK_OS_WITH_RAG=false
+  # (or WITH_PORTAL=false) still demanded the disabled half's *_IMAGE var, or
+  # created a stray container with no networks/env. Off by default (build locally).
   if with_rag; then
     files+=(-f "${COMPOSE_DIR}/compose.rag.yaml")
     if [ "$target" = "box" ]; then
       files+=(-f "${COMPOSE_DIR}/compose.rag.prod.yaml")
     else
       files+=(-f "${COMPOSE_DIR}/compose.rag.dev.yaml")
+    fi
+    if use_published_images; then
+      files+=(-f "${COMPOSE_DIR}/compose.images.rag.yaml")
     fi
   fi
   if with_portal; then
@@ -112,11 +145,9 @@ compose() {
     else
       files+=(-f "${COMPOSE_DIR}/compose.portal.dev.yaml")
     fi
-  fi
-  # Image-or-build toggle: layered LAST so its `build: !reset null` wins, pulling
-  # published images instead of building. Off by default (build locally).
-  if use_published_images; then
-    files+=(-f "${COMPOSE_DIR}/compose.images.yaml")
+    if use_published_images; then
+      files+=(-f "${COMPOSE_DIR}/compose.images.portal.yaml")
+    fi
   fi
   "${DC[@]}" --project-directory "$ROOT" --env-file "$ENV_FILE" "${files[@]}" "$@"
 }
@@ -129,9 +160,22 @@ ensure_portal_context() {
   use_published_images && return 0
   local prep="${ROOT}/portal/prepare-context.sh"
   [ -f "$prep" ] || { warn "portal/prepare-context.sh missing — skipping portal prep."; return 0; }
-  if [ ! -f "${ROOT}/portal/.build/package.json" ]; then
+  # prepare-context.sh writes .build/.elk-os-prepared (containing the pin) as its
+  # LAST step. A missing or mismatched marker means a half-prepared context (a
+  # prior prep died mid-patch) or a pin bump — re-prepare rather than silently
+  # docker-building an unpatched tree.
+  local pin marker
+  pin="$(cat "${ROOT}/portal/PINNED_COMMIT" 2>/dev/null | tr -d '[:space:]' || true)"
+  marker="$(cat "${ROOT}/portal/.build/.elk-os-prepared" 2>/dev/null | tr -d '[:space:]' || true)"
+  if [ -z "$marker" ] || [ "$marker" != "$pin" ]; then
     info "Preparing the portal build context (pinned archive + self-host patches)…"
-    bash "$prep" || die "Failed to prepare the portal build context."
+    # prepare-context.sh reads PORTAL_SOURCE_REPO from its environment; make the
+    # .env knob work too.
+    local src; src="$(get_env PORTAL_SOURCE_REPO)"
+    if [ -n "$src" ]; then export PORTAL_SOURCE_REPO="$src"; fi
+    bash "$prep" || die "Failed to prepare the portal build context.
+Alternatives: in .env set ELK_OS_WITH_PORTAL=false (Directus-only install), or set
+ELK_OS_USE_PUBLISHED_IMAGES=true + PORTAL_IMAGE/RAG_IMAGE to pull published images."
   fi
 }
 
@@ -188,6 +232,18 @@ mask_status() {
 }
 
 # ---------------------------------------------------------------------------
+# curl with a Bearer token — the Authorization header travels via a /dev/fd
+# header file (process substitution, curl's `-H @file`), NEVER argv: argv is
+# readable by every user on the host through `ps`/procfs, and these calls carry
+# the admin static token. Same threat model mint-token.sh already guards its
+# request bodies against. Usage: curl_tok "$token" [normal curl args…]
+# ---------------------------------------------------------------------------
+curl_tok() {
+  local tok="$1"; shift
+  curl -H @<(printf 'Authorization: Bearer %s\n' "$tok") "$@"
+}
+
+# ---------------------------------------------------------------------------
 # init
 # ---------------------------------------------------------------------------
 cmd_init() {
@@ -213,10 +269,31 @@ cmd_init() {
   command -v openssl >/dev/null 2>&1 || die "openssl is required to generate secrets."
 
   info "Writing .env from .env.example (profile=${profile}, target=${target})…"
+  # --force must NOT rotate live secrets: postgres applies POSTGRES_PASSWORD
+  # only at initdb, and the admin password/token must keep matching the DB —
+  # regenerating them bricks an existing deployment. Snapshot them BEFORE the
+  # copy (.env.example ships them blank) and re-apply after.
+  local prev_pg prev_key prev_secret prev_pw prev_token
+  prev_pg="$(get_env POSTGRES_PASSWORD)"
+  prev_key="$(get_env DIRECTUS_KEY)"
+  prev_secret="$(get_env DIRECTUS_SECRET)"
+  prev_pw="$(get_env DIRECTUS_ADMIN_PASSWORD)"
+  prev_token="$(get_env DIRECTUS_ADMIN_TOKEN)"
+  if [ -f "$ENV_FILE" ]; then
+    local env_backup="${ENV_FILE}.bak.$(date +%Y%m%d%H%M%S)"
+    cp "$ENV_FILE" "$env_backup"
+    chmod 600 "$env_backup"
+    info "Backed up existing .env to $(basename "$env_backup")."
+  fi
   cp "$ENV_EXAMPLE" "$ENV_FILE"
+  chmod 600 "$ENV_FILE"   # owner-only: this file carries every stack secret
 
   set_env ELK_OS_PROFILE "$profile"
   set_env ELK_OS_TARGET  "$target"
+  [ -n "$prev_pg" ]     && set_env POSTGRES_PASSWORD "$prev_pg"
+  [ -n "$prev_key" ]    && set_env DIRECTUS_KEY "$prev_key"
+  [ -n "$prev_secret" ] && set_env DIRECTUS_SECRET "$prev_secret"
+  [ -n "$prev_pw" ]     && set_env DIRECTUS_ADMIN_PASSWORD "$prev_pw"
 
   # Auto-generate secrets (only if empty — re-running --force keeps existing).
   local k
@@ -225,8 +302,8 @@ cmd_init() {
       set_env "$k" "$(openssl rand -hex 32)"
     fi
   done
-  # Admin token is minted at bootstrap, never here.
-  set_env DIRECTUS_ADMIN_TOKEN ""
+  # Admin token is minted at bootstrap, never here (kept across --force re-runs).
+  set_env DIRECTUS_ADMIN_TOKEN "$prev_token"
 
   # Merge profile defaults (non-secret overrides).
   local defaults="${PROFILES_DIR}/${profile}/env.defaults"
@@ -425,7 +502,7 @@ cmd_doctor() {
 
   # 5. Admin static token (informational — green when minted)
   if [ -n "$(get_env DIRECTUS_ADMIN_TOKEN)" ]; then
-    if curl -sf -o /dev/null --max-time 5 -H "Authorization: Bearer $(get_env DIRECTUS_ADMIN_TOKEN)" "${url}/users/me?fields=id" 2>/dev/null; then
+    if curl_tok "$(get_env DIRECTUS_ADMIN_TOKEN)" -sf -o /dev/null --max-time 5 "${url}/users/me?fields=id" 2>/dev/null; then
       doctor_row "Admin API token" 0 "minted, authenticates (hidden)"
     else
       doctor_row "Admin API token" 1 "present but does not authenticate" "Re-run ./bin/elk-os up to re-mint."
@@ -437,7 +514,10 @@ cmd_doctor() {
   # 6. RAG knowledge-engine /health (only when the overlay is enabled)
   if with_rag; then
     local rag_port rag_url rag_json
-    rag_port="$(get_env RAG_API_PORT)"; rag_port="${rag_port:-9100}"
+    # Fallback matches the isolated .env.example default (19100) — a 9100
+    # fallback could green-light a co-located host engine, the exact impostor
+    # the port isolation exists to rule out (fix commit 5222976).
+    rag_port="$(get_env RAG_API_PORT)"; rag_port="${rag_port:-19100}"
     rag_url="http://localhost:${rag_port}"
     if rag_json=$(curl -sf --max-time 5 "${rag_url}/health" 2>/dev/null); then
       local rstatus rreason rdocs rvecs detail
@@ -466,7 +546,7 @@ cmd_doctor() {
   local stok; stok="$(get_env DIRECTUS_ADMIN_TOKEN)"
   if [ -n "$stok" ]; then
     local tasks_json
-    if tasks_json=$(curl -sf --max-time 5 -H "Authorization: Bearer ${stok}" "${url}/items/os_tasks?limit=1&fields=id" 2>/dev/null); then
+    if tasks_json=$(curl_tok "$stok" -sf --max-time 5 "${url}/items/os_tasks?limit=1&fields=id" 2>/dev/null); then
       if printf '%s' "$tasks_json" | grep -q '"id"'; then
         doctor_row "Seeded os_task" 0 "os_tasks readable (>=1 row)"
       else
@@ -484,8 +564,8 @@ cmd_doctor() {
   #     so a valid pre-wire stack stays green; the loop only needs it post-wire.
   if [ -n "$stok" ]; then
     local mcp_code
-    mcp_code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
-      -X POST -H "Authorization: Bearer ${stok}" -H 'Content-Type: application/json' \
+    mcp_code=$(curl_tok "$stok" -s -o /dev/null -w '%{http_code}' --max-time 5 \
+      -X POST -H 'Content-Type: application/json' \
       -H 'Accept: application/json, text/event-stream' \
       -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
       "${url%/}/mcp" 2>/dev/null || echo 000)
@@ -500,10 +580,20 @@ cmd_doctor() {
 
   # 8. Portal HTTP (only when the overlay is enabled). Green on HTTP 200 from
   #    the auth-free /login route (falls back to /). Red otherwise.
+  #    Box target: the prod overlay publishes NO host port (Caddy fronts the
+  #    portal on app.${ELK_OS_DOMAIN}), so probing localhost:3000 was a
+  #    guaranteed false red on every healthy box (P6 follow-up #4). Probe the
+  #    public app.* origin there instead — that also exercises Caddy + TLS.
   if with_portal; then
-    local pport purl code
-    pport="$(get_env PORTAL_PORT)"; pport="${pport:-3000}"
-    purl="http://localhost:${pport}"
+    local ptarget pdomain pport purl code
+    ptarget="$(get_env ELK_OS_TARGET)"; ptarget="${ptarget:-local}"
+    pdomain="$(get_env ELK_OS_DOMAIN)"
+    if [ "$ptarget" = "box" ] && [ -n "$pdomain" ]; then
+      purl="https://app.${pdomain}"
+    else
+      pport="$(get_env PORTAL_PORT)"; pport="${pport:-3000}"
+      purl="http://localhost:${pport}"
+    fi
     code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 "${purl}/login" 2>/dev/null || true)
     if [ "$code" != "200" ]; then
       # Fall back to the marketing root before declaring red.
@@ -593,10 +683,10 @@ if code==200 and cur and 'data' in cur and cur['data'].get('directus'):
 
 # 2. diff (force=true bypasses the version/vendor guard)
 code, diff = req('POST', '/schema/diff?force=true', snap)
-if code in (204,) or diff is None or not (isinstance(diff, dict) and diff.get('data')):
-    print('[migrate] schema already in sync — no changes to apply.'); sys.exit(0)
 if code>=400:
     print('[migrate] diff failed (%d): %s'%(code, json.dumps(diff)[:400]), file=sys.stderr); sys.exit(1)
+if code in (204,) or diff is None or not (isinstance(diff, dict) and diff.get('data')):
+    print('[migrate] schema already in sync — no changes to apply.'); sys.exit(0)
 
 # 3. apply the diff object ({hash, diff})
 code, res = req('POST', '/schema/apply', diff['data'])
@@ -624,6 +714,7 @@ PY
 cmd_seed() {
   [ -f "$ENV_FILE" ] || die ".env not found. Run ./bin/elk-os init first."
   require_python3
+  [ -f "$SCHEMA_SNAPSHOT" ] || die "Schema snapshot not found at $SCHEMA_SNAPSHOT"
 
   local profile url tok dir
   profile="$(get_env ELK_OS_PROFILE)"; profile="${profile:-generic}"
@@ -759,9 +850,12 @@ cmd_rebuild_portal() {
 #   .mcp.json           → the native Directus MCP server (URL substituted; token
 #                         left as the ${DIRECTUS_ADMIN_TOKEN} env reference — the
 #                         secret is NEVER written into a file).
-#   CLAUDE.md           → the profile's agency-OS constitution.
+#   CLAUDE.md           → the profile's governance constitution.
 #   README.md           → how to use the wired directory.
-#   run-claude.sh       → turnkey launcher (sources the deployment .env, exec claude).
+#   run-claude.sh       → turnkey launcher (exports ONLY DIRECTUS_URL /
+#                         DIRECTUS_ADMIN_TOKEN / ELK_OS_BRAND_NAME from the
+#                         deployment .env — never sources it wholesale — then
+#                         exec claude).
 #   .claude/settings.json + .claude/hooks/  → SessionStart banner + os_tasks snapshot.
 #   .claude/memory/     → MEMORY.md index + the auto-memory pattern note.
 #
@@ -771,17 +865,22 @@ cmd_rebuild_portal() {
 # Idempotent; marks `wire` in state. Secrets are never printed.
 
 # Render a {{PLACEHOLDER}} template to a destination. `|` is the sed delimiter,
-# so substituted values (URLs, paths, brand) must not contain `|` — they don't.
+# and `\` / `&` are special in sed replacement text, so every substituted value
+# is escaped first — a brand like "Smith & Co" or a path containing `|` must
+# render literally, not corrupt the output (unescaped, `&` re-inserts the
+# matched placeholder: "Smith {{BRAND_NAME}} Co").
+sed_escape() { printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/&/\\&/g' -e 's/|/\\|/g'; }
+
 render_tmpl() {
   local src="$1" dest="$2"
   sed \
-    -e "s|{{DIRECTUS_URL}}|${WIRE_DIRECTUS_URL}|g" \
-    -e "s|{{DIRECTUS_MCP_URL}}|${WIRE_MCP_URL}|g" \
-    -e "s|{{BRAND_NAME}}|${WIRE_BRAND}|g" \
-    -e "s|{{PROFILE}}|${WIRE_PROFILE}|g" \
-    -e "s|{{ENV_FILE}}|${WIRE_ENV_FILE}|g" \
-    -e "s|{{WIRE_DIR}}|${WIRE_DIR}|g" \
-    -e "s|{{GENERATED_AT}}|${WIRE_GENERATED_AT}|g" \
+    -e "s|{{DIRECTUS_URL}}|$(sed_escape "$WIRE_DIRECTUS_URL")|g" \
+    -e "s|{{DIRECTUS_MCP_URL}}|$(sed_escape "$WIRE_MCP_URL")|g" \
+    -e "s|{{BRAND_NAME}}|$(sed_escape "$WIRE_BRAND")|g" \
+    -e "s|{{PROFILE}}|$(sed_escape "$WIRE_PROFILE")|g" \
+    -e "s|{{ENV_FILE}}|$(sed_escape "$WIRE_ENV_FILE")|g" \
+    -e "s|{{WIRE_DIR}}|$(sed_escape "$WIRE_DIR")|g" \
+    -e "s|{{GENERATED_AT}}|$(sed_escape "$WIRE_GENERATED_AT")|g" \
     "$src" > "$dest"
 }
 
@@ -818,8 +917,8 @@ cmd_wire() {
   local tok url; tok="$(get_env DIRECTUS_ADMIN_TOKEN)"; url="$WIRE_DIRECTUS_URL"
   if [ -n "$tok" ]; then
     local code
-    code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 \
-      -X PATCH -H "Authorization: Bearer ${tok}" -H 'Content-Type: application/json' \
+    code=$(curl_tok "$tok" -s -o /dev/null -w '%{http_code}' --max-time 8 \
+      -X PATCH -H 'Content-Type: application/json' \
       -d '{"mcp_enabled":true}' "${url%/}/settings" 2>/dev/null || echo 000)
     if [ "$code" = "200" ]; then
       success "Directus native MCP server enabled (settings.mcp_enabled=true)."
@@ -866,7 +965,7 @@ cmd_wire() {
     echo ""
     info "Loop check — reading os_tasks back through the wired Directus + token…"
     local tasks_json
-    if tasks_json=$(curl -sf --max-time 8 -H "Authorization: Bearer ${tok}" \
+    if tasks_json=$(curl_tok "$tok" -sf --max-time 8 \
         "${url%/}/items/os_tasks?fields=name,status,priority&sort=priority&limit=8" 2>/dev/null); then
       if printf '%s' "$tasks_json" | grep -q '"name"'; then
         if command -v python3 >/dev/null 2>&1; then
@@ -901,7 +1000,8 @@ PY
 usage() {
   cat <<EOF
 
-${BOLD}elk-os${RESET} — self-host agency-OS installer (resumable phased CLI)
+${BOLD}elk-os${RESET} — self-host installer for Muster, the operating system
+for agentic software teams (resumable phased CLI; elk-os is the working name)
 
 ${BOLD}Usage:${RESET}
   ./bin/elk-os <command> [flags]
@@ -909,7 +1009,7 @@ ${BOLD}Usage:${RESET}
 ${BOLD}Commands:${RESET}
   init [--profile generic|analogelk] [--target local|box] [--force]
                       Generate secrets + write .env from .env.example.
-  up                  docker compose up the core (+ RAG engine), then mint the admin token.
+  up                  docker compose up the core (+ RAG + portal), then mint the admin token.
   down [--volumes]    Stop the stack (keep data unless --volumes).
   doctor              Per-subsystem green/red health board (exits nonzero if red).
   logs [service]      Tail container logs (e.g. directus, elkos-rag-api).
@@ -929,15 +1029,16 @@ ${BOLD}Quick start:${RESET}
 The RAG knowledge engine (Postgres + Qdrant + Redis + FastAPI, local
 embeddings — no external inference) is bundled into up/down/logs by default.
 Disable it by setting ELK_OS_WITH_RAG=false in .env (e.g. to skip the Python
-image build). The RAG API is served at http://localhost:\${RAG_API_PORT:-9100}.
+image build). The RAG API is served at http://localhost:\${RAG_API_PORT}
+(19100 in the .env that init writes — isolated from a host engine on 9100).
 
 The portal (Next.js 16 front-end, built from a pinned analog-elk-front-end
 commit) is bundled into up/down/logs by default and served at
 http://localhost:\${PORTAL_PORT:-3000}. Disable it with ELK_OS_WITH_PORTAL=false
 in .env (e.g. to skip the heavy Next build).
 
-Docker is the only hard dependency. Secrets live only in .env (gitignored)
-and are never printed.
+Docker is the only hard dependency (migrate/seed additionally use stdlib
+python3). Secrets live only in .env (gitignored) and are never printed.
 
 EOF
 }

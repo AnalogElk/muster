@@ -5,7 +5,10 @@
 #   rag-postgres  15433  (core Postgres is 15432)
 #   qdrant        16333  (engine default is 6333)
 #   redis         16379  (engine default is 6379)
-#   rag-api        9100  (the documented RAG contract; CLAUDE.md/.mcp.json query it here)
+#   rag-api       19100  (.env.example default — clear of a host-running
+#                          analog-elk-v3 engine on 9100; the fallback below
+#                          matches, so an unset RAG_API_PORT never lands on
+#                          the host engine's port)
 # Any of these can be overridden in .env.
 
 services:
@@ -23,4 +26,4 @@ services:
 
   elkos-rag-api:
     ports:
-      - "127.0.0.1:${RAG_API_PORT:-9100}:9100"
+      - "127.0.0.1:${RAG_API_PORT:-19100}:9100"

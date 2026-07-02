@@ -16,23 +16,24 @@ elsewhere — see [`../deploy/netlify/`](../deploy/netlify/).)
 - A VPS with **2 GB+ RAM** (4 GB if you ever build images on the box), Ubuntu
   22.04 or 24.04, root/sudo.
 - A hostname that resolves to the box's IP. Either:
-  - a real domain (point an `A` record for the apex **and** a `cms` record at the
-    IP), or
+  - a real domain (point an `A` record for the apex **and** `app` + `cms` records
+    at the IP), or
   - **no domain** — use `sslip.io`: if your IP is `1.2.3.4`, set
-    `ELK_OS_DOMAIN=1.2.3.4.sslip.io`. Both `1.2.3.4.sslip.io` and
-    `cms.1.2.3.4.sslip.io` resolve automatically, so Caddy gets TLS for both with
-    zero DNS setup.
+    `ELK_OS_DOMAIN=1.2.3.4.sslip.io`. `1.2.3.4.sslip.io`, `app.1.2.3.4.sslip.io`
+    and `cms.1.2.3.4.sslip.io` all resolve automatically, so Caddy gets TLS for
+    all three with zero DNS setup.
 - Ports **80 and 443** open (Caddy needs them for Let's Encrypt + serving).
 
 ## Routing (what the box serves)
 
 | URL | Serves |
 |---|---|
-| `https://${ELK_OS_DOMAIN}` | the portal (the human surface) |
+| `https://${ELK_OS_DOMAIN}` | the static whitepaper landing ([`../site/`](../site/)) |
+| `https://app.${ELK_OS_DOMAIN}` | the portal (the human surface) |
 | `https://cms.${ELK_OS_DOMAIN}` | Directus — the `os_*` board |
 | `https://cms.${ELK_OS_DOMAIN}/mcp` | the native Directus MCP endpoint (agents) |
 
-Caddy provisions and renews TLS for both hosts automatically.
+Caddy provisions and renews TLS for all three hosts automatically.
 
 ## Run it
 
@@ -42,13 +43,14 @@ SSH to the box as root and:
 export ELK_OS_DOMAIN=1.2.3.4.sslip.io          # your IP + .sslip.io, or your domain
 export ELK_OS_ADMIN_EMAIL=you@example.com
 export ELK_OS_PROFILE=generic                  # generic | analogelk
-export ELK_OS_REPO=https://github.com/<owner>/elk-os.git
+export ELK_OS_REPO=https://github.com/AnalogElk/muster.git
 
-# Optional — add the portal surface using PUBLISHED images (see "The portal" below)
-# export PORTAL_IMAGE=ghcr.io/<owner>/elk-os-portal:0.1.0
-# export RAG_IMAGE=ghcr.io/<owner>/elk-os-rag-api:0.1.0
+# Optional — add the portal surface using PUBLISHED images (see "The portal" below;
+# only once images are published via publish-images.yml)
+# export PORTAL_IMAGE=ghcr.io/analogelk/elk-os-portal:0.1.0
+# export RAG_IMAGE=ghcr.io/analogelk/elk-os-rag-api:0.1.0
 
-curl -fsSL https://raw.githubusercontent.com/<owner>/elk-os/main/provision/cloud-init.sh | bash
+curl -fsSL https://raw.githubusercontent.com/AnalogElk/muster/main/provision/cloud-init.sh | bash
 ```
 
 Or, if you copied the repo to the box already

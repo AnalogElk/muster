@@ -24,7 +24,12 @@ primary_region = "sea"  # ← pick a region near you (fly platform regions)
   DB_CLIENT = "pg"
   WEBSOCKETS_ENABLED = "true"
   CORS_ENABLED = "true"
-  CORS_ORIGIN = "true"
+  # PIN this to your portal app's public origin. "true" reflects ANY origin —
+  # fine on a loopback-only laptop, but on a public Fly URL it would let any
+  # website script the API with a visitor's Directus session (same pin the box
+  # target applies in compose.prod.yaml). Only the portal's browser code calls
+  # Directus cross-origin; MCP/CLI clients are not browsers and need no CORS.
+  CORS_ORIGIN = "https://your-portal.fly.dev" # ← change to your portal app URL
   # PERMITS the native MCP server; flip it on in Settings → AI → MCP (or PATCH
   # /settings {"mcp_enabled":true}) after first boot.
   MCP_ENABLED = "true"

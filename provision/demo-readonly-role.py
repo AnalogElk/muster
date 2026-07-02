@@ -7,9 +7,13 @@ Directus policy and can always write). The portal's employee-vs-client check
 (portal/.build/lib/portal/auth.ts -> resolveUserRole) treats any role whose
 NAME lower-cases to "employee" as an employee, and unknown role names default
 to "client". So the safe shape is a NON-admin role literally named "Employee"
-carrying a read-only policy (app_access=true, admin_access=false, READ-only
-permissions). This script creates that policy + role, links them, and reassigns
-the demo user. Idempotent.
+carrying a read-only policy (app_access=FALSE, admin_access=false, READ-only
+permissions). app_access must stay off: it grants Directus's built-in minimum
+permissions, which include self-update of password/email/TFA — with the demo
+credentials public, that is a one-request demo lockout. API login (which the
+portal uses) does not require app access. This script creates that policy +
+role, links them, and reassigns the demo user. Idempotent; re-runs also
+reconcile the flags on an existing policy.
 
 Usage:
     DIRECTUS_ADMIN_TOKEN=... \\
@@ -39,7 +43,11 @@ def req(method, path, body=None):
         return e.code, json.loads(e.read().decode() or "{}")
 
 # 1. collections (non-system)
-_, cols = req("GET", "/collections?limit=-1")
+s, cols = req("GET", "/collections?limit=-1")
+if s >= 300 or "data" not in cols:
+    print("COLLECTIONS FETCH FAIL", s, json.dumps(cols)[:300])
+    print("Is DIRECTUS_ADMIN_TOKEN valid for %s ?" % B)
+    sys.exit(1)
 app_cols = sorted({c["collection"] for c in cols["data"]
                    if not c["collection"].startswith("directus_")
                    and c.get("schema") is not None})  # real tables only
@@ -49,14 +57,28 @@ print("APP COLLECTIONS:", len(app_cols))
 _, pols = req("GET", "/policies?fields=id,name&filter[name][_eq]=" + POLICY_NAME.replace(" ", "%20"))
 if pols.get("data"):
     policy_id = pols["data"][0]["id"]
-    print("Policy exists:", policy_id)
+    # Reconcile flags on re-runs: earlier versions created this policy with
+    # app_access=True, which lets the public demo user change their own
+    # password/TFA via the built-in app-access minimum permissions. Force it off.
+    req("PATCH", "/policies/" + policy_id,
+        {"admin_access": False, "app_access": False})
+    print("Policy exists (flags reconciled):", policy_id)
 else:
     s, p = req("POST", "/policies", {
         "name": POLICY_NAME,
         "icon": "visibility",
         "description": "Public demo read-only access. No create/update/delete.",
         "admin_access": False,
-        "app_access": True,
+        # app_access MUST stay False for a public demo: app access grants
+        # Directus's built-in minimum permissions, which include UPDATE on the
+        # user's own directus_users row (password, email, tfa_secret, ...).
+        # With the demo credentials printed on the public site, app_access=True
+        # would let any visitor change the demo password / enable TFA and lock
+        # everyone else out. API login (/auth/login, used by the portal) does
+        # not require app access — only the Data Studio does, and the Studio is
+        # blocked at Caddy anyway. All reads the portal needs are granted
+        # explicitly below.
+        "app_access": False,
         "enforce_tfa": False,
     })
     if s >= 300:
@@ -111,8 +133,13 @@ if s >= 300:
 print("Created", len(perms), "read permissions (read-only)")
 
 # 6. reassign demo user to Employee role
-_, u = req("GET", "/users?filter[email][_eq]=%s&fields=id,role.id,role.name" % DEMO_EMAIL)
-demo = u["data"][0]
+s, u = req("GET", "/users?filter[email][_eq]=%s&fields=id,role.id,role.name" % DEMO_EMAIL)
+demo_rows = u.get("data") or []
+if not demo_rows:
+    print("DEMO USER NOT FOUND:", DEMO_EMAIL)
+    print("Create the user first (Directus Studio or POST /users), then re-run.")
+    sys.exit(1)
+demo = demo_rows[0]
 print("Demo user current role:", demo["role"])
 s, _ = req("PATCH", "/users/%s" % demo["id"], {"role": role_id})
 if s >= 300:

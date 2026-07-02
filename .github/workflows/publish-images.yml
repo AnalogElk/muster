@@ -126,6 +126,11 @@ jobs:
         run: |
           PIN="$(tr -d '[:space:]' < portal/PINNED_COMMIT)"
           git clone "https://x-access-token:${AE_FRONTEND_PAT}@${AE_FRONTEND_REPO}" "$RUNNER_TEMP/ae-frontend"
+          # The PAT is embedded in the clone URL and persists in the checkout's
+          # .git/config — scrub it immediately. (prepare-context.sh uses
+          # `git archive`, so .git never reaches the build context, but don't
+          # leave a credential on disk for any later step to pick up.)
+          git -C "$RUNNER_TEMP/ae-frontend" remote set-url origin "https://${AE_FRONTEND_REPO}"
           git -C "$RUNNER_TEMP/ae-frontend" checkout "$PIN"
           echo "PORTAL_SOURCE_REPO=$RUNNER_TEMP/ae-frontend" >> "$GITHUB_ENV"
 

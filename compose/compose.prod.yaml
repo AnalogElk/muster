@@ -9,13 +9,21 @@ volumes:
 services:
   directus:
     # Reachable only on the internal network, fronted by Caddy on the cms.* host.
-    # The portal takes the apex; Directus (the os_* board + native MCP) lives at
+    # The apex serves the static whitepaper landing (site/); the portal lives on
+    # app.${ELK_OS_DOMAIN}; Directus (the os_* board + native MCP) lives at
     # https://cms.${ELK_OS_DOMAIN}. Set DIRECTUS_URL in .env to match so the host
     # CLI (up/migrate/seed/wire) reaches Directus through the same public origin.
     expose:
       - "8055"
     environment:
       PUBLIC_URL: https://cms.${ELK_OS_DOMAIN:?ELK_OS_DOMAIN must be set for box target}
+      # Pin CORS to the portal's public origin. The base compose sets
+      # CORS_ORIGIN=true (reflect ANY origin) which is fine on a loopback-only
+      # laptop, but on a public box it would let any website script the API with
+      # a visitor's Directus session cookie. Browser calls only ever come from
+      # the app.* portal; Studio (cms.*) is same-origin and MCP/CLI clients are
+      # not browsers, so none of them need CORS.
+      CORS_ORIGIN: https://app.${ELK_OS_DOMAIN}
 
   caddy:
     image: caddy:2-alpine
@@ -30,6 +38,8 @@ services:
       ELK_OS_DOMAIN: ${ELK_OS_DOMAIN:?ELK_OS_DOMAIN must be set for box target}
     volumes:
       - ./caddy/Caddyfile.tmpl:/etc/caddy/Caddyfile:ro
+      # The static whitepaper landing served on the apex (see caddy/Caddyfile.tmpl).
+      - ./site:/srv/site:ro
       - elk_os_caddy_data:/data
       - elk_os_caddy_config:/config
     networks:

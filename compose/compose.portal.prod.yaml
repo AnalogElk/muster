@@ -1,9 +1,10 @@
 # Elk OS — portal prod override (ELK_OS_TARGET=box)
-# Internal-only: no host port published. Caddy reverse-proxies the portal on the
-# apex (${ELK_OS_DOMAIN}); Directus sits on cms.${ELK_OS_DOMAIN}. See
-# caddy/Caddyfile.tmpl, which routes both. The portal's browser-side calls must
-# reach Directus at its public cms.* origin (server-side calls still use the
-# in-network http://directus:8055 from the base portal overlay).
+# Internal-only: no host port published. Caddy reverse-proxies the portal on
+# app.${ELK_OS_DOMAIN}; the apex serves the static whitepaper landing (site/);
+# Directus sits on cms.${ELK_OS_DOMAIN}. See caddy/Caddyfile.tmpl, which routes
+# all three. The portal's browser-side calls must reach Directus at its public
+# cms.* origin (server-side calls still use the in-network http://directus:8055
+# from the base portal overlay).
 
 services:
   portal:
@@ -11,4 +12,4 @@ services:
       - "3000"
     environment:
       NEXT_PUBLIC_DIRECTUS_URL: https://cms.${ELK_OS_DOMAIN:?ELK_OS_DOMAIN must be set for box target}
-      NEXT_PUBLIC_SITE_URL: https://${ELK_OS_DOMAIN:?ELK_OS_DOMAIN must be set for box target}
+      NEXT_PUBLIC_SITE_URL: https://app.${ELK_OS_DOMAIN:?ELK_OS_DOMAIN must be set for box target}

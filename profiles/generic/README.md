@@ -1,7 +1,10 @@
 # Generic profile
 
-The blank, unbranded agency-OS. `elk-os init --profile generic` merges
-[`env.defaults`](./env.defaults) into the generated `.env`.
+The blank-slate profile: schema + seed data scrubbed of any Analog Elk origin.
+`elk-os init --profile generic` merges [`env.defaults`](./env.defaults) into the
+generated `.env`. (The portal UI itself ships Muster-branded — branding is
+applied at image build by `portal/prepare-context.sh`, not per profile;
+per-profile portal branding is a tracked follow-up.)
 
 - **Brand:** `Demo Co` (placeholder — rebrand freely)
 - **Seed (P2):** a synthetic "Demo Co" org with sample tasks/sprints/projects so

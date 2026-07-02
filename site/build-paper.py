@@ -31,8 +31,18 @@ BOARD = "https://cms.34.220.64.149.sslip.io"
 
 def product_swap(text: str) -> str:
     """Swap the working name 'Elk OS' -> 'Muster' without hitting 'Analog Elk'
-    or the lowercase 'bin/elk-os' command."""
-    return re.sub(r"\bElk OS\b", "Muster", text)
+    or the lowercase 'bin/elk-os' command.
+
+    The paper's byline note ('Working name: "Elk OS."') must NOT be blindly
+    swapped — 'Working name: "Muster."' would be false (Muster is the resolved
+    public name; Elk OS is the working name). Rewrite that sentence explicitly,
+    protecting the literal 'Elk OS' inside it from the generic swap."""
+    text = text.replace(
+        'Working name: "Elk OS."',
+        "Public name: \"Muster\" (the project's working name, \x00WN\x00, survives in the CLI and internals).",
+    )
+    text = re.sub(r"\bElk OS\b", "Muster", text)
+    return text.replace("\x00WN\x00", '"Elk OS"')
 
 
 def inline(text: str) -> str:
@@ -245,8 +255,8 @@ TEMPLATE = """<!DOCTYPE html>
   </article>
   <div class="paper-doc" style="margin-top:3rem;">
     <hr>
-    <p class="fineprint">Live exhibits: <a class="livechip" href="{portal}" target="_blank" rel="noopener">app.34.220.64.149.sslip.io</a> &nbsp; <a class="livechip" href="{board}" target="_blank" rel="noopener">cms.34.220.64.149.sslip.io</a></p>
-    <p class="fineprint">sslip.io demo cert — your browser will warn once; it's a $3/mo box. Treat the TLS as "reachable," not "trusted." &nbsp;·&nbsp; <a href="#" onclick="window.print();return false;">Print / PDF</a></p>
+    <p class="fineprint">Live exhibit: <a class="livechip" href="{portal}" target="_blank" rel="noopener">app.34.220.64.149.sslip.io</a> &nbsp;·&nbsp; read-only demo login <code>demo@muster.dev</code> / <code>muster-demo</code> &nbsp;·&nbsp; <a href="assets/muster-board.png" target="_blank" rel="noopener">board snapshot (archived)</a> if the box is asleep</p>
+    <p class="fineprint">sslip.io demo · real Let's Encrypt TLS · $3/mo box · live instance may sleep between showings. &nbsp;·&nbsp; <a href="#" onclick="window.print();return false;">Print / PDF</a></p>
     <p class="fineprint">Rendered from <code>docs/whitepaper/elk-os-whitepaper.md</code>. Product name resolved to <strong>Muster</strong> per the identity brief; "Analog Elk" (origin/case study) and <code>bin/elk-os</code> (command) are preserved verbatim.</p>
   </div>
 </main>

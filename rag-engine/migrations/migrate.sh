@@ -1,16 +1,24 @@
 #!/bin/bash
 # =============================================================================
-# Analog Elk v3 — Migration Runner
+# Elk OS — RAG KB migration runner (vendored from Analog Elk v3)
 # =============================================================================
-# Applies all SQL migrations in order against the elk-postgres container.
+# Applies all SQL migrations in order against the RAG knowledge-base Postgres
+# container (elkos-rag-postgres in this stack — see compose/compose.rag.yaml).
+#
+# OPTIONAL: the RAG API self-creates the `documents` table on first boot (see
+# PROVENANCE.md), so a fresh stack works without ever running this. Run it to
+# apply the full reference schema (FTS indexes, SEO history, v3 optimizations).
 #
 # Usage:
 #   ./migrations/migrate.sh           # Apply pending migrations
 #   ./migrations/migrate.sh --force   # Re-apply all migrations (destructive)
 #
 # Requirements:
-#   - elk-postgres Docker container must be running
+#   - the elkos-rag-postgres container must be running (./bin/elk-os up)
 #   - docker CLI available on PATH
+#
+# Overrides (match compose.rag.yaml / your .env when customized):
+#   RAG_CONTAINER=elkos-rag-postgres  RAG_POSTGRES_DB=analog_elk  RAG_POSTGRES_USER=analog_elk
 # =============================================================================
 set -euo pipefail
 
@@ -31,11 +39,11 @@ error()   { echo -e "${RED}[migrate]${RESET} $*" >&2; }
 die()     { error "$*"; exit 1; }
 
 # ---------------------------------------------------------------------------
-# Configuration (matches engine/docker-compose.yml defaults)
+# Configuration (matches compose/compose.rag.yaml defaults; override via env)
 # ---------------------------------------------------------------------------
-CONTAINER="elk-postgres"
-DB="${POSTGRES_DB:-analog_elk}"
-USER="${POSTGRES_USER:-analog_elk}"
+CONTAINER="${RAG_CONTAINER:-elkos-rag-postgres}"
+DB="${RAG_POSTGRES_DB:-analog_elk}"
+USER="${RAG_POSTGRES_USER:-analog_elk}"
 
 # Resolve migrations directory relative to this script's location
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -47,7 +47,24 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${HERE}/.build"
 PIN_FILE="${HERE}/PINNED_COMMIT"
-SOURCE_REPO="${PORTAL_SOURCE_REPO:-/Users/michaelwalliser/Desktop/DevProd/analog-elk-front-end}"
+# Portal source checkout: set PORTAL_SOURCE_REPO (env, or via .env — elk-os
+# exports it), or keep an analog-elk-front-end checkout as a SIBLING of this
+# repo (../analog-elk-front-end).
+SOURCE_REPO="${PORTAL_SOURCE_REPO:-${HERE}/../../analog-elk-front-end}"
+
+# Host-tool preflight: the patch steps below run node + perl on the HOST (the
+# build context is prepared before Docker is involved). Fail early with an
+# actionable message instead of dying mid-patch on a bare "command not found"
+# under set -e.
+for tool in git node perl; do
+  command -v "$tool" >/dev/null 2>&1 || {
+    echo "[portal] '$tool' is required on the host to prepare the portal build context." >&2
+    echo "[portal] Install it, or skip the local portal build: in .env set" >&2
+    echo "[portal]   ELK_OS_WITH_PORTAL=false   (Directus-only install), or" >&2
+    echo "[portal]   ELK_OS_USE_PUBLISHED_IMAGES=true + PORTAL_IMAGE/RAG_IMAGE (pull published images)." >&2
+    exit 1
+  }
+done
 
 [ -f "$PIN_FILE" ] || { echo "[portal] PINNED_COMMIT not found at $PIN_FILE" >&2; exit 1; }
 PIN="$(tr -d '[:space:]' < "$PIN_FILE")"
@@ -55,6 +72,11 @@ PIN="$(tr -d '[:space:]' < "$PIN_FILE")"
 
 force=0
 [ "${1:-}" = "--force" ] && force=1
+
+# Completion marker: written (containing $PIN) as the LAST step of this script.
+# A context without a matching marker is either half-prepared (a previous run
+# died mid-patch) or extracted from a different pin — never patch on top of it.
+MARKER="${BUILD_DIR}/.elk-os-prepared"
 
 # ---------------------------------------------------------------------------
 # 1. Extract the frozen archive (read-only; never edits the source repo)
@@ -64,9 +86,29 @@ if [ "$force" -eq 1 ]; then
   rm -rf "$BUILD_DIR"
 fi
 
+if [ -d "$BUILD_DIR" ] && [ "$(cat "$MARKER" 2>/dev/null || true)" != "$PIN" ]; then
+  echo "[portal] build context is partial or from another pin — re-extracting from scratch"
+  rm -rf "$BUILD_DIR"
+fi
+
 if [ ! -f "${BUILD_DIR}/package.json" ]; then
-  command -v git >/dev/null 2>&1 || { echo "[portal] git is required" >&2; exit 1; }
-  [ -d "$SOURCE_REPO/.git" ] || { echo "[portal] source repo not found: $SOURCE_REPO" >&2; exit 1; }
+  if [ ! -d "$SOURCE_REPO/.git" ]; then
+    echo "[portal] source repo not found: $SOURCE_REPO" >&2
+    echo "[portal] Set PORTAL_SOURCE_REPO to a local analog-elk-front-end checkout (or clone it" >&2
+    echo "[portal] as a sibling of this repo). No checkout available? In .env set" >&2
+    echo "[portal]   ELK_OS_WITH_PORTAL=false   (Directus-only install), or" >&2
+    echo "[portal]   ELK_OS_USE_PUBLISHED_IMAGES=true + PORTAL_IMAGE/RAG_IMAGE (pull published images)." >&2
+    exit 1
+  fi
+  # The pin must exist locally — a checkout that is behind origin (or shallow)
+  # makes `git archive` die mid-pipe with a bare "not a valid object name".
+  # Check first and say exactly how to fix it.
+  if ! git -C "$SOURCE_REPO" cat-file -e "${PIN}^{commit}" 2>/dev/null; then
+    echo "[portal] pinned commit ${PIN} not found in ${SOURCE_REPO}" >&2
+    echo "[portal] (the checkout is behind origin, or shallow). Fetch and retry:" >&2
+    echo "[portal]   git -C '${SOURCE_REPO}' fetch origin" >&2
+    exit 1
+  fi
   echo "[portal] extracting analog-elk-front-end @ ${PIN} → ${BUILD_DIR} (read-only archive)"
   mkdir -p "$BUILD_DIR"
   git -C "$SOURCE_REPO" archive "$PIN" | tar -x -C "$BUILD_DIR"
@@ -75,6 +117,9 @@ else
 fi
 
 cd "$BUILD_DIR"
+
+# Invalidate the marker while patching; it is re-written as the LAST step below.
+rm -f "$MARKER"
 
 # ---------------------------------------------------------------------------
 # 2. Patch .npmrc — strip the private GitHub Packages registry + authToken
@@ -124,6 +169,13 @@ node -e '
   if (s.includes("@analogelk/background-three-js")) {
     s=s.replace(/,\s*["'"'"']@analogelk\/background-three-js["'"'"']/g, "");
     changed=true;
+  }
+  // Anchor drift guard: if the `const nextConfig = {` anchor vanished with a
+  // pin bump, the replace above silently no-ops and the Docker build later
+  // fails on a missing .next/standalone. Fail HERE, with the cause.
+  if (!/output:\s*["'"'"']standalone["'"'"']/.test(s)) {
+    console.error("[portal] next.config.js: anchor for output:standalone not found — the pinned commit changed the config shape; update prepare-context.sh step 4");
+    process.exit(1);
   }
   if (changed) { fs.writeFileSync(p,s); console.log("[portal] patch next.config.js: standalone + gates + drop private pkg"); }
   else { console.log("[portal] next.config.js already patched"); }
@@ -177,10 +229,24 @@ find . -type f \( -name '*.tsx' -o -name '*.ts' -o -name '*.json' -o -name '*.md
 #     apply a domain only when AUTH_COOKIE_DOMAIN is set, else host-only cookies.
 if ! grep -q 'elk-os single-domain' proxy.ts 2>/dev/null; then
   perl -0pi -e 's/function isDevelopment\(hostname: string\): boolean \{\n/function isDevelopment(hostname: string): boolean {\n  \/\/ [elk-os single-domain] Any host that is not the analogelk.com multi-subdomain\n  \/\/ production deployment (local dev, or a self-hosted single-domain box) uses\n  \/\/ path-based routing with no cross-subdomain redirects, so the whole portal is\n  \/\/ reachable on one origin.\n  if (!hostname.endsWith("analogelk.com")) return true;\n/' proxy.ts
+  # Anchor drift guard: an unmatched perl pattern is a SILENT no-op, and an
+  # unpatched proxy.ts 301s the whole authed portal off to *.analogelk.com on
+  # any self-host domain. Prove the marker landed.
+  grep -q 'elk-os single-domain' proxy.ts || {
+    echo "[portal] proxy.ts: isDevelopment() anchor not found — the pinned commit changed proxy.ts; update prepare-context.sh step 6a" >&2
+    exit 1
+  }
   echo "[portal] patch proxy.ts: single-domain mode for non-analogelk hosts"
 fi
 if grep -qF "domain: '.analogelk.com'" lib/portal/auth.ts 2>/dev/null; then
   perl -0pi -e "s/\.\.\.\(isProd && \{ domain: '\.analogelk\.com' \}\),/...(process.env.AUTH_COOKIE_DOMAIN ? { domain: process.env.AUTH_COOKIE_DOMAIN } : {}), \/* [elk-os] host-only unless AUTH_COOKIE_DOMAIN set *\//" lib/portal/auth.ts
+  # Same guard: if the spread-expression anchor drifted, the hardcoded
+  # `.analogelk.com` cookie domain survives and no session ever sticks on a
+  # self-host box. Prove the old literal is gone.
+  if grep -qF "domain: '.analogelk.com'" lib/portal/auth.ts; then
+    echo "[portal] lib/portal/auth.ts: cookie-domain anchor not found — the pinned commit changed auth.ts; update prepare-context.sh step 6b" >&2
+    exit 1
+  fi
   echo "[portal] patch lib/portal/auth.ts: env-driven (host-only) cookie domain"
 fi
 
@@ -276,5 +342,9 @@ if [ -f "${HERE}/.dockerignore" ]; then
   cp "${HERE}/.dockerignore" "${BUILD_DIR}/.dockerignore"
   echo "[portal] copied .dockerignore into build context"
 fi
+
+# Completion marker — LAST step, so bin/elk-os can distinguish a fully prepared
+# context (marker matches the pin) from a partial one or a pin bump.
+printf '%s\n' "$PIN" > "$MARKER"
 
 echo "[portal] build context ready at ${BUILD_DIR} (pinned ${PIN})"

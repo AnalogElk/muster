@@ -1,12 +1,13 @@
 # Changelog
 
-All notable changes to Elk OS are documented here. This file is maintained
+All notable changes to Elk OS (public product name: **Muster** — see the
+naming note in [`README.md`](./README.md)) are documented here. This file is maintained
 automatically by [release-please](https://github.com/googleapis/release-please)
 (`release-type: simple`) from [Conventional Commit](https://www.conventionalcommits.org/)
 history — do not edit released sections by hand. The version of record lives in
 [`version.txt`](./version.txt).
 
-## 0.1.0 (unreleased) — the first packaged cut
+## 0.1.0 (2026-06-30) — the first packaged cut
 
 The initial self-host packaging of Elk OS. Phases P0–P5 stood up the whole loop;
 P7 wraps it as a distributable product. One `./bin/elk-os up` brings up four

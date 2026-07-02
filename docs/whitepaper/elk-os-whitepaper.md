@@ -6,13 +6,13 @@
 
 *Working name: "Elk OS." It began as an internal tool for my agency, Analog Elk; Analog Elk is now the case study, not the headline. This is an operating system for agentic software teams.*
 
-*Live: [the portal](https://34.220.64.149.sslip.io) · [the build's own task board](https://cms.34.220.64.149.sslip.io). Note on the links: the demo runs on a `sslip.io` host with a real, browser-trusted Let's Encrypt certificate auto-provisioned by Caddy on a $3 box. (The live instance may be asleep between showings to save cost; archived snapshots stand in.)*
+*Live: [the portal, with the build's own task board inside](https://app.34.220.64.149.sslip.io) — read-only demo login `demo@muster.dev` / `muster-demo`. Note on the link: the demo runs on a `sslip.io` host with a real, browser-trusted Let's Encrypt certificate auto-provisioned by Caddy on a $3 box. The Directus Studio (the admin surface) is deliberately not publicly exposed; the portal is the read window — its API origin is public, but everything the demo login can reach on it is the same read-only scope. (The live instance may be asleep between showings to save cost; archived snapshots stand in.)*
 
 ---
 
 ## Abstract
 
-On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock (17:56 to 20:23 Pacific), spanned 8 phases, 27 commits, and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations that consumed over 2 million tokens. The result runs on a single AWS instance for about $2 to $4 per month, and you can open it right now.
+On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock (17:56 to 20:23 Pacific), spanned 8 phases, 27 commits, and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations that consumed over 2 million tokens. The result runs on a single AWS instance for about $2 to $4 per month at demo duty-cycle (stopped when idle; §7 firewalls the costs), and you can open it right now.
 
 That an agent fleet can emit 90 files quickly is not the interesting part. Volume is unfalsifiable and ages badly. The interesting part is the apparatus that let a long, multi-session, ship-grade build hold together without a human reviewing every diff, and the fact that the system used that apparatus on itself. Elk OS used its own task board as the build's spine, its own parallel fan-out to construct one of its own subsystems, and its own adversarial verifiers to keep its own sellable template clean.
 
@@ -73,9 +73,9 @@ In this build, contention was controlled one level up, by **disjoint dispatch**.
 
 ---
 
-## 3. The apparatus: five organs of an agent operating system
+## 3. The apparatus: six organs of an agent operating system
 
-Elk OS is a coordination architecture with named organs. Read it as a transferable mental model; you can build all five on any vendor's stack.
+Elk OS is a coordination architecture with named organs. Read it as a transferable mental model; you can build all six on any vendor's stack.
 
 **The spine: the shared task bus.** A Directus 11 instance over Postgres 15, exposing an `os_*` schema (`os_tasks`, `os_sprints`, `os_projects`, `releases`, `repositories`, `organizations`, `contacts`). The human watches it in the portal; the agent fleet reads and writes it over Directus's **native MCP server** at `/mcp`, not custom glue, gated by a single `mcp_enabled` setting. The credential is always an environment reference (`Bearer ${DIRECTUS_ADMIN_TOKEN}`), never a literal, so the real token lives only in a gitignored `.env`.
 
@@ -87,9 +87,9 @@ Elk OS is a coordination architecture with named organs. Read it as a transferab
 
 **The immune system: adversarial verification and loop-proofs.** Independent verifier agents whose mandate is to disprove the builder's claim, plus from-scratch loop-proofs that re-run the one-command install from an empty volume and check the contract holds.
 
-**The constitution: governance as plain-English code.** A numbered, versioned ruleset (`CLAUDE.md` §1 to §10) loaded into every session as non-optional context: secrets are env-only, one trunk equals production, semver is automated, never edit a contested worktree path, and a literal "definition of done" ceremony. The rules are imperative and testable. This is what makes a stateless model behave like a long-lived teammate.
+**The constitution: governance as plain-English code.** A numbered, versioned ruleset (`CLAUDE.md`) loaded into every session as non-optional context: secrets are env-only, one trunk equals production, semver is automated, never edit a contested worktree path, and a literal "definition of done" ceremony. This build ran under the author's ten-section constitution; the repo ships a distilled per-profile cut (six to seven sections) that `wire` renders into every deployment. The rules are imperative and testable. This is what makes a stateless model behave like a long-lived teammate.
 
-The whole thing stands up with one command. `bin/elk-os` is a resumable, idempotent phase machine (`init → up → migrate → seed → wire → doctor`) whose only hard dependency is Docker. The `doctor` subcommand is the credibility instrument: a green/red board that checks every subsystem from an empty start and exits nonzero on red. It is a from-scratch acceptance test, not a smoke check.
+The whole thing stands up with one command. `bin/elk-os` is a resumable, idempotent phase machine (`init → up → migrate → seed → wire → doctor`) whose only hard dependency is Docker (the `migrate`/`seed` phases additionally use stdlib `python3`). The `doctor` subcommand is the credibility instrument: a green/red board that checks every subsystem from an empty start and exits nonzero on red. It is a from-scratch acceptance test, not a smoke check.
 
 A note on alternatives, because "task board vs raw chat" is a soft target nobody serious argues for. The real competitors to a task board are: git itself (branches and PRs as the unit of work), markdown plan files in the repo (which my own spec-flow kit uses), and framework-managed handoff state (LangGraph, CrewAI, AutoGen). A board earns its place over markdown-plan-files for one reason: it is a **queryable, concurrently-writable, human-watchable** store with a stable ID per unit. Plan files in git serialize fine for one agent but invite merge conflicts the moment several agents update status at once, and they are not watchable in real time by a non-technical stakeholder. A board over a database gives you the query surface and the live human read-side that flat files do not. That is the honest reason to reach for one, and it is a smaller, more defensible claim than "tickets are novel."
 
@@ -119,7 +119,7 @@ The fleet caught roughly **7 functional bugs and 6 brand-leak references before 
 
 These were caught by **from-scratch reproduction and live deploy**, techniques that do not require parallelism or adversarial diversity. I am attributing them to *discipline*, not to *the fleet*, because a single agent that re-derives from zero would also find them. They are still real, and they are still bugs the ungoverned default ships, because the ungoverned default rarely re-runs from an empty volume.
 
-**The instructive one, walked end to end so you can see a receipt rather than take my word.** The RAG service claimed port `:9100`. A naive health check reported "healthy." It was lying: a *different*, already-running engine was answering on that port, and the check was passing for the wrong reason. The trail is on the board: a task row was opened for the RAG bring-up, a loop-proof run in a clean environment (where the impostor process was not present to flatter the check) flipped it red, the closing note recorded the root cause as a co-located listener, and the fix commit pinned the port and hardened the check to assert identity, not just a 200. "Tests pass" and "the system works" are different claims, and an agent watching its own rolling context sees green and moves on. The thing that caught it was not a smarter agent. It was a from-zero environment.
+**The instructive one, walked end to end so you can see a receipt rather than take my word.** The RAG service claimed port `:9100`. A naive health check reported "healthy." It was lying: a *different*, already-running engine was answering on that port, and the check was passing for the wrong reason. The trail is on the board: a task row was opened for the RAG bring-up, a loop-proof run in a clean environment (where the impostor process was not present to flatter the check) flipped it red, the closing note recorded the root cause as a co-located listener, and the fix commit (`5222976`, in the public repo) isolated the port — the default moved to `19100`, alongside the overlay's already-isolated Postgres/Qdrant/Redis ports — so no impostor is present to answer. One honesty note on the hardening: the shipped check parses the engine's reported status rather than accepting any 200, but it still does not assert *which* engine replied; that identity assertion is a filed follow-up, not a shipped fix. "Tests pass" and "the system works" are different claims, and an agent watching its own rolling context sees green and moves on. The thing that caught it was not a smarter agent. It was a from-zero environment.
 
 Also in this bucket: a genuine RAG port collision in the compose topology; a `set -e`/`pipefail` bug in `doctor` that would have silently swallowed failures, the exact opposite of a doctor's job; a compose path where turning RAG *off* aborted the whole stack; and an **arm64-vs-amd64 portal-image mismatch** that is invisible in code review and unit tests and only surfaces when real bytes hit a real machine. That last one was diagnosed and fixed live on the box during deploy. A from-scratch agent without a live-deploy loop produces a repo that "should work." This loop produced a box that does.
 
@@ -167,7 +167,7 @@ Every row is an architecture difference. But re-read §5 before you read this ta
 
 There are three different costs in this project and the slogans tend to blur them. Keep them apart:
 
-1. **Demo hosting:** ~$2 to $4 per month. This is the AWS box. It is what "cheap" refers to, and it has nothing to do with the cost of *building* the system.
+1. **Demo hosting:** ~$2 to $4 per month. This is the AWS box **at demo duty-cycle**: the instance is stopped when idle, so the floor is EBS storage (~$2/mo) plus pennies of compute for the hours it is actually up. Run the same box 24/7 and you are in ordinary always-on VPS territory (the repo's own provisioning docs quote ~$6–12/mo). It is what "cheap" refers to, and it has nothing to do with the cost of *building* the system.
 2. **Build model-spend:** the one-time cost of the 2.5-hour build. Over 2M subagent tokens. In dollars this is small in absolute terms but one to two orders of magnitude above the hosting figure.
 3. **Ongoing fleet-operating cost:** what it would cost to run this apparatus on your *next* project, which is dominated by token spend and by the human time to govern it.
 
@@ -187,13 +187,13 @@ Now the verdict, stated against my own interest: **the apparatus did not primari
 
 ## 8. Limitations: when not to reach for this
 
-**When it is overkill.** A single-file fix, a sub-100-LOC change, a throwaway prototype, anything that fits one window: the ungoverned default is faster and far cheaper, and the memory/board layer is pure overhead. Elk OS itself ships a `/quick` lane for exactly this. If a human reviews every diff, paying several agents to re-derive that judgment is redundant. If the work is genuinely novel and not verifiable, open-ended design with no ground truth, adversarial verifiers add little; they excel only at checkable properties.
+**When it is overkill.** A single-file fix, a sub-100-LOC change, a throwaway prototype, anything that fits one window: the ungoverned default is faster and far cheaper, and the memory/board layer is pure overhead. My own workflow kit has a `/quick` lane for exactly this (Elk OS does not ship one — deliberately; small work should not pay for the apparatus). If a human reviews every diff, paying several agents to re-derive that judgment is redundant. If the work is genuinely novel and not verifiable, open-ended design with no ground truth, adversarial verifiers add little; they excel only at checkable properties.
 
 **The apparatus's own failure modes.** Correlated blind spots survive fan-out, as §7 conceded. Verification is only as good as what it was built to check; a verifier that greps `AnalogElk` misses a paraphrase, a base64'd token, or a brand reference baked into an image asset. I can log the catches and cannot enumerate the misses. Several caught bugs (the `doctor` pipefail bug, the compose RAG-off abort) were *in the governance machinery itself*: more moving parts, more places to break. And the task-spine as single source of truth is also a single point of coupling, which leads to the next gap.
 
 **The spine is shared mutable state, and I have no graceful-degradation story.** If the board goes down mid-build, the fleet loses its coordination substrate, and I have not built a recovery path beyond "the orchestrator notices and restarts." Two agents *can* race a row (§2a). The board is sold as the solution to coordination while having a coordination problem of its own. On a $3 single-box demo the board is also a literal SPOF, and the live exhibit can 404 if the box hiccups.
 
-**The public-demo posture, stated so you do not assume the worst.** The headline exhibit is a publicly reachable Directus instance. The board is exposed for *reading* the receipt; the admin token that can write it is env-only and not in the client. The honest risk acceptance is mine: this is a disposable demo with seed data, not production, and standing it up at a guessable URL with these specific exposures was a blast-radius judgment I made deliberately. If you self-host past a demo, lock the public read surface and never expose the admin instance.
+**The public-demo posture, stated so you do not assume the worst.** The headline exhibit is a public, read-only window onto a real Directus instance. Directus itself — Studio and the admin surface — is deliberately not publicly exposed; the board is read through the portal's demo login, and the admin token that can write it is env-only and never in the client. The honest risk acceptance is mine: this is a disposable demo with seed data, not production, and standing it up at a guessable URL with these specific exposures was a blast-radius judgment I made deliberately. If you self-host past a demo, lock the public read surface and never expose the admin instance.
 
 **What still needs a human, non-negotiably.** This is the part I most want a hiring manager to read, so I am putting it in the body rather than a footnote. The reframe, "this is a product, Analog Elk is just the case study," was a product call no agent made. The shipped-vs-aspirational ledger exists because a human insisted on honesty and defined what counts as shipped; agents optimize toward "done" and only a human reliably separates done from claimed-done. The arm64/amd64 fix happened live on metal with a human diagnosing. Bounding the fan-out, deciding "this is enough verification," is human ROI governance; the machine will fan out forever. These judgment calls are the leadership content of this build, not a caveat to it.
 
@@ -205,7 +205,7 @@ The break-even rule: the apparatus pays off when the work is **multi-session** (
 
 One loud caveat first, because every confound in this paper points the same way: this is **one anecdote, self-built, on the most favorable possible case**. The playbook below is reasoned extrapolation, untested elsewhere. Treat it as a hypothesis to falsify on your own work, not a proven method.
 
-With that stated, the five organs are transferable, and none of it is vendor magic:
+With that stated, the six organs are transferable, and none of it is vendor magic:
 
 1. **Pick a durable store.** Any ticket system or database with an API. Make the task row the unit of work, the thing agents operate *on*. Prefer it over markdown-plan-files once more than one agent updates status concurrently (§3).
 2. **Give every agent the protocol:** claim → work → verify → close, and build *real* claim semantics if you scale past human-arbitrated dispatch (§2a). Do not assume the row is atomic.
@@ -220,20 +220,20 @@ Separate **state** (the task bus) from **lessons** (memory files) from **narrati
 
 ## 10. Run it yourself, and watch the spine
 
-The apparatus is open and self-hostable. The one-command flow is the whole pitch, and the `doctor` board at the end is the credibility instrument:
+The apparatus is public and self-hostable (license selection is in progress; see the repo's `LICENSE-RECOMMENDATION.md`). The one-command flow is the whole pitch, and the `doctor` board at the end is the credibility instrument:
 
 ```
 bin/elk-os init      # scaffold + env
 bin/elk-os up        # compose core (Directus, Postgres, RAG, portal)
 bin/elk-os migrate   # apply os_* schema
 bin/elk-os seed      # profile data (generic | analogelk)
-bin/elk-os wire      # enable native MCP, mint env-referenced token
+bin/elk-os wire      # enable native MCP, wire Claude to the board (env-referenced token)
 bin/elk-os doctor    # green/red from-scratch acceptance board
 ```
 
-The repository ships `bin/elk-os`, the `CLAUDE.md` §1 to §10 constitution (the single most reusable artifact in this package, and the one I would copy first), the two profiles, and the compose topology. The repo link lives on the demo homepage alongside this paper.
+The repository is public: [github.com/AnalogElk/muster](https://github.com/AnalogElk/muster). It ships `bin/elk-os`, the `CLAUDE.md` constitution templates — a distilled cut of the ten-section ruleset that governed this build (the single most reusable artifact in this package, and the one I would copy first) — the two profiles, and the compose topology.
 
-An empty repository became a live, self-hostable product in about 2.5 hours, governed end to end by its own task board, hosted for a few dollars a month, and you can poke the real thing now. The [portal](https://34.220.64.149.sslip.io) is the human read-side of the loop. The [Directus board](https://cms.34.220.64.149.sslip.io) is the spine itself: open it and you are looking at the actual coordination substrate of *this build*, the same `os_tasks` rows the fleet claimed, worked, and closed to bring the system into existence.
+An empty repository became a live, self-hostable product in about 2.5 hours, governed end to end by its own task board, hosted for a few dollars a month, and you can poke the real thing now. The [portal](https://app.34.220.64.149.sslip.io) is the human read-side of the loop, and the board it renders is the spine itself: sign in with the read-only demo login (`demo@muster.dev` / `muster-demo`) and you are looking at the actual coordination substrate of *this build*, the same `os_tasks` rows the fleet claimed, worked, and closed to bring the system into existence. (The Directus Studio/admin surface is not publicly exposed; the portal is the read window, and the demo login holds the same read-only scope at the API.)
 
 The model is stateless; the organization around it does not have to be. That is the whole argument. The next generation of dev tools will not compete on model quality, which commoditizes. They will compete on the operating system around the model, and the task record is its coordination substrate. Make the ticket the unit of work, and the chat becomes disposable.
 
@@ -241,4 +241,4 @@ It built the thing that ships itself. Go watch the spine.
 
 ---
 
-*Mike Walliser is a creative technologist and AI-systems builder. The homepage you are reading is itself the deliverable: a static field report that survives the live system being down, with the running system one link away. Elk OS is the headline; Analog Elk is the first install.*
+*Mike Walliser is a creative technologist and AI-systems builder. The page you are reading is itself part of the deliverable: a static field report that survives the live system being down, with the running system one link away. Elk OS is the headline; Analog Elk is the first install.*

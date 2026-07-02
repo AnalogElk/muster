@@ -12,10 +12,10 @@
 #   export ELK_OS_ADMIN_EMAIL=you@example.com    # optional (default admin@<domain>)
 #   export ELK_OS_PROFILE=generic                # generic | analogelk
 #   # --- full-stack portal (optional) — needs PUBLISHED images (see README) ---
-#   export PORTAL_IMAGE=ghcr.io/<owner>/elk-os-portal:0.1.0
-#   export RAG_IMAGE=ghcr.io/<owner>/elk-os-rag-api:0.1.0
+#   export PORTAL_IMAGE=ghcr.io/analogelk/elk-os-portal:0.1.0
+#   export RAG_IMAGE=ghcr.io/analogelk/elk-os-rag-api:0.1.0
 #   # --- where to get elk-os ---
-#   export ELK_OS_REPO=https://github.com/<owner>/elk-os.git   # git source, OR
+#   export ELK_OS_REPO=https://github.com/AnalogElk/muster.git  # git source, OR
 #   export ELK_OS_SOURCE_DIR=/root/elk-os                      # a pre-copied tree
 #   bash cloud-init.sh
 #
@@ -120,9 +120,13 @@ if [ ! -f .env ]; then
 else
   log ".env already exists — keeping it (init skipped)."
 fi
+# Belt-and-braces: .env carries every stack secret — owner-only, even if it
+# pre-existed from an older install that wrote it world-readable.
+chmod 600 .env
 
 # Box-target wiring: pin the public origins so the host CLI + portal + Directus
-# all agree. Directus lives on cms.${ELK_OS_DOMAIN}; the portal takes the apex.
+# all agree. Directus lives on cms.${ELK_OS_DOMAIN}; the portal lives on
+# app.${ELK_OS_DOMAIN}; the apex serves the static whitepaper landing (site/).
 set_kv() { # key value — replace or append in .env
   local k="$1" v="$2"
   if grep -qE "^${k}=" .env; then
@@ -156,7 +160,7 @@ fi
 # ---------------------------------------------------------------------------
 # 5. up → migrate → seed → wire → doctor
 # ---------------------------------------------------------------------------
-log "Bringing the stack up (Caddy provisions TLS for ${ELK_OS_DOMAIN} + cms.${ELK_OS_DOMAIN})…"
+log "Bringing the stack up (Caddy provisions TLS for ${ELK_OS_DOMAIN} + app.${ELK_OS_DOMAIN} + cms.${ELK_OS_DOMAIN})…"
 ./bin/elk-os up
 
 log "Applying schema (migrate)…"
@@ -172,7 +176,8 @@ log "Health board (doctor)…"
 ./bin/elk-os doctor || log "doctor reported a red row — inspect: cd ${ELK_OS_INSTALL_DIR} && ./bin/elk-os logs <service>"
 
 log "Done."
-log "  Portal (if enabled):  https://${ELK_OS_DOMAIN}"
+log "  Landing (whitepaper): https://${ELK_OS_DOMAIN}"
+log "  Portal (if enabled):  https://app.${ELK_OS_DOMAIN}"
 log "  Directus board:       https://cms.${ELK_OS_DOMAIN}"
 log "  Native MCP endpoint:  https://cms.${ELK_OS_DOMAIN}/mcp"
 log "  Wired Claude config:  ${ELK_OS_INSTALL_DIR}/wire (run ./run-claude.sh)"
