@@ -7,6 +7,13 @@ automatically by [release-please](https://github.com/googleapis/release-please)
 history — do not edit released sections by hand. The version of record lives in
 [`version.txt`](./version.txt).
 
+## [0.1.1](https://github.com/AnalogElk/muster/compare/v0.1.0...v0.1.1) (2026-07-02)
+
+
+### Fixed
+
+* self-optimize refine pass (correctness, security, docs, copy) ([#3](https://github.com/AnalogElk/muster/issues/3)) ([ca2c46f](https://github.com/AnalogElk/muster/commit/ca2c46f3f66dac2cd88ae758a92e1d858038d776))
+
 ## 0.1.0 (2026-06-30) — the first packaged cut
 
 The initial self-host packaging of Elk OS. Phases P0–P5 stood up the whole loop;
