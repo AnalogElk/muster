@@ -1,17 +1,30 @@
 # FINAL IDENTITY + HOMEPAGE SPEC — the agent-built agency OS
 
-> **Status note (2026-07-01):** this brief is the historical spec; four of its
-> prescriptions were deliberately superseded during implementation. (1) The
-> "Build board" exhibit at `cms.<host>` is NO LONGER publicly linked — Directus
-> Studio is hidden (302 to apex) and the board is read through the portal's
-> read-only demo login (`demo@muster.dev` / `muster-demo`); do not re-expose
-> raw `cms.*` links. (2) `muster.dev` is not yet registered; the canonical URL
-> stays the sslip.io host until the domain is live (see the comment in
-> `site/index.html`). (3) The name-clearance protocol in §0 remains an open
+> **Status note (2026-07-01, amended 2026-07-02):** this brief is the historical
+> spec; six of its prescriptions were deliberately superseded during
+> implementation. (1) The "Build board" exhibit at `cms.<host>` is NO LONGER
+> publicly linked — Directus Studio is hidden (302 to apex) and the board is
+> read through the portal's read-only demo login (`demo@muster.dev` /
+> `muster-demo`); do not re-expose raw `cms.*` links. (2) *(superseded by (6))*
+> the canonical domain question is resolved: it is **https://musterr.dev**, not
+> `muster.dev`. (3) The name-clearance protocol in §0 remains an open
 > follow-up, not done. (4) The "never say 'whitepaper' in UI copy" rule was
 > relaxed: the shipped site labels the paper link "Whitepaper" (topbar, hero,
-> §11, footer) because the link targets a literal long-form paper page — the
+> §12, footer) because the link targets a literal long-form paper page — the
 > hero and page nouns stay "build log" as prescribed.
+> (5) 2026-07-02: the hiring-signal audience is upgraded from "secondary, never
+> the headline" to an explicit goal — the product stays the protagonist, but the
+> site now carries a dated "one week in service" evidence section (18 PRs/48h
+> across 8 repos, the four evidenced gate refusals, the crash-recovery resume,
+> runs-a-real-agency) and a one-line mono colophon in the Author section +
+> footer (Michael Walliser — creative technologist · walliser.me ·
+> github.com/AnalogElk/muster). The work argues for the builder; no CV content
+> on-page. (6) The canonical domain is **https://musterr.dev** (double R,
+> deliberate — `muster.dev` is not ours); every `muster.dev` prescription in
+> §0/§4 reads as `musterr.dev`. The sslip.io host remains the *serving* URL
+> until DNS cutover; the seeded demo login stays `demo@muster.dev` (single R,
+> predates the domain move) until the demo user is re-seeded in lockstep with
+> copy.
 
 *This is the decisive, buildable brief. It resolves the four-lens draft against three critique passes (credibility/thesis, identity-sharpness, completeness). Every contested decision is closed here and carried consistently through every section. The product noun is set; the visual identity is decoupled from it; the demo seam is fixed; the perf budget is made real.*
 

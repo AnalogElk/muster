@@ -1,10 +1,10 @@
-# Elk OS: The Task Record Is the Coordination Substrate
+# Muster: The Task Record Is the Coordination Substrate
 
-### How a governed fleet of AI agents built, and publicly shipped, the product that packages its own governance, in roughly 2.5 hours on a $3-a-month box
+### How a governed fleet of AI agents built and publicly shipped the product that packages its own governance — in roughly 2.5 hours, on a $3-a-month box
 
 **A field report by Mike Walliser · 2026-06-29**
 
-*Working name: "Elk OS." It began as an internal tool for my agency, Analog Elk; Analog Elk is now the case study, not the headline. This is an operating system for agentic software teams.*
+*Working name: "Elk OS" — it survives in the CLI (`bin/elk-os`) and env vars. Muster began as the internal tool of my agency, Analog Elk; Analog Elk is now the case study, not the headline. This is an operating system for agentic software teams.*
 
 *Live: [the portal, with the build's own task board inside](https://app.34.220.64.149.sslip.io) — read-only demo login `demo@muster.dev` / `muster-demo`. Note on the link: the demo runs on a `sslip.io` host with a real, browser-trusted Let's Encrypt certificate auto-provisioned by Caddy on a $3 box. The Directus Studio (the admin surface) is deliberately not publicly exposed; the portal is the read window — its API origin is public, but everything the demo login can reach on it is the same read-only scope. (The live instance may be asleep between showings to save cost; archived snapshots stand in.)*
 
@@ -14,13 +14,15 @@
 
 On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock (17:56 to 20:23 Pacific), spanned 8 phases, 27 commits, and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations that consumed over 2 million tokens. The result runs on a single AWS instance for about $2 to $4 per month at demo duty-cycle (stopped when idle; §7 firewalls the costs), and you can open it right now.
 
-That an agent fleet can emit 90 files quickly is not the interesting part. Volume is unfalsifiable and ages badly. The interesting part is the apparatus that let a long, multi-session, ship-grade build hold together without a human reviewing every diff, and the fact that the system used that apparatus on itself. Elk OS used its own task board as the build's spine, its own parallel fan-out to construct one of its own subsystems, and its own adversarial verifiers to keep its own sellable template clean.
+That an agent fleet can emit 90 files quickly is not the interesting part. Volume is unfalsifiable and ages badly. The interesting part is the apparatus that let a long, multi-session, ship-grade build hold together without a human reviewing every diff, and the fact that the system used that apparatus on itself. Muster used its own task board as the build's spine, its own parallel fan-out to construct one of its own subsystems, and its own adversarial verifiers to keep its own sellable template clean.
 
 This paper makes one architectural claim and defends exactly it:
 
 > **The task record, not the chat transcript, is the coordination substrate between a human and a fleet of AI agents.**
 
 Two honesty notes up front, because the rest of the paper depends on them. First, the contribution here is not new primitives. Claude Code already ships subagents, a session-loaded `CLAUDE.md`, and worktree support. The contribution is **assembling existing primitives into a coordination architecture anchored on a durable task board**, and reporting what that buys. Second, this is **n=1**: one build, by the tool's author, of the tool itself, the single most favorable possible case. Read it as an existence proof and a reasoned playbook, not a controlled study. I did not run the control, and I will say so again where it matters.
+
+*[2026-07-02] The n has since grown: in one 48-hour window this apparatus carried 18 PRs to production across 8 repositories, and its 3-reviewer risk gate stopped four machine-written changes with reproducible evidence — including one fix proven to be a no-op by its own deploy preview. Still author-run; no longer one build. See the postscript.*
 
 ---
 
@@ -67,7 +69,7 @@ The argument of this paper is about the first one. The other two are necessary s
 
 A CTO's first question is the right one. If the board is the coordination substrate, what stops two parallel agents from grabbing the same row? This is the load-bearing engineering question, and I will answer it honestly rather than wave at it.
 
-Elk OS does **not** rely on the Directus row being magically atomic. It isn't. A row has `assigned_to` and `status`, and the protocol is a compare-and-set: read the row, confirm it is unclaimed, write your identity and an in-progress status, then proceed. But Directus does not give you a true row lock by default, and I have observed the failure this implies: my own working memory carries the note *"version collisions happen across parallel sessions, re-check before bumping."* Two agents *can* race a row and produce a lost update.
+Muster does **not** rely on the Directus row being magically atomic. It isn't. A row has `assigned_to` and `status`, and the protocol is a compare-and-set: read the row, confirm it is unclaimed, write your identity and an in-progress status, then proceed. But Directus does not give you a true row lock by default, and I have observed the failure this implies: my own working memory carries the note *"version collisions happen across parallel sessions, re-check before bumping."* Two agents *can* race a row and produce a lost update.
 
 In this build, contention was controlled one level up, by **disjoint dispatch**. The orchestrator (me, plus the top-level Claude session) handed each fan-out agent a non-overlapping slice of work, and physical isolation came from worktrees, not from the board. So the precise, defensible claim is this: the task record is where work is *represented, persisted, and audited* across the fleet; staying off each other's toes came from disjoint dispatch and worktree isolation, not from the board solving contention by existing. If you scale past human-arbitrated dispatch, you need real claim semantics (optimistic concurrency with a version check, or a queue in front of the board). I have not built that, and I am not going to pretend the row gives it to you for free.
 
@@ -75,7 +77,7 @@ In this build, contention was controlled one level up, by **disjoint dispatch**.
 
 ## 3. The apparatus: six organs of an agent operating system
 
-Elk OS is a coordination architecture with named organs. Read it as a transferable mental model; you can build all six on any vendor's stack.
+Muster is a coordination architecture with named organs. Read it as a transferable mental model; you can build all six on any vendor's stack.
 
 **The spine: the shared task bus.** A Directus 11 instance over Postgres 15, exposing an `os_*` schema (`os_tasks`, `os_sprints`, `os_projects`, `releases`, `repositories`, `organizations`, `contacts`). The human watches it in the portal; the agent fleet reads and writes it over Directus's **native MCP server** at `/mcp`, not custom glue, gated by a single `mcp_enabled` setting. The credential is always an environment reference (`Bearer ${DIRECTUS_ADMIN_TOKEN}`), never a literal, so the real token lives only in a gitignored `.env`.
 
@@ -97,7 +99,7 @@ A note on alternatives, because "task board vs raw chat" is a soft target nobody
 
 ## 4. The recursion: the system built the thing that ships the system
 
-Every capability Elk OS ships was used to build Elk OS:
+Every capability Muster ships was used to build Muster:
 
 | The capability the product ships | …is the capability that built it |
 |---|---|
@@ -127,7 +129,7 @@ Also in this bucket: a genuine RAG port collision in the compose topology; a `se
 
 These are the ones that genuinely required more than one decorrelated perspective.
 
-The **six leak-scrubs** are the clearest. Elk OS ships two profiles, `generic` and `analogelk`, and the commercial premise is that `generic` contains zero trace of its origin. A scrub-audit plus three adversarial leak-verifiers found and cleaned 6 real "AnalogElk" / analogelk.com references before they could ship in the sellable template. I will undercut my own rhetoric here, because honesty is the brand: these six are *string-checkable*, which means a deterministic grep or linter would also catch them. So they are strong evidence that an automated provenance gate beats good intentions, and **weak** evidence for *fan-out specifically*. The fan-out's marginal value over a linter shows up only on the paraphrased, non-literal leaks, and those were fewer and softer.
+The **six leak-scrubs** are the clearest. Muster ships two profiles, `generic` and `analogelk`, and the commercial premise is that `generic` contains zero trace of its origin. A scrub-audit plus three adversarial leak-verifiers found and cleaned 6 real "AnalogElk" / analogelk.com references before they could ship in the sellable template. I will undercut my own rhetoric here, because honesty is the brand: these six are *string-checkable*, which means a deterministic grep or linter would also catch them. So they are strong evidence that an automated provenance gate beats good intentions, and **weak** evidence for *fan-out specifically*. The fan-out's marginal value over a linter shows up only on the paraphrased, non-literal leaks, and those were fewer and softer.
 
 The **seam bugs** are the more honest case for the fleet: a required `releases.repository_id` foreign key missing from the pruned schema snapshot, and AE seed files bare-named and colliding with a kept UI-folder collection. These are integration and packaging bugs that live between subsystems, where a single agent optimizing the file in front of it has no vantage point. Parallel explorers attacking the seams found them.
 
@@ -139,7 +141,7 @@ The **seam bugs** are the more honest case for the fleet: a required `releases.r
 
 ### On the fleet's true size
 
-"30+ subagents" deserves a breakdown so the number does not read as inflated. The accounted core is the 8-agent schema workflow and the 5-agent live-pricing cost panel. The remainder were explorers, builders, and verifiers spread across the other phases, several of them single-shot. Not all of them produced kept work: some fan-outs returned partial or discarded output that was retried or dropped, and that wasted production is part of the token cost in §7. I did not instrument a precise discard rate, which is itself a measurement gap I would close on a real product run.
+"30+ subagents" deserves a breakdown so the number does not read as inflated. The accounted core is the 8-agent schema workflow and the 4-lens live-pricing cost panel. The remainder were explorers, builders, and verifiers spread across the other phases, several of them single-shot. Not all of them produced kept work: some fan-outs returned partial or discarded output that was retried or dropped, and that wasted production is part of the token cost in §7. I did not instrument a precise discard rate, which is itself a measurement gap I would close on a real product run.
 
 ---
 
@@ -147,7 +149,7 @@ The **seam bugs** are the more honest case for the fleet: a required `releases.r
 
 The ungoverned single-agent workflow is faster to start, cheaper per token, and the correct choice for a large class of work. The apparatus is a specialization, not a general upgrade.
 
-| Capability | Ungoverned single-agent workflow | Elk OS apparatus |
+| Capability | Ungoverned single-agent workflow | Muster apparatus |
 |---|---|---|
 | Cross-session state | one rolling window | durable `os_*` board + disk memory + log |
 | Memory | none in practice | memory files + local RAG recall |
@@ -175,19 +177,19 @@ Now the verdict, stated against my own interest: **the apparatus did not primari
 
 **Wall-clock: real but secondary, and I will not fake the math.** Parallel fan-out helped, but a large share of the build (scaffold, compose wiring, live-box debugging, packaging) was inherently serial. An honest estimate is that fan-out bought something in the range of 1.5× to 2× on overall wall-clock, with the 8-agent schema phase collapsing far more *on that phase alone*. I am labeling that a rough estimate, not a measurement. I do **not** have a measured parallel fraction, and the precise Amdahl figure an earlier draft of this paper carried was invented. I am removing it rather than dress up a guess as arithmetic.
 
-**Correctness: where most of the value lives.** ~7 functional bugs + 6 leaks = ~13 defects caught, **0 known-shipped as of writing** (I can count catches; I cannot enumerate misses, so "0 shipped" is survivorship and I will not claim it as a hard zero). Why would a linear run ship some of these? Because the single pass that *wrote* the `analogelk.com` reference is the same pass asked to *find* it, error-correlated, so it ships it. The verification layer's job is error decorrelation. With the caveat from §5: my verifiers are the *same base model* with different prompts and temperatures, which is weak decorrelation. They share training-failure modes. The decorrelation is real for surface and seam errors and thin for anything where the base model is confidently and uniformly wrong.
+**Correctness: where most of the value lives.** ~7 functional bugs + 6 leaks = ~13 defects caught, **0 known-shipped as of writing** (I can count catches; I cannot enumerate misses, so "0 shipped" is survivorship and I will not claim it as a hard zero). *[2026-07-02 follow-up: the survivorship caveat was right — the first post-ship self-audit (PR #3) found and fixed 14 shipped defects, enumerated in that PR's commit trail. The ledger firing is the mechanism working, not failing.]* Why would a linear run ship some of these? Because the single pass that *wrote* the `analogelk.com` reference is the same pass asked to *find* it, error-correlated, so it ships it. The verification layer's job is error decorrelation. With the caveat from §5: my verifiers are the *same base model* with different prompts and temperatures, which is weak decorrelation. They share training-failure modes. The decorrelation is real for surface and seam errors and thin for anything where the base model is confidently and uniformly wrong.
 
-**Durability: the "possible at all" win.** The build consumed over 2M subagent tokens across 7+ sessions. A single window cannot physically hold that; it compacts, forgets, re-reads, re-litigates. By externalizing state into the board, disk memory, and the log, the apparatus turned an impossible-for-one-window task into a resumable one. This is the cleanest win, because it is categorical: a linear run does not finish this build cleanly, it stalls at the context boundary.
+**Durability: the "possible at all" win.** The build consumed over 2M subagent tokens across 7+ sessions. A single window cannot physically hold that; it compacts, forgets, re-reads, re-litigates. By externalizing state into the board, disk memory, and the log, the apparatus turned an impossible-for-one-window task into a resumable one. This is the cleanest win, because it is categorical: a linear run does not finish this build cleanly, it stalls at the context boundary. *[2026-07-02 follow-up: this was later tested the hard way — on 2026-07-01 the orchestrating session was killed mid-flight by a machine crash; because every unit of work lived in the task record and per-agent journals, a fresh session reconstructed the full state and resumed with zero lost work.]*
 
 **The cost, plainly.** The apparatus spent over 2M tokens, dominated by coordination rather than production: the same artifact read and re-reasoned several times, plus the discarded fan-out output from §5. There is a genuine token premium on every run, including runs where the verifiers find nothing. You are buying insurance, and you pay the premium whether or not you file a claim.
 
-**The caveat I will defend rather than hide.** I did not run the control. I did not build Elk OS twice and measure the delta. "The ungoverned default would have shipped these" is a reasoned argument from the logged catches, not a measured A/B. The bugs and the catches are in the board's history; the counterfactual is inference. I would rather state that than imply a rigor I did not perform.
+**The caveat I will defend rather than hide.** I did not run the control. I did not build Muster twice and measure the delta. "The ungoverned default would have shipped these" is a reasoned argument from the logged catches, not a measured A/B. The bugs and the catches are in the board's history; the counterfactual is inference. I would rather state that than imply a rigor I did not perform.
 
 ---
 
 ## 8. Limitations: when not to reach for this
 
-**When it is overkill.** A single-file fix, a sub-100-LOC change, a throwaway prototype, anything that fits one window: the ungoverned default is faster and far cheaper, and the memory/board layer is pure overhead. My own workflow kit has a `/quick` lane for exactly this (Elk OS does not ship one — deliberately; small work should not pay for the apparatus). If a human reviews every diff, paying several agents to re-derive that judgment is redundant. If the work is genuinely novel and not verifiable, open-ended design with no ground truth, adversarial verifiers add little; they excel only at checkable properties.
+**When it is overkill.** A single-file fix, a sub-100-LOC change, a throwaway prototype, anything that fits one window: the ungoverned default is faster and far cheaper, and the memory/board layer is pure overhead. My own workflow kit has a `/quick` lane for exactly this (Muster does not ship one — deliberately; small work should not pay for the apparatus). If a human reviews every diff, paying several agents to re-derive that judgment is redundant. If the work is genuinely novel and not verifiable, open-ended design with no ground truth, adversarial verifiers add little; they excel only at checkable properties.
 
 **The apparatus's own failure modes.** Correlated blind spots survive fan-out, as §7 conceded. Verification is only as good as what it was built to check; a verifier that greps `AnalogElk` misses a paraphrase, a base64'd token, or a brand reference baked into an image asset. I can log the catches and cannot enumerate the misses. Several caught bugs (the `doctor` pipefail bug, the compose RAG-off abort) were *in the governance machinery itself*: more moving parts, more places to break. And the task-spine as single source of truth is also a single point of coupling, which leads to the next gap.
 
@@ -220,7 +222,7 @@ Separate **state** (the task bus) from **lessons** (memory files) from **narrati
 
 ## 10. Run it yourself, and watch the spine
 
-The apparatus is public and self-hostable (license selection is in progress; see the repo's `LICENSE-RECOMMENDATION.md`). The one-command flow is the whole pitch, and the `doctor` board at the end is the credibility instrument:
+The apparatus is public, MIT-licensed (© Michael Walliser; the `os_*` schema's lineage from directus-labs/agency-os is attributed in `NOTICE`), and self-hostable — permissive on purpose: the business is services, and the code is the credential, not the moat. The short path from clone to green board is the whole pitch, and the `doctor` board at the end is the credibility instrument:
 
 ```
 bin/elk-os init      # scaffold + env
@@ -241,4 +243,10 @@ It built the thing that ships itself. Go watch the spine.
 
 ---
 
-*Mike Walliser is a creative technologist and AI-systems builder. The page you are reading is itself part of the deliverable: a static field report that survives the live system being down, with the running system one link away. Elk OS is the headline; Analog Elk is the first install.*
+## Postscript — 2026-07-02, one week in service
+
+Two things happened after this paper was written that bear on its claims, so I am appending rather than rewriting (the log's rule). First, the durability claim met a harder test than a context boundary: the orchestrating session was killed mid-flight by a machine crash. Because every unit of work lives in the task record and per-agent journals, a fresh session reconstructed the full state and resumed with zero lost work. Second, the apparatus carried real production load: 18 pull requests across 8 repositories in one 48-hour window, every machine-written change passing a 3-reviewer adversarial gate — a gate that also refused four changes with reproducible evidence, including a fix it proved to be a complete no-op via its own deploy preview, and a blog rollout it still holds because indexing thin pages before the content exists would be an SEO regression. The system this packages runs a real agency in production: clients, invoices, uptime monitoring, backup restore drills, automated releases (Muster v0.1.1 and the agency platform's v1.21.0, both cut 2026-07-02). Still n=1, still self-reported — but now logged against production, not a demo.
+
+---
+
+*Mike Walliser is a creative technologist and AI-systems builder ([walliser.me](https://walliser.me)). The page you are reading is itself part of the deliverable: a static field report that survives the live system being down, with the running system one link away. Muster is the headline; Analog Elk is the first install. Source: [github.com/AnalogElk/muster](https://github.com/AnalogElk/muster).*
