@@ -9,7 +9,10 @@
 <p align="center">
   <a href="https://34.220.64.149.sslip.io">Live demo &amp; whitepaper</a> ·
   <a href="https://app.34.220.64.149.sslip.io">Live portal</a>
-  (read-only demo login <code>demo@muster.dev</code> / <code>muster-demo</code>)
+  (read-only demo login <code>demo@muster.dev</code> / <code>muster-demo</code>)<br>
+  <sub>The demo serves from a raw <code>sslip.io</code> host with a real Let's Encrypt cert
+  until <strong>musterr.dev</strong> (double R — deliberate) DNS cuts over — same box, same TLS.
+  The demo login keeps the older single-R address.</sub>
 </p>
 
 > **Naming note:** the public product name is **Muster**; **Elk OS** is the
@@ -148,6 +151,20 @@ version of record lives in [`version.txt`](./version.txt); the narrative in
 `fix:`/`perf:` → patch, `feat!:` → major). On tag, service images publish to GHCR
 ([`publish-images.yml`](./.github/workflows/publish-images.yml)).
 
+## Does it hold up outside a demo?
+
+The system Muster packages runs a real agency in production — real clients,
+invoices, uptime monitoring, backup restore drills, automated releases. In one
+48-hour window (2026-07-01/02) it carried **18 pull requests to production
+across 8 repositories**, every machine-written change passing a **3-reviewer
+adversarial risk gate** before merge. The gate earns its keep by saying no: in
+that window it stopped four changes with reproducible evidence — including a
+"fix" it proved to be a complete no-op via its own deploy preview, and a blog
+rollout it still holds because indexing thin pages before the content exists
+would be an SEO regression. When the orchestrating session was killed by a
+machine crash, a fresh session rebuilt the full state from the task record and
+per-agent journals and resumed with zero lost work.
+
 ## Design & status
 
 Full spec: [`docs/superpowers/specs/2026-06-29-elk-os-installer-design.md`](./docs/superpowers/specs/2026-06-29-elk-os-installer-design.md).
@@ -165,3 +182,6 @@ from [directus-labs/agency-os](https://github.com/directus-labs/agency-os)
 any redistribution. Decision record: permissive licensing maximizes adoption and
 trust; the business is services (hosting, support, custom builds) — the code is
 the credential, not the moat.
+
+Built by [Michael Walliser](https://walliser.me), creative technologist —
+Muster is the credential.

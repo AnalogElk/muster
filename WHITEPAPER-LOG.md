@@ -445,5 +445,55 @@ Three moves turned the public demo from "seeded" to real, and the code went publ
 
 ---
 
+## 2026-07-02 — Session 11: one week in service — licensing, releases, the post-ship audit, and the musterr.dev copy sweep
+
+Catching the ledger up (dated corrections, per the header rule — nothing above is edited):
+
+- **Licensing RESOLVED (corrects Session 6).** Session 6 recorded "no binding `LICENSE`
+  committed" with `LICENSE-RECOMMENDATION.md` laying out the options. Mike decided: **MIT,
+  © Michael Walliser**, adopted via PR #4 (merged 2026-07-02); `LICENSE-RECOMMENDATION.md`
+  retired; `NOTICE` retains the directus-labs/agency-os (MIT) schema lineage. Decision
+  record: the business is services — the code is the credential, not the moat.
+- **Releases cut (corrects Session 10's "v0.1.0 PR pending").** release-please shipped
+  **v0.1.0** (2026-07-01) and **v0.1.1** (2026-07-02).
+- **The "0 known-shipped defects" verdict fired, as designed (corrects the §8/site ledger
+  row).** The first post-ship self-audit — PR #3, a multi-round adversarially-verified
+  audit/fix loop, merged 2026-07-02 — found and fixed **14 verified shipped defects in its
+  first round alone** (among them: `init --force` silently rotating live secrets, the
+  demo role retaining app access, unpinned CORS on public deploy targets), all logged in
+  the CHANGELOG. The survivorship caveat was correct; the ledger catching its own misses
+  is the mechanism working.
+- **The service record (2026-07-01/02, checkable in public repo history).** In one
+  48-hour window the apparatus carried **18 PRs to production across 8 repositories**
+  (10 to the agency platform, plus muster, wlsr-me, the-station-chat,
+  stillframes-portfolio-front-end, a Next/Directus template). Every machine-written
+  change passed a **3-reviewer adversarial risk gate**; the gate refused four changes
+  with reproducible evidence: a fix proven a complete no-op by its own deploy preview
+  (the-station-front-end #15 — real defect was a CMS value, fixed at the source), a PR
+  that broke a test mock (analog-elk-front-end #289 — fixed, re-verified, shipped), a
+  sitemap change that would have advertised noindexed soft-404 pages (#287 — split, safe
+  half shipped), and a blog rollout still held until the CMS content exists (#294).
+- **The durability thesis, tested the hard way.** On 2026-07-01 the orchestrating session
+  was killed mid-flight by a machine crash; a fresh session reconstructed the full state
+  from the task record + per-agent journals and resumed with zero lost work.
+- **Domain cutover + copy sweep (this session).** The canonical domain becomes
+  **https://musterr.dev** (double R, deliberate — `muster.dev` is not ours); canonical,
+  `og:url`, and og-image URLs now point there while the sslip.io host keeps serving until
+  DNS cuts over. The seeded demo login stays `demo@muster.dev` on purpose (it predates
+  the move; re-seeding is a tracked follow-up — copy and seed change in lockstep, never
+  copy-only). A four-lens copy audit was applied across the site, README, whitepaper, and
+  identity brief: the paper is retitled **Muster** at the source (the render-time token
+  swap is now a safety net), the stale "license selection is in progress /
+  `LICENSE-RECOMMENDATION.md`" claim in §10 is fixed, the site + paper gained a dated
+  "one week in service" addendum/postscript using only the logged facts above, the site's
+  "0 known-shipped defects" ledger row now carries the PR #3 correction, the cost panel
+  is re-labeled **4-lens** to match this log (the earlier "5-agent" phrasing had no
+  in-log receipt; token counts are now marked "by session accounting"), the "One command."
+  heading over a six-command snippet now says six, and the author sections gained a
+  colophon (walliser.me · mike@analogelk.com) — the hiring signal is now an explicit
+  goal, recorded in the identity brief's status note, deviations (5) and (6).
+
+---
+
 <!-- Append new sessions/phases below. Each phase flips from aspirational to real
      only when `doctor` proves it. -->

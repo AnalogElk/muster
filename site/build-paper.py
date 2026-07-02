@@ -30,17 +30,15 @@ BOARD = "https://cms.34.220.64.149.sslip.io"
 
 
 def product_swap(text: str) -> str:
-    """Swap the working name 'Elk OS' -> 'Muster' without hitting 'Analog Elk'
-    or the lowercase 'bin/elk-os' command.
+    """Safety net: swap any straggler working-name 'Elk OS' -> 'Muster' without
+    hitting 'Analog Elk' or the lowercase 'bin/elk-os' command.
 
-    The paper's byline note ('Working name: "Elk OS."') must NOT be blindly
-    swapped — 'Working name: "Muster."' would be false (Muster is the resolved
-    public name; Elk OS is the working name). Rewrite that sentence explicitly,
-    protecting the literal 'Elk OS' inside it from the generic swap."""
-    text = text.replace(
-        'Working name: "Elk OS."',
-        "Public name: \"Muster\" (the project's working name, \x00WN\x00, survives in the CLI and internals).",
-    )
+    As of 2026-07-02 the markdown source itself is titled/written 'Muster'
+    (identity-brief §7 apex coherence), so this is normally a no-op. The one
+    intentional 'Elk OS' left in the source — the byline's working-name note
+    ('Working name: "Elk OS" — …') — must NOT be swapped ('Working name:
+    "Muster"' would be false), so it is protected before the generic sub."""
+    text = text.replace('Working name: "Elk OS"', "Working name: \x00WN\x00")
     text = re.sub(r"\bElk OS\b", "Muster", text)
     return text.replace("\x00WN\x00", '"Elk OS"')
 
@@ -208,7 +206,9 @@ TEMPLATE = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Muster — the whitepaper · The Task Record Is the Coordination Substrate</title>
-<meta name="description" content="A field report by Mike Walliser. How a governed fleet of AI agents built, and publicly shipped, the product that packages its own governance, in roughly 2.5 hours on a $3-a-month box.">
+<meta name="description" content="A field report by Mike Walliser. How a governed fleet of AI agents built and publicly shipped the product that packages its own governance — in roughly 2.5 hours, on a $3-a-month box.">
+<!-- canonical = https://musterr.dev/ (double R — deliberate); serving host stays sslip.io until DNS cutover -->
+<link rel="canonical" href="https://musterr.dev/paper.html">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Cpolyline points='6,58 18,58 18,44 30,44 30,30 42,30' fill='none' stroke='%2325402F' stroke-width='5' stroke-linecap='square'/%3E%3Cpolyline points='30,30 30,16 42,16' fill='none' stroke='%23DE7330' stroke-width='5' stroke-linecap='square'/%3E%3Ccircle cx='42' cy='16' r='5' fill='%23DE7330'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

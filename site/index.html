@@ -4,22 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Muster — the operating system for agentic software teams</title>
-<meta name="description" content="The governance layer that lets AI agents ship production software — and shipped itself. An empty repo became a live, self-hostable product in ~2.5 hours, built by a governed fleet of ~30 AI subagents that used the system's own task board as their spine.">
-<!-- canonical = the URL that actually serves this page. muster.dev is not yet
-     registered/live (identity-brief clearance is an open follow-up); pointing
-     canonical at an unowned domain hands the page's SEO to whoever registers it.
-     Switch back to https://muster.dev/ only once the domain is live and serving. -->
-<link rel="canonical" href="https://34.220.64.149.sslip.io/">
+<meta name="description" content="The governance layer that lets AI agents ship production software. It shipped itself: empty repo to live, self-hostable product in ~2.5 hours. Demo and receipts inside.">
+<!-- canonical = https://musterr.dev/ (double R — deliberate; muster.dev is not ours).
+     The demo itself still serves at 34.220.64.149.sslip.io until DNS cuts over;
+     demo/portal links stay sslip.io on purpose until then. -->
+<link rel="canonical" href="https://musterr.dev/">
 
 <!-- Open Graph / Twitter -->
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://musterr.dev/">
 <meta property="og:title" content="Muster — the software that built itself, and shipped">
 <meta property="og:description" content="Governance is the product. A governed fleet of ~30 AI subagents took an empty repo to a live HTTPS demo in ~2.5 hours, using the system's own task board as the coordination spine.">
-<meta property="og:image" content="https://34.220.64.149.sslip.io/assets/muster-board.png">
+<meta property="og:image" content="https://musterr.dev/assets/muster-board.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Muster — the software that built itself, and shipped">
 <meta name="twitter:description" content="Muster the agents. Keep the receipts. This page is the build log; the links are the live system.">
-<meta name="twitter:image" content="https://34.220.64.149.sslip.io/assets/muster-board.png">
+<meta name="twitter:image" content="https://musterr.dev/assets/muster-board.png">
 
 <!-- favicon: three steps + one ember, the Build-Trail at 16px -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Cpolyline points='6,58 18,58 18,44 30,44 30,30 42,30' fill='none' stroke='%2325402F' stroke-width='5' stroke-linecap='square'/%3E%3Cpolyline points='30,30 30,16 42,16' fill='none' stroke='%23DE7330' stroke-width='5' stroke-linecap='square'/%3E%3Ccircle cx='42' cy='16' r='5' fill='%23DE7330'/%3E%3C/svg%3E">
@@ -45,11 +45,12 @@
     <a href="#receipt">Receipt</a>
     <a href="#build">Build</a>
     <a href="#bugs">Proof</a>
+    <a href="#service">Service</a>
     <a href="#try">Run it</a>
   </nav>
   <span class="topbar__spacer"></span>
   <div class="topbar__cta">
-    <a class="btn btn--live btn--sm" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Live portal ↗</a>
+    <a class="btn btn--live btn--sm" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener" title="demo login: demo@muster.dev / muster-demo (read-only)">Live portal ↗</a>
     <a class="btn btn--sm" href="paper.html">Whitepaper</a>
   </div>
 </header>
@@ -86,20 +87,20 @@
     </svg>
 
     <h1 class="hero__wordmark">Muster</h1>
-    <p class="hero__lede">The operating system for agentic software teams — that built itself.</p>
+    <p class="hero__lede">The operating system for agentic software teams. It built itself.</p>
 
-    <p class="hero__pitch">A self-hostable stack — <b>Claude-side governance</b>, a <b>Directus shared-task bus</b>, local RAG, and a Next.js portal — went from empty repo to a live, public, HTTPS demo in about <b>2.5 hours</b>, built by a fleet of ~30 AI subagents that used the system's own task board as their spine, caught their own bugs, and scrubbed their own shipping artifacts.</p>
+    <p class="hero__pitch">A self-hostable stack — <b>Claude-side governance</b>, a <b>Directus task bus</b>, local RAG, a Next.js portal — went from empty repo to a live HTTPS demo in about <b>2.5 hours</b>. The ~30 AI subagents that built it coordinated through the system's own task board, caught their own bugs, and scrubbed their own shipping artifacts.</p>
 
-    <p class="hero__sub mono">This page is the build log. The links are the live system.</p>
+    <p class="hero__sub mono">This page is the build log. The links are the live system. Designed, governed, and shipped by <a href="#author">Mike Walliser</a>.</p>
+    <p class="hero__sub mono">Week one in service: 18 production PRs across 8 repos in 48 hours, behind a 3-reviewer gate that said no four times. <a href="#service">The receipts ↓</a></p>
 
     <div class="hero__cta">
-      <a class="btn btn--solid" href="#abstract">Read the log ↓</a>
       <a class="btn btn--live" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Open the live portal ↗</a>
-      <a class="btn" href="assets/muster-board.png" target="_blank" rel="noopener">Board snapshot (archived)</a>
-      <a class="btn" href="paper.html">Read the whitepaper</a>
+      <a class="btn btn--solid" href="#abstract">Read the build log ↓</a>
+      <a class="btn" href="paper.html">Whitepaper</a>
       <a class="btn" href="https://github.com/AnalogElk/muster" target="_blank" rel="noopener">GitHub ↗</a>
     </div>
-    <p class="fineprint mono" style="margin-top:.6rem">demo login: <code>demo@muster.dev</code> / <code>muster-demo</code> — read-only</p>
+    <p class="fineprint mono" style="margin-top:.6rem">demo login: <code>demo@muster.dev</code> / <code>muster-demo</code> — read-only (the login predates the domain move; the site is <b>musterr.dev</b>, two Rs, on purpose) · <a class="snapchip" href="assets/muster-board.png" target="_blank" rel="noopener">archived board snapshot</a></p>
 
     <!-- metric strip: ground-truth numbers, plain mono, renders CSS-off -->
     <div class="metricstrip" id="metricstrip" aria-label="Build metrics">
@@ -107,8 +108,9 @@
       <div class="metric"><span class="metric__n" data-count="30" data-prefix="" data-suffix="+">30+</span><span class="metric__l">AI subagents · 6 parallel fan-outs</span></div>
       <div class="metric"><span class="metric__n" data-count="2" data-suffix="M+">2M+</span><span class="metric__l">tokens consumed</span></div>
       <div class="metric"><span class="metric__n" data-count="27" data-suffix="">27</span><span class="metric__l">commits · 90 files · 8 phases</span></div>
-      <div class="metric"><span class="metric__n">~13</span><span class="metric__l">defects caught by machines, not humans</span></div>
+      <div class="metric"><span class="metric__n">~7 + 6</span><span class="metric__l">functional bugs + brand leaks — machine-caught, none by humans</span></div>
       <div class="metric"><span class="metric__n" data-count="0" data-suffix="">0</span><span class="metric__l">secret leaks · 0 collisions / 28 worktrees</span></div>
+      <div class="metric"><span class="metric__n" data-count="18" data-suffix="">18</span><span class="metric__l">PRs to production in one 48-hr window · 8 repos</span></div>
       <div class="metric"><span class="metric__n">$2–4</span><span class="metric__l">per month to host the demo (duty-cycled)</span></div>
     </div>
   </div>
@@ -119,7 +121,7 @@
   <div class="doc">
     <p class="kicker">§1 · Abstract</p>
     <p class="lead">On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock, spanned 8 phases, 27 commits and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations consuming over 2 million tokens. It runs on a single AWS instance for about $2–4 per month at demo duty-cycle (stopped when idle), and you can open it right now.</p>
-    <p>That an agent fleet emits files quickly is not the interesting part — volume is unfalsifiable and ages badly. The interesting part is the apparatus that let a long, multi-session, ship-grade build hold together without a human reviewing every diff, and the fact that the system used that apparatus on itself. The thesis: <strong>the value is the architecture, not the prompt.</strong></p>
+    <p>That an agent fleet emits files quickly is not the interesting part; volume is unfalsifiable and ages badly. The interesting part is the apparatus that let a long, multi-session, ship-grade build hold together without a human reviewing every diff, and the fact that the system used that apparatus on itself. The thesis: <strong>the value is the architecture, not the prompt.</strong></p>
     <p class="note">Three costs, kept apart on purpose: hosting (~$3/mo) is not the one-time build model-spend, and neither is the ongoing cost of running the fleet on your next project. The cheap number is only the box.</p>
   </div>
 </section>
@@ -130,16 +132,16 @@
     <p class="kicker">§2 · Governance is the product</p>
     <h2 class="h2 secnum">The system built itself.</h2>
     <p class="lead">The system that ships the system used its own task board as the build's spine, its own governed fan-out to construct one of its own subsystems, its own adversarial verifiers to keep its sellable template clean, and its own loop-proofs to catch bugs in its own packaging.</p>
-    <p>Call this <strong>dogfooding</strong>, not proof of necessity. Self-use shows the apparatus is coherent and usable — that it can carry its own non-trivial build — not that it is necessary or net-positive in dollars. The honesty is the point.</p>
+    <p>Call this <strong>dogfooding</strong>, not proof of necessity. Self-use shows the apparatus is coherent and usable: it can carry its own non-trivial build. It does not show the apparatus is necessary, or net-positive in dollars. The honesty is the point.</p>
     <p>The single architectural claim this rests on:</p>
     <div class="ledger">
       <div class="ledger__row ledger__head"><div>The bottleneck is not the model</div><div>It is shared coordination state</div></div>
       <div class="ledger__row"><div>The task record — not the chat transcript —</div><div>is the coordination substrate between a human and a fleet of agents.</div></div>
     </div>
-    <p>The board is still browsable, read-only, exactly as the agents left it.
+    <p>The real build board — the 18 tasks that built this demo, exported live from the working CMS with hierarchy and statuses preserved — is browsable read-only.
       <a class="livechip" href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">app.34.220.64.149.sslip.io</a>
       <span class="fineprint mono">— demo login <code>demo@muster.dev</code> / <code>muster-demo</code></span></p>
-    <p class="fineprint">Origin clause: Muster began as the internal OS of one agency, Analog&nbsp;Elk. That lineage is now just the first profile (<code>analogelk</code>) shipped alongside a generic one — a demonstrated feature, not the headline.</p>
+    <p class="fineprint">Origin clause: Muster began as the internal OS of one agency, Analog&nbsp;Elk. That lineage is now just the first profile (<code>analogelk</code>) shipped alongside a generic one: a demonstrated feature, not the headline.</p>
   </div>
 </section>
 
@@ -148,7 +150,7 @@
   <div class="doc">
     <p class="kicker">§3 · What Muster is</p>
     <h2 class="h2">Four planes around a task board.</h2>
-    <p>Read it as a transferable mental model — you can build all four on any vendor's stack. The architecture figure:</p>
+    <p>Read it as a transferable mental model: you can build all four on any vendor's stack. The architecture figure:</p>
     <div class="planes" role="list" aria-label="The four planes of Muster">
       <div class="plane" role="listitem"><p class="plane__h">Governance · Claude-side constitution</p><p class="plane__d">A numbered, versioned ruleset (CLAUDE.md) loaded into every session: secrets are env-only, one trunk equals production, never edit a contested worktree. The build ran under the author's ten-section constitution; the repo ships a distilled per-profile cut. Plain-English code that makes a stateless model behave like a long-lived teammate.</p></div>
       <div class="plane" role="listitem"><p class="plane__h">Task bus · the Directus os_* board</p><p class="plane__d">A shared board every agent reads, claims, updates and closes over Directus's native MCP endpoint. The <strong>task record is the coordination atom</strong> — claimable units of work.</p></div>
@@ -163,7 +165,7 @@
   <div class="doc">
     <p class="kicker">§4 · One receipt, end to end</p>
     <h2 class="h2">A paper about receipts should show one.</h2>
-    <p>The RAG service claimed port <code class="mono">:9100</code>. A naive health check reported "healthy." It was lying — a <em>different</em> engine, already running, was answering on that port, and the check passed for the wrong reason. Here is the whole trail, on the board:</p>
+    <p>The RAG service claimed port <code class="mono">:9100</code>. A naive health check reported "healthy." It was lying: a <em>different</em> engine, already running, was answering on that port, and the check passed for the wrong reason. Here is the whole trail, on the board:</p>
     <div class="receipt" aria-label="One defect walked from board row to fix commit">
       <div class="receipt__step"><div class="receipt__k">the symptom</div><div class="receipt__v">RAG <span class="mono">:9100</span> health check reports green</div></div>
       <div class="receipt__step"><div class="receipt__k">board row</div><div class="receipt__v">a task opened for the RAG bring-up — claimed, worked, status tracked</div></div>
@@ -192,7 +194,7 @@
       <div class="phase" data-phase="P6 · live demo"><span class="phase__id">P6</span><span class="phase__name">Live demo on the box</span><span class="phase__meta">arm64 fix, live</span></div>
       <div class="phase" data-phase="P7 · packaging"><span class="phase__id">P7</span><span class="phase__name">Packaging · scrub-audit</span><span class="phase__meta">20:23 PT</span></div>
     </div>
-    <p class="fineprint">27 commits · 90 files · the spine of every phase was the <code>os_tasks</code> board — still live, browsable behind the read-only demo login.</p>
+    <p class="fineprint">27 commits · 90 files · the spine of every phase was the <code>os_tasks</code> board, still live and browsable behind the read-only demo login.</p>
   </div>
 </section>
 
@@ -203,10 +205,10 @@
     <h2 class="h2">30+ invocations, 6 fan-outs, 2M+ tokens.</h2>
     <p>Two named set-pieces carry the number:</p>
     <ul class="tight">
-      <li>The <strong>8-agent schema build</strong> — <span class="mono">546k tokens</span> — ground → fan-out → scrub-audit → 3 adversarial leak-verifiers.</li>
-      <li>The <strong>5-agent live-AWS-pricing cost panel</strong> — <span class="mono">256k tokens</span>.</li>
+      <li>The <strong>8-agent schema build</strong> — <span class="mono">~546k tokens</span> by session accounting — ground → fan-out → scrub-audit → 3 adversarial leak-verifiers.</li>
+      <li>The <strong>4-lens live-AWS-pricing cost panel</strong> — <span class="mono">~256k tokens</span>.</li>
     </ul>
-    <p>The rest were parallel explorers, builders and verifiers spread across P0–P7, several single-shot. Honestly: not all produced kept work. Some fan-outs returned partial or discarded output that was retried or dropped — and that wasted production is part of the real token cost in §7. The discard rate was not instrumented; that is itself a measurement gap.</p>
+    <p>The rest were parallel explorers, builders and verifiers spread across P0–P7, several single-shot. Not all of them produced kept work. Some fan-outs returned partial or discarded output that was retried or dropped — and that wasted production is part of the real token cost in §7. The discard rate was not instrumented; that is itself a measurement gap.</p>
   </div>
 </section>
 
@@ -230,7 +232,7 @@
         </tbody>
       </table>
     </div>
-    <p class="fineprint">Most functional catches are loop-proof wins a single disciplined agent could reach. The genuinely fleet-dependent win is the system policing its own multi-tenancy before shipping a sellable generic template. Honestly: the brand leaks are string-checkable — a grep catches those too. The fleet's marginal value is the seam and the semantic cases. The scrub is a capability, not a confession.</p>
+    <p class="fineprint">Most functional catches are loop-proof wins a single disciplined agent could reach. The genuinely fleet-dependent win is the system policing its own multi-tenancy before shipping a sellable generic template. The brand leaks are string-checkable; a grep catches those too. The fleet's marginal value is the seam and the semantic cases. The scrub is a capability, not a confession.</p>
   </div>
 </section>
 
@@ -239,15 +241,15 @@
   <div class="doc">
     <p class="kicker">§8 · Governance &amp; safety</p>
     <h2 class="h2">The honesty ledger is the design feature.</h2>
-    <p><strong>0 secret leaks.</strong> DB and admin tokens were always env-referenced, never echoed, never committed — grep-verified, not assumed. On the 28 worktrees: we avoided the contested checkout entirely by building read-only from a frozen snapshot. <strong>0 collisions by not participating in the contention, not by handling it.</strong></p>
+    <p><strong>0 secret leaks.</strong> DB and admin tokens were always env-referenced, never echoed, never committed; grep-verified, not assumed. On the 28 worktrees: we avoided the contested checkout entirely by building read-only from a frozen snapshot. <strong>0 collisions by not participating in the contention, not by handling it.</strong></p>
     <div class="ledger" aria-label="Shipped versus aspirational ledger">
       <div class="ledger__row ledger__head"><div>shipped — demonstrated</div><div>aspirational — not yet</div></div>
       <div class="ledger__row"><div>self-built in ~2.5 hrs, live + reachable</div><div>a measured A/B against the control</div></div>
       <div class="ledger__row"><div>0 secret leaks (grep-verified)</div><div>real claim atomicity at scale (§9)</div></div>
-      <div class="ledger__row"><div>0 known-shipped defects as of writing</div><div>graceful degradation if the board dies</div></div>
+      <div class="ledger__row"><div>0 defects shipped undetected at publication; the first post-ship self-audit (PR #3, merged 2026-07-02) found and fixed 14 — logged in the CHANGELOG, exactly as the ledger promises</div><div>graceful degradation if the board dies</div></div>
       <div class="ledger__row"><div>generic profile scrubbed of origin</div><div>decorrelated (cross-model) verifiers</div></div>
     </div>
-    <p class="fineprint">Defects shipped: <strong>0 known-shipped as of writing</strong> — not a hard zero. I can count catches; I cannot enumerate misses, so "0 shipped" is survivorship, stated as such.</p>
+    <p class="fineprint">Defects shipped: I can count catches, not misses — and the post-ship audit finding real ones is the ledger working, not failing. "0 at publication" was survivorship, stated as such at the time.</p>
   </div>
 </section>
 
@@ -256,9 +258,9 @@
   <div class="doc">
     <p class="kicker">§9 · Durability across sessions</p>
     <h2 class="h2">7+ sessions, zero context loss.</h2>
-    <p>State held across three substrates: the board (coordination spine), on-disk memory files (knowledge), and the append-only log (narrative). A single rolling window cannot physically hold a 2M-token build — it compacts, forgets, re-reads, re-litigates. Externalizing state turned an impossible-for-one-window task into a resumable one. That is the cleanest win, because it is categorical.</p>
+    <p>State held across three substrates: the board (coordination spine), on-disk memory files (knowledge), and the append-only log (narrative). A single rolling window cannot physically hold a 2M-token build; it compacts, forgets, re-reads, re-litigates. Externalizing state turned an impossible-for-one-window task into a resumable one. That is the cleanest win, because it is categorical. It was later tested the hard way: on 2026-07-01 the orchestrating session was killed mid-flight by a machine crash; because every unit of work lived in the task record and per-agent journals, a fresh session reconstructed the full state and resumed with zero lost work.</p>
     <h3 class="h3">The spine has its own coordination problem</h3>
-    <p>The board is shared mutable state and a single point of coupling — the first thing a CTO probes, so here it is straight. A row carries <code>assigned_to</code> and <code>status</code>; the protocol is a compare-and-set. But Directus gives no true row lock by default, and the build <em>observed</em> version collisions across parallel sessions — re-check before write. Contention was actually controlled one level up, by <strong>disjoint dispatch</strong> plus worktree isolation, not by the board being magically atomic. Scale past human-arbitrated dispatch and you need real claim semantics (optimistic concurrency, or a queue in front of the board). That is not built, and the row does not give it to you for free.</p>
+    <p>The board is shared mutable state and a single point of coupling, the first thing a CTO probes, so here it is straight. A row carries <code>assigned_to</code> and <code>status</code>; the protocol is a compare-and-set. But Directus gives no true row lock by default, and the build <em>observed</em> version collisions across parallel sessions; re-check before write. Contention was actually controlled one level up, by <strong>disjoint dispatch</strong> plus worktree isolation, not by the board being magically atomic. Scale past human-arbitrated dispatch and you need real claim semantics (optimistic concurrency, or a queue in front of the board). That is not built, and the row does not give it to you for free.</p>
   </div>
 </section>
 
@@ -282,13 +284,28 @@
   </div>
 </section>
 
-<!-- ===================== §11 RUN IT (CONSOLE) ===================== -->
+<!-- ===================== §11 SERVICE RECORD (ADDENDUM) ===================== -->
+<section class="band band-paper" id="service">
+  <div class="doc">
+    <p class="kicker">§11 · Addendum · one week in service · 2026-07-02</p>
+    <h2 class="h2">The build log ends June 29. The system didn't.</h2>
+    <p>Everything above was written the night of the build. What follows happened after, in production, and is checkable in public repo history. The same apparatus runs a real agency: real clients, real invoices, uptime monitoring, backup restore drills, release automation.</p>
+    <ul class="tight">
+      <li><strong>18 pull requests to production in one 48-hour window, across 8 repositories</strong> — including 10 to the agency platform that pays the bills, with releases cut by automation (Muster <span class="mono">v0.1.1</span> and the platform's <span class="mono">v1.21.0</span>, both 2026-07-02).</li>
+      <li><strong>The 3-reviewer adversarial gate said no four times, with evidence.</strong> One "fix" it proved a complete no-op via its own deploy preview — the real defect was a CMS value, fixed at the source instead. One broke a test mock: fixed, re-verified, then shipped. One sitemap change would have advertised noindexed soft-404 pages: split, the safe half shipped. One blog rollout is still held, because indexing thin pages before the content exists is an SEO regression. A gate that only ever says yes is decoration.</li>
+      <li><strong>The orchestrating session was killed mid-flight by a machine crash.</strong> Because every unit of work lives in the task record and per-agent journals, a fresh session reconstructed the full state and resumed with zero lost work — §9's thesis, demonstrated the hard way, on itself.</li>
+    </ul>
+    <p class="fineprint">Same rule as the rest of this page: logged, reproducible events — not projections.</p>
+  </div>
+</section>
+
+<!-- ===================== §12 RUN IT (CONSOLE) ===================== -->
 <section class="band band-console" id="try">
   <div class="doc">
-    <p class="kicker">§11 · Run it yourself</p>
-    <h2 class="h2">One command. The doctor board is the proof.</h2>
+    <p class="kicker">§12 · Run it yourself</p>
+    <h2 class="h2">Six commands. The doctor board is the proof.</h2>
     <p class="lead">The apparatus is public and self-hostable. <code>bin/elk-os</code> — the CLI keeps the project's working name, Elk OS — is a resumable, idempotent phase machine whose only hard dependency is Docker (<code>migrate</code>/<code>seed</code> additionally use stdlib <code>python3</code>).</p>
-    <pre class="code" aria-label="One-command install"><span class="c"># scaffold → live, from an empty volume</span>
+    <pre class="code" aria-label="Six-command install"><span class="c"># scaffold → live, from an empty volume</span>
 bin/elk-os <span class="e">init</span>      <span class="c"># scaffold + env</span>
 bin/elk-os <span class="e">up</span>        <span class="c"># compose core (Directus, Postgres, RAG, portal)</span>
 bin/elk-os <span class="e">migrate</span>   <span class="c"># apply os_* schema</span>
@@ -296,7 +313,7 @@ bin/elk-os <span class="e">seed</span>      <span class="c"># profile data (gene
 bin/elk-os <span class="e">wire</span>      <span class="c"># enable native MCP, wire Claude to the board (env-referenced token)</span>
 bin/elk-os <span class="e">doctor</span>    <span class="c"># green/red from-scratch acceptance board</span></pre>
 
-    <p>The exhibits — the only outbound destinations that matter. Anything ember is a seam into the running system:</p>
+    <p>The exhibits: the only outbound destinations that matter. Anything ember is a seam into the running system:</p>
 
     <figure style="margin:1.5rem 0">
       <a href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener"><img src="assets/muster-board.png" alt="The live Muster task board — the os_* coordination substrate the agents coordinated through" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(0,0,0,.18)"></a>
@@ -318,14 +335,16 @@ bin/elk-os <span class="e">doctor</span>    <span class="c"># green/red from-scr
   </div>
 </section>
 
-<!-- ===================== §12 AUTHOR ===================== -->
+<!-- ===================== §13 AUTHOR ===================== -->
 <section class="band band-paper" id="author">
   <div class="doc">
-    <p class="kicker">§12 · Author &amp; judgment calls</p>
+    <p class="kicker">§13 · Author &amp; judgment calls</p>
     <h2 class="h2 author__name">Mike Walliser</h2>
-    <p class="lead">Creative technologist and AI-systems builder. The system is the protagonist; the architect is in the margins.</p>
+    <p class="lead">Creative technologist and AI-systems builder. The system is the protagonist; these were the calls no agent made.</p>
     <p>Here is what no agent decided. The reframe — "this is a product; Analog Elk is just the case study" — was a product call. The honesty ledger exists because a human insisted on it and defined what counts as shipped; agents optimize toward "done," and only a human reliably separates done from claimed-done. Bounding the fan-out — "this is enough verification" — is human ROI governance; the machine fans out forever. The arm64/amd64 fix happened live on metal, human-diagnosed. <strong>Mike designed this page and the system architecture</strong> — the page's craft is the portfolio piece.</p>
+    <p>The work is the résumé; the human is reachable. <a href="mailto:mike@analogelk.com">mike@analogelk.com</a> · <a href="https://walliser.me" target="_blank" rel="noopener">walliser.me</a></p>
     <p class="fineprint">n=1, self-built, author-run, same-base-model verifiers — these limitations are trust assets, stated plainly throughout. Read it as an existence proof and a reasoned playbook, not a controlled study.</p>
+    <p class="fineprint mono">Michael Walliser — creative technologist · <a href="https://walliser.me" target="_blank" rel="noopener">walliser.me</a> · <a href="https://github.com/AnalogElk/muster" target="_blank" rel="noopener">github.com/AnalogElk/muster</a></p>
   </div>
 </section>
 </main>
@@ -334,14 +353,15 @@ bin/elk-os <span class="e">doctor</span>    <span class="c"># green/red from-scr
 <footer class="footer">
   <div class="doc">
     <div>Muster · built by agents · origin &amp; case study: Analog Elk</div>
-    <div>Design &amp; system architecture: Mike Walliser · 2026-06-29</div>
+    <div>Design &amp; system architecture: <a href="https://walliser.me" target="_blank" rel="noopener">Mike Walliser</a> · 2026-06-29</div>
     <div class="footer__links">
       <a href="paper.html">Whitepaper</a>
-      <a href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener">Live portal ↗</a>
+      <a href="https://app.34.220.64.149.sslip.io" target="_blank" rel="noopener" title="demo login: demo@muster.dev / muster-demo (read-only)">Live portal ↗</a>
       <a href="https://github.com/AnalogElk/muster" target="_blank" rel="noopener">GitHub ↗</a>
-      <a href="#" onclick="window.print();return false;">Download PDF / Print</a>
+      <a href="https://github.com/AnalogElk/muster/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+      <button type="button" onclick="window.print()" style="background:none;border:0;padding:0;font:inherit;color:var(--ember);cursor:pointer;text-decoration:underline">Download PDF / Print</button>
     </div>
-    <div class="fineprint" style="margin-top:1rem;">Muster the agents. Keep the receipts. The model is stateless; the organization around it does not have to be.</div>
+    <div class="fineprint" style="margin-top:1rem;">Muster the agents. Keep the receipts. The model is stateless; the organization around it does not have to be. © 2026 Michael Walliser · MIT-licensed · schema lineage from directus-labs/agency-os, attributed in <a href="https://github.com/AnalogElk/muster/blob/main/NOTICE" target="_blank" rel="noopener">NOTICE</a> · musterr.dev — yes, two Rs.</div>
   </div>
 </footer>
 
@@ -405,7 +425,7 @@ bin/elk-os <span class="e">doctor</span>    <span class="c"># green/red from-scr
     what: "the four planes", receipt: "one receipt, walked", build: "the build · P0→P7",
     fleet: "the agent fleet", bugs: "bugs the machines caught", governance: "governance & safety",
     durability: "durability across sessions", vs: "vs. ungoverned single-agent",
-    try: "run it yourself", author: "judgment calls"
+    service: "one week in service", try: "run it yourself", author: "judgment calls"
   };
   var railMap = {
     build: "commits", fleet: "agents", bugs: "leaks", governance: "leaks",
