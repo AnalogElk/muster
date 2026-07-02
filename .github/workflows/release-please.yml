@@ -15,6 +15,23 @@
 # (DevProd CLAUDE.md §7: versioning is automated, all projects.)
 #
 # This activates once the repo has a GitHub remote. Until then it is inert.
+#
+# ENTERPRISE BLOCK + PAT FALLBACK (2026-07-01):
+# The AnalogElk enterprise policy forces the Actions GITHUB_TOKEN read-only and
+# blocks Actions from creating PRs ("Write permissions for workflows are
+# disabled by the enterprise"; repo-level PUT on
+# /actions/permissions/workflow returns 409). The `permissions:` block below is
+# therefore ignored, and release-please cannot open its release PR with the
+# default token. Fix: mint a PAT and add it as a repo secret:
+#
+#   Secret name: RELEASE_PLEASE_TOKEN
+#   Token type:  FINE-GRAINED PAT (github.com -> Settings -> Developer settings
+#                -> Personal access tokens -> Fine-grained tokens)
+#   Resource:    AnalogElk/muster (this repo only)
+#   Permissions: Contents: Read and write, Pull requests: Read and write
+#
+# Until the secret exists, the step falls back to github.token (read-only) and
+# release-please will fail on push to main — that is the current known state.
 name: release-please
 
 on:
@@ -31,5 +48,9 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
+          # PAT fallback: enterprise policy keeps github.token read-only, so a
+          # fine-grained PAT (RELEASE_PLEASE_TOKEN, see header) is required for
+          # release-please to push the release branch + open the release PR.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
