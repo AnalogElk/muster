@@ -159,9 +159,9 @@ public demo is up: [the whitepaper homepage](https://34.220.64.149.sslip.io) wit
 
 ## License
 
-Not yet finalized — Muster's `os_*` schema derives from
-[directus-labs/agency-os](https://github.com/directus-labs/agency-os) (MIT, see
-[`NOTICE`](./NOTICE)). The license choice affects monetization, so the options and
-a recommendation are laid out in
-[`LICENSE-RECOMMENDATION.md`](./LICENSE-RECOMMENDATION.md) for a deliberate
-decision rather than a default.
+[MIT](./LICENSE) © Michael Walliser (Analog Elk). Muster's `os_*` schema derives
+from [directus-labs/agency-os](https://github.com/directus-labs/agency-os)
+(also MIT); that attribution lives in [`NOTICE`](./NOTICE) and rides along with
+any redistribution. Decision record: permissive licensing maximizes adoption and
+trust; the business is services (hosting, support, custom builds) — the code is
+the credential, not the moat.
