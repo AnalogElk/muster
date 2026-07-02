@@ -2,15 +2,17 @@
 # =============================================================================
 # Elk OS — resumable phased installer CLI
 # =============================================================================
-# One-command, self-hostable repackaging of the Analog Elk agency-OS.
-# Docker is the ONLY hard runtime dependency; everything else is POSIX bash +
-# standard unix tools (curl, openssl, awk, grep, sed).
+# One-command, self-hostable packaging of Muster (working name: Elk OS), the
+# operating system for agentic software teams, derived from Analog Elk's stack.
+# Docker is the ONLY hard runtime dependency for init/up/doctor/down; everything
+# else is POSIX bash + standard unix tools (curl, openssl, awk, grep, sed).
+# The migrate/seed phases additionally require python3 (stdlib only).
 #
 # Phases (ordered, idempotent, resumable via .elk-os-state.json):
 #   init     generate secrets + write .env from .env.example
-#   up       docker compose up the core (+ RAG engine), then bootstrap the admin token
+#   up       docker compose up the core (+ RAG + portal), then bootstrap the admin token
 #   migrate  (P2) apply os_* schema snapshot
-#   seed     (P5) load profile seed data
+#   seed     (P2) load profile seed data
 #   wire     (P5) write CLAUDE.md + .mcp.json + hooks + memory seed
 #   doctor   green/red health board (the runtime acceptance test)
 #   down     stop the stack
@@ -226,6 +228,18 @@ mask_status() {
   # echoes "set (hidden)" or "(empty)" — never the value itself
   local val="$1"
   if [ -n "$val" ]; then echo "set (hidden)"; else echo "(empty)"; fi
+}
+
+# ---------------------------------------------------------------------------
+# curl with a Bearer token — the Authorization header travels via a /dev/fd
+# header file (process substitution, curl's `-H @file`), NEVER argv: argv is
+# readable by every user on the host through `ps`/procfs, and these calls carry
+# the admin static token. Same threat model mint-token.sh already guards its
+# request bodies against. Usage: curl_tok "$token" [normal curl args…]
+# ---------------------------------------------------------------------------
+curl_tok() {
+  local tok="$1"; shift
+  curl -H @<(printf 'Authorization: Bearer %s\n' "$tok") "$@"
 }
 
 # ---------------------------------------------------------------------------
@@ -487,7 +501,7 @@ cmd_doctor() {
 
   # 5. Admin static token (informational — green when minted)
   if [ -n "$(get_env DIRECTUS_ADMIN_TOKEN)" ]; then
-    if curl -sf -o /dev/null --max-time 5 -H "Authorization: Bearer $(get_env DIRECTUS_ADMIN_TOKEN)" "${url}/users/me?fields=id" 2>/dev/null; then
+    if curl_tok "$(get_env DIRECTUS_ADMIN_TOKEN)" -sf -o /dev/null --max-time 5 "${url}/users/me?fields=id" 2>/dev/null; then
       doctor_row "Admin API token" 0 "minted, authenticates (hidden)"
     else
       doctor_row "Admin API token" 1 "present but does not authenticate" "Re-run ./bin/elk-os up to re-mint."
@@ -499,7 +513,10 @@ cmd_doctor() {
   # 6. RAG knowledge-engine /health (only when the overlay is enabled)
   if with_rag; then
     local rag_port rag_url rag_json
-    rag_port="$(get_env RAG_API_PORT)"; rag_port="${rag_port:-9100}"
+    # Fallback matches the isolated .env.example default (19100) — a 9100
+    # fallback could green-light a co-located host engine, the exact impostor
+    # the port isolation exists to rule out (fix commit 5222976).
+    rag_port="$(get_env RAG_API_PORT)"; rag_port="${rag_port:-19100}"
     rag_url="http://localhost:${rag_port}"
     if rag_json=$(curl -sf --max-time 5 "${rag_url}/health" 2>/dev/null); then
       local rstatus rreason rdocs rvecs detail
@@ -528,7 +545,7 @@ cmd_doctor() {
   local stok; stok="$(get_env DIRECTUS_ADMIN_TOKEN)"
   if [ -n "$stok" ]; then
     local tasks_json
-    if tasks_json=$(curl -sf --max-time 5 -H "Authorization: Bearer ${stok}" "${url}/items/os_tasks?limit=1&fields=id" 2>/dev/null); then
+    if tasks_json=$(curl_tok "$stok" -sf --max-time 5 "${url}/items/os_tasks?limit=1&fields=id" 2>/dev/null); then
       if printf '%s' "$tasks_json" | grep -q '"id"'; then
         doctor_row "Seeded os_task" 0 "os_tasks readable (>=1 row)"
       else
@@ -546,8 +563,8 @@ cmd_doctor() {
   #     so a valid pre-wire stack stays green; the loop only needs it post-wire.
   if [ -n "$stok" ]; then
     local mcp_code
-    mcp_code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
-      -X POST -H "Authorization: Bearer ${stok}" -H 'Content-Type: application/json' \
+    mcp_code=$(curl_tok "$stok" -s -o /dev/null -w '%{http_code}' --max-time 5 \
+      -X POST -H 'Content-Type: application/json' \
       -H 'Accept: application/json, text/event-stream' \
       -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' \
       "${url%/}/mcp" 2>/dev/null || echo 000)
@@ -832,7 +849,7 @@ cmd_rebuild_portal() {
 #   .mcp.json           → the native Directus MCP server (URL substituted; token
 #                         left as the ${DIRECTUS_ADMIN_TOKEN} env reference — the
 #                         secret is NEVER written into a file).
-#   CLAUDE.md           → the profile's agency-OS constitution.
+#   CLAUDE.md           → the profile's governance constitution.
 #   README.md           → how to use the wired directory.
 #   run-claude.sh       → turnkey launcher (exports ONLY DIRECTUS_URL /
 #                         DIRECTUS_ADMIN_TOKEN / ELK_OS_BRAND_NAME from the
@@ -899,8 +916,8 @@ cmd_wire() {
   local tok url; tok="$(get_env DIRECTUS_ADMIN_TOKEN)"; url="$WIRE_DIRECTUS_URL"
   if [ -n "$tok" ]; then
     local code
-    code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 \
-      -X PATCH -H "Authorization: Bearer ${tok}" -H 'Content-Type: application/json' \
+    code=$(curl_tok "$tok" -s -o /dev/null -w '%{http_code}' --max-time 8 \
+      -X PATCH -H 'Content-Type: application/json' \
       -d '{"mcp_enabled":true}' "${url%/}/settings" 2>/dev/null || echo 000)
     if [ "$code" = "200" ]; then
       success "Directus native MCP server enabled (settings.mcp_enabled=true)."
@@ -947,7 +964,7 @@ cmd_wire() {
     echo ""
     info "Loop check — reading os_tasks back through the wired Directus + token…"
     local tasks_json
-    if tasks_json=$(curl -sf --max-time 8 -H "Authorization: Bearer ${tok}" \
+    if tasks_json=$(curl_tok "$tok" -sf --max-time 8 \
         "${url%/}/items/os_tasks?fields=name,status,priority&sort=priority&limit=8" 2>/dev/null); then
       if printf '%s' "$tasks_json" | grep -q '"name"'; then
         if command -v python3 >/dev/null 2>&1; then
@@ -982,7 +999,8 @@ PY
 usage() {
   cat <<EOF
 
-${BOLD}elk-os${RESET} — self-host agency-OS installer (resumable phased CLI)
+${BOLD}elk-os${RESET} — self-host installer for Muster, the operating system
+for agentic software teams (resumable phased CLI; elk-os is the working name)
 
 ${BOLD}Usage:${RESET}
   ./bin/elk-os <command> [flags]
@@ -990,7 +1008,7 @@ ${BOLD}Usage:${RESET}
 ${BOLD}Commands:${RESET}
   init [--profile generic|analogelk] [--target local|box] [--force]
                       Generate secrets + write .env from .env.example.
-  up                  docker compose up the core (+ RAG engine), then mint the admin token.
+  up                  docker compose up the core (+ RAG + portal), then mint the admin token.
   down [--volumes]    Stop the stack (keep data unless --volumes).
   doctor              Per-subsystem green/red health board (exits nonzero if red).
   logs [service]      Tail container logs (e.g. directus, elkos-rag-api).
@@ -1010,15 +1028,16 @@ ${BOLD}Quick start:${RESET}
 The RAG knowledge engine (Postgres + Qdrant + Redis + FastAPI, local
 embeddings — no external inference) is bundled into up/down/logs by default.
 Disable it by setting ELK_OS_WITH_RAG=false in .env (e.g. to skip the Python
-image build). The RAG API is served at http://localhost:\${RAG_API_PORT:-9100}.
+image build). The RAG API is served at http://localhost:\${RAG_API_PORT}
+(19100 in the .env that init writes — isolated from a host engine on 9100).
 
 The portal (Next.js 16 front-end, built from a pinned analog-elk-front-end
 commit) is bundled into up/down/logs by default and served at
 http://localhost:\${PORTAL_PORT:-3000}. Disable it with ELK_OS_WITH_PORTAL=false
 in .env (e.g. to skip the heavy Next build).
 
-Docker is the only hard dependency. Secrets live only in .env (gitignored)
-and are never printed.
+Docker is the only hard dependency (migrate/seed additionally use stdlib
+python3). Secrets live only in .env (gitignored) and are never printed.
 
 EOF
 }

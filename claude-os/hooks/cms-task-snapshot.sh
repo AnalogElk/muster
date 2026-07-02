@@ -32,8 +32,10 @@ fi
 
 # Pull a wide slice and bucket client-side (avoids brittle server-side status
 # enums that vary by profile). fields kept minimal; sort newest-ish last.
+# The Authorization header travels via a /dev/fd header file (process
+# substitution), never argv — argv is readable host-wide via `ps`/procfs.
 RAW=$(curl -sS --max-time 5 \
-  -H "Authorization: Bearer ${DIRECTUS_ADMIN_TOKEN}" \
+  -H @<(printf 'Authorization: Bearer %s\n' "$DIRECTUS_ADMIN_TOKEN") \
   "${DIRECTUS_URL}/items/os_tasks?limit=100&fields=name,status,priority&sort=priority" 2>/dev/null) || RAW=""
 
 if [ -z "$RAW" ]; then

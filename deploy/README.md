@@ -17,7 +17,7 @@ full-stack demo. These help when you'd rather live on a managed platform.
    needs the private `analog-elk-front-end` source. Publish images first with
    [`../.github/workflows/publish-images.yml`](../.github/workflows/publish-images.yml)
    (on a release tag), make the GHCR package public (or add a registry cred), and
-   reference `ghcr.io/<owner>/elk-os-portal:<tag>`.
+   reference `ghcr.io/analogelk/elk-os-portal:<tag>`.
 2. **Directus is the official image** (`directus/directus:11.15.1`) — deploys
    anywhere with no build.
 3. **The native MCP server** is *permitted* by `MCP_ENABLED=true` but must be
@@ -28,12 +28,16 @@ full-stack demo. These help when you'd rather live on a managed platform.
    Directus user *after* first boot — no env can mint it. (On the box, `elk-os up`
    mints it automatically.)
 
-## Render — post-deploy wiring (the 4 `sync: false` values)
+## Render — post-deploy wiring (the 5 `sync: false` values)
 
 After Render's first deploy assigns URLs:
 
 1. **`elk-os-directus` → `PUBLIC_URL`** = the Directus service URL
-   (`https://elk-os-directus-XXXX.onrender.com`). Also set `ADMIN_EMAIL`.
+   (`https://elk-os-directus-XXXX.onrender.com`). Also set `ADMIN_EMAIL`, and set
+   **`CORS_ORIGIN`** to the *portal's* URL (`https://elk-os-portal-XXXX.onrender.com`)
+   — never `true` on a public host: reflecting any origin would let arbitrary
+   websites script the API with a visitor's Directus session (same pin the box
+   target applies in `compose.prod.yaml`).
 2. Log into Directus (admin email + the generated `ADMIN_PASSWORD` from the
    dashboard). Enable MCP (Settings → AI → MCP). Create a **static token** on your
    admin user.
@@ -43,5 +47,5 @@ After Render's first deploy assigns URLs:
 4. Redeploy the portal so the new env takes effect.
 
 That's the honest cost of "one-click" across a platform with no env
-interpolation: the topology and secrets are declarative; four cross-service
+interpolation: the topology and secrets are declarative; five cross-service
 values are filled once.

@@ -101,8 +101,7 @@ fi
 # --- 3. generate + assign a strong static token ------------------------------
 # Token travels over stdin for the same reason as the login body above.
 NEW_TOKEN=$(openssl rand -hex 32)
-printf '{"token":"%s"}' "$NEW_TOKEN" | curl -sf -o /dev/null -X PATCH "${URL}/users/${USER_ID}" \
-  -H "Authorization: Bearer ${ACCESS}" \
+printf '{"token":"%s"}' "$NEW_TOKEN" | curl_tok "$ACCESS" -sf -o /dev/null -X PATCH "${URL}/users/${USER_ID}" \
   -H "Content-Type: application/json" \
   --data @- 2>/dev/null || {
   echo "[bootstrap] failed to PATCH static token onto admin user." >&2
@@ -110,7 +109,7 @@ printf '{"token":"%s"}' "$NEW_TOKEN" | curl -sf -o /dev/null -X PATCH "${URL}/us
 }
 
 # --- 4. verify the static token, then persist to .env ------------------------
-if ! curl -sf -o /dev/null -H "Authorization: Bearer ${NEW_TOKEN}" "${URL}/users/me?fields=id" 2>/dev/null; then
+if ! curl_tok "$NEW_TOKEN" -sf -o /dev/null "${URL}/users/me?fields=id" 2>/dev/null; then
   echo "[bootstrap] minted token did not authenticate — aborting without writing .env." >&2
   exit 1
 fi

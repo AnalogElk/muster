@@ -78,7 +78,14 @@ services:
       - key: CORS_ENABLED
         value: "true"
       - key: CORS_ORIGIN
-        value: "true"
+        # PIN this to the portal's public origin after the first deploy assigns
+        # URLs (https://elk-os-portal-XXXX.onrender.com). "true" reflects ANY
+        # origin — acceptable on a loopback-only laptop (see compose.dev.yaml)
+        # but NOT on a public Render URL, where it would let any website script
+        # the API with a visitor's Directus session. Same rationale as the
+        # box target's compose.prod.yaml CORS pin. Only the portal's browser
+        # code calls Directus cross-origin; nothing else needs CORS.
+        sync: false # set to the elk-os-portal URL after deploy (step 1b in deploy/README.md)
       - key: MCP_ENABLED
         value: "true" # PERMITS the native MCP server; you still flip it on in
         # Settings → AI → Model Context Protocol (or PATCH /settings

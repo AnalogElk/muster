@@ -44,8 +44,10 @@ fi
 # --- probe the native Directus MCP server (settings.mcp_enabled gate) ---------
 MCP_MARK="${DIM}unknown${NC}"
 if [ -n "$DIRECTUS_ADMIN_TOKEN" ]; then
+  # Header via a /dev/fd file (process substitution), never argv — argv is
+  # readable host-wide via `ps`/procfs and this carries the admin token.
   CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 2 \
-    -H "Authorization: Bearer ${DIRECTUS_ADMIN_TOKEN}" \
+    -H @<(printf 'Authorization: Bearer %s\n' "$DIRECTUS_ADMIN_TOKEN") \
     -H 'Content-Type: application/json' \
     -H 'Accept: application/json, text/event-stream' \
     -X POST "${DIRECTUS_URL}/mcp" \
