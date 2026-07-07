@@ -31,15 +31,22 @@
 
 <link rel="stylesheet" href="styles.css">
 
-<!-- Matomo: self-hosted, first-party cookie, IP-anonymized server-side; disclosed in privacy.html -->
+<!-- Matomo: self-hosted, first-party cookie, IP-anonymized server-side; skipped entirely
+     when the browser sends Global Privacy Control (DNT is honored server-side by Matomo).
+     Disclosed in privacy.html -->
 <script>
-var _paq = window._paq = window._paq || [];
-_paq.push(['setTrackerUrl', 'https://analytics.analogelk.com/matomo.php']);
-_paq.push(['setSiteId', '10']);
-_paq.push(['trackPageView']);
-_paq.push(['enableLinkTracking']);
+if (!navigator.globalPrivacyControl) {
+  var _paq = window._paq = window._paq || [];
+  _paq.push(['setTrackerUrl', 'https://analytics.analogelk.com/matomo.php']);
+  _paq.push(['setSiteId', '10']);
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  var g = document.createElement('script');
+  g.async = true;
+  g.src = 'https://analytics.analogelk.com/matomo.js';
+  document.head.appendChild(g);
+}
 </script>
-<script async src="https://analytics.analogelk.com/matomo.js"></script>
 </head>
 <body>
 <a class="skip" href="#abstract">Skip to content</a>

@@ -24,15 +24,22 @@
   .backhome { display:inline-flex; gap:0.4rem; align-items:center; font-family:var(--mono); font-size:0.82rem; text-decoration:none; color:var(--pine); }
   .fineprint-block { font-family: var(--mono); font-size: 0.82rem; color: var(--pine); opacity: 0.75; margin-top: 2.5rem; }
 </style>
-<!-- Matomo: self-hosted, first-party cookie, IP-anonymized server-side; disclosed on this page -->
+<!-- Matomo: self-hosted, first-party cookie, IP-anonymized server-side; skipped entirely
+     when the browser sends Global Privacy Control (DNT is honored server-side by Matomo).
+     Disclosed on this page -->
 <script>
-var _paq = window._paq = window._paq || [];
-_paq.push(['setTrackerUrl', 'https://analytics.analogelk.com/matomo.php']);
-_paq.push(['setSiteId', '10']);
-_paq.push(['trackPageView']);
-_paq.push(['enableLinkTracking']);
+if (!navigator.globalPrivacyControl) {
+  var _paq = window._paq = window._paq || [];
+  _paq.push(['setTrackerUrl', 'https://analytics.analogelk.com/matomo.php']);
+  _paq.push(['setSiteId', '10']);
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  var g = document.createElement('script');
+  g.async = true;
+  g.src = 'https://analytics.analogelk.com/matomo.js';
+  document.head.appendChild(g);
+}
 </script>
-<script async src="https://analytics.analogelk.com/matomo.js"></script>
 </head>
 <body>
 <a class="skip" href="#privacy-main">Skip to content</a>
@@ -65,7 +72,7 @@ _paq.push(['enableLinkTracking']);
 
   <h2>What we honor and discard</h2>
   <ul>
-    <li>If your browser sends the <strong>Do Not Track</strong> signal, you are not tracked at all.</li>
+    <li>We respect both browser privacy signals. If your browser sends <strong>Global Privacy Control</strong> (<code>Sec-GPC</code>), the analytics script never runs. If it sends the older <strong>Do Not Track</strong> signal, the server discards the visit. Either way, you are not tracked at all.</li>
     <li>Raw visit logs are deleted after 13 months; only aggregate statistics (counts, not visits) are kept beyond that.</li>
     <li>All analytics data stays on infrastructure we operate. No third party receives it.</li>
   </ul>
