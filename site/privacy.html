@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy · Muster</title>
+<meta name="description" content="What musterr.dev measures, what it stores, and what it never does with your data.">
+<link rel="canonical" href="https://musterr.dev/privacy.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Cpolyline points='6,58 18,58 18,44 30,44 30,30 42,30' fill='none' stroke='%2325402F' stroke-width='5' stroke-linecap='square'/%3E%3Cpolyline points='30,30 30,16 42,16' fill='none' stroke='%23DE7330' stroke-width='5' stroke-linecap='square'/%3E%3Ccircle cx='42' cy='16' r='5' fill='%23DE7330'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .paper-doc { max-width: 70ch; margin: 0 auto; padding: 0 1.4rem 4rem; }
+  .paper-doc h1 { font-size: clamp(2.1rem,5.5vw,3rem); line-height:1.08; letter-spacing:-0.02em; margin: 0 0 0.6rem; }
+  .paper-doc h2 { font-size: clamp(1.4rem,3.5vw,1.8rem); margin: 2.4rem 0 0.6rem; letter-spacing:-0.01em; }
+  .paper-doc p, .paper-doc li { font-size: 1.125rem; line-height: 1.7; }
+  .paper-doc p { margin: 0 0 1.1rem; }
+  .paper-doc ul { padding-left: 1.3rem; }
+  .paper-doc li { margin: 0.4rem 0; }
+  .paper-doc code { font-family: var(--mono); font-size: 0.9em; background: var(--paper-2); padding: 0.08em 0.34em; border-radius: 3px; }
+  .paper-hd { padding: 1.2rem 0 0; }
+  .backhome { display:inline-flex; gap:0.4rem; align-items:center; font-family:var(--mono); font-size:0.82rem; text-decoration:none; color:var(--pine); }
+  .fineprint-block { font-family: var(--mono); font-size: 0.82rem; color: var(--pine); opacity: 0.75; margin-top: 2.5rem; }
+</style>
+<!-- Matomo: self-hosted, first-party cookie, IP-anonymized server-side; disclosed on this page -->
+<script>
+var _paq = window._paq = window._paq || [];
+_paq.push(['setTrackerUrl', 'https://analytics.analogelk.com/matomo.php']);
+_paq.push(['setSiteId', '10']);
+_paq.push(['trackPageView']);
+_paq.push(['enableLinkTracking']);
+</script>
+<script async src="https://analytics.analogelk.com/matomo.js"></script>
+</head>
+<body>
+<a class="skip" href="#privacy-main">Skip to content</a>
+<header class="topbar is-visible" style="transform:none;">
+  <a class="topbar__brand" href="index.html" aria-label="Muster — home">
+    <svg viewBox="0 0 48 64" aria-hidden="true"><polyline points="6,58 18,58 18,44 30,44 30,30 42,30" fill="none" stroke="var(--pine)" stroke-width="4.5" stroke-linecap="square"/><polyline points="30,30 30,16 42,16" fill="none" stroke="var(--ember)" stroke-width="4.5" stroke-linecap="square"/><circle cx="42" cy="16" r="4.5" fill="var(--ember)"/></svg>
+    Muster
+  </a>
+  <span class="topbar__spacer"></span>
+  <div class="topbar__cta">
+    <a class="backhome" href="index.html">&larr; back to the build log</a>
+  </div>
+</header>
+<main id="privacy-main" class="paper-doc">
+  <div class="paper-hd">
+    <h1>Privacy</h1>
+    <p>The short version: this site counts its readers with software we run ourselves. Nothing about you is sold, shared, or sent to an ad network, because none of those things exist here.</p>
+  </div>
+
+  <h2>What we measure</h2>
+  <p>musterr.dev uses <a href="https://matomo.org" target="_blank" rel="noopener">Matomo</a>, an open-source analytics tool, self-hosted on our own server. For each visit it records:</p>
+  <ul>
+    <li>the pages you view and the site that referred you here,</li>
+    <li>your browser and device type,</li>
+    <li>your approximate location (city level), derived from an <strong>anonymized</strong> IP address. The last two octets are discarded before anything is stored, so <code>203.0.113.7</code> is kept only as <code>203.0.0.0</code>. We cannot identify you from it.</li>
+  </ul>
+
+  <h2>Cookies</h2>
+  <p>Matomo sets a first-party cookie (<code>_pk_id</code>, plus a short-lived session cookie) so that a returning browser is counted once instead of twice. It works only on this domain, is never used for advertising, and is not shared with anyone. There is no third-party ad tech, no fingerprinting service, and no social widget on this site.</p>
+
+  <h2>What we honor and discard</h2>
+  <ul>
+    <li>If your browser sends the <strong>Do Not Track</strong> signal, you are not tracked at all.</li>
+    <li>Raw visit logs are deleted after 13 months; only aggregate statistics (counts, not visits) are kept beyond that.</li>
+    <li>All analytics data stays on infrastructure we operate. No third party receives it.</li>
+  </ul>
+
+  <h2>The demo portal</h2>
+  <p>If you log into the read-only demo (<code>demo@muster.dev</code>), the app stores a session token in your browser. That token exists solely so the login works; it is not used for tracking.</p>
+
+  <h2>Questions</h2>
+  <p>Email <a href="mailto:mike@analogelk.com">mike@analogelk.com</a> for any question, or to ask that a visit record be deleted.</p>
+
+  <p class="fineprint-block">Last updated 2026-07-07 · Muster · <a href="index.html">home</a> · <a href="paper.html">whitepaper</a></p>
+</main>
+</body>
+</html>
