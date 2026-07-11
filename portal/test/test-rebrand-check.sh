@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Unit test for portal/rebrand-check.sh — fixture-based, no network, no Docker.
+# Unit test for portal/rebrand-check.sh - fixture-based, no network, no Docker.
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=../rebrand-check.sh
