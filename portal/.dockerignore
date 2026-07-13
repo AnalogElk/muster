@@ -14,6 +14,11 @@ __tests__
 __fixtures__
 *.test.ts
 *.test.tsx
+# Dev-only Playwright/Cosmos capture routes. They 404 outside development and
+# some import from the excluded __fixtures__ tree, so keeping them would break
+# `next build` in-image (module-not-found). Excluding the whole tree also keeps
+# future AE syncs from breaking when a new preview route imports a fixture.
+app/screenshot-preview
 playwright-report
 test-results
 .playwright-screenshots
