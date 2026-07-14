@@ -1,7 +1,8 @@
 <h1 align="center">Muster</h1>
 
 <p align="center">
-  <strong>The operating system for agentic software teams, in one command.</strong><br>
+  <strong>The operating system for agentic software teams.</strong><br>
+  Stands up in one command; proves itself in one more.
   A human and a fleet of AI coding agents share one task board. Muster packages the
   whole loop (the task substrate, a production portal, and a local intelligence engine)
   so you can stand it up on a fresh cloud box or a laptop.
@@ -13,6 +14,12 @@
   <a href="https://github.com/AnalogElk/muster">Source</a><br>
   <sub>Read-only demo login: <code>demo@muster.dev</code> / <code>muster-demo</code>.
   Live now on real Let's Encrypt TLS. (musterr.dev has two Rs on purpose.)</sub>
+</p>
+
+<p align="center">
+  <a href="https://github.com/AnalogElk/muster/releases"><img src="https://img.shields.io/github/v/release/AnalogElk/muster?label=release&color=DE7330" alt="latest release"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/github/license/AnalogElk/muster?color=25402F" alt="MIT license"></a>
+  <a href="https://app.musterr.dev"><img src="https://img.shields.io/badge/live%20demo-app.musterr.dev-2E7D32" alt="live demo"></a>
 </p>
 
 > **Naming note:** the public product name is **Muster**; **Elk OS** is the
@@ -35,14 +42,23 @@ running, multi-service system with a live public demo, not a slide deck. See
 
 ```bash
 git clone https://github.com/AnalogElk/muster.git && cd muster
-./bin/elk-os init --profile generic   # generate secrets + .env
-./bin/elk-os up                       # docker compose up the whole stack
-./bin/elk-os doctor                   # green/red health board, the loop proof
+./bin/elk-os init --profile generic         # generate secrets + .env
+./bin/elk-os up                             # docker compose up the whole stack
+./bin/elk-os migrate && ./bin/elk-os seed   # os_* schema + profile data
+./bin/elk-os wire                           # point Claude Code at this board
+./bin/elk-os doctor                         # green/red health board, the loop proof
 ```
 
+<p align="center">
+  <a href="https://app.musterr.dev"><img src="site/assets/muster-board.png" alt="The Muster task board: the shared os_* substrate the human and the agent fleet both work" width="840"></a><br>
+  <sub>The board is the product. This is the live portal at <a href="https://app.musterr.dev">app.musterr.dev</a>; the demo login is read-only.</sub>
+</p>
+
 Docker is the only hard dependency (`migrate`/`seed` additionally use stdlib
-`python3`, see the CLI table below). Secrets are generated into a gitignored
-`.env` and never printed.
+`python3`, see the CLI table below; building the portal image locally also
+needs `git`/`node`/`perl` on the host, and `prepare-context.sh` preflights
+them with the alternatives spelled out). Secrets are generated into a
+gitignored `.env` and never printed.
 
 > **Fresh-clone note:** the portal image builds from a *local checkout* of
 > `analog-elk-front-end` (see [`portal/`](./portal/)), which a fresh clone
@@ -83,6 +99,22 @@ by reading seeded `os_tasks` back through the same endpoint + token. `doctor`
 then walks every subsystem, including a live `tools/list` probe against `/mcp`
 (a WARN until wired), and exits nonzero on any red row.
 
+## Why not just a plain Claude Code session?
+
+A plain session is the right tool for a large class of work. Muster is what you
+wrap around it when the work is multi-session, ships to others, and cannot be
+human-reviewed line by line:
+
+| A plain Claude Code session | Muster |
+|---|---|
+| One rolling context window is the project memory | A durable task board + on-disk memory + an append-only log survive every session |
+| Serial by default; two agents clobber one checkout | Governed fan-out with worktree isolation around one shared board |
+| The builder audits its own work, sharing its blind spots | Adversarial verifiers and from-scratch loop-proofs |
+| Rules live in a human's head and drift | A written constitution loaded into every session |
+
+The honest version of this table, including which rows a disciplined single
+agent can match, is [whitepaper section 7](https://musterr.dev/paper.html).
+
 ## The intelligent layer
 
 The board is where work happens. The intelligent layer is how the system answers
@@ -96,9 +128,11 @@ Qdrant, and Redis. Embeddings are generated on the box with
 [fastembed](https://github.com/qdrant/fastembed) using `BAAI/bge-small-en-v1.5`
 (384-dimensional vectors, ONNX on CPU). Retrieval and indexing run entirely
 locally: no external inference, no embedding API key, no quota, and no document
-text leaving the machine. On the self-host stack the engine runs on the internal
-`elkos-rag` network only, in development mode with no published ports, so network
-isolation is the perimeter out of the box.
+text leaving the machine. On the self-host stack the engine runs on the private
+`elkos-rag` network in development mode; the engine's only host exposure is a
+loopback binding (`127.0.0.1:19100`, `RAG_API_PORT`), which is how `bin/elk-os doctor`
+and host-side tools reach it. Nothing is reachable off the box, so the machine
+boundary is the perimeter out of the box.
 
 **Elk Chat.** On top of the engine sits an in-portal assistant that answers
 questions over your own knowledge base and `os_*` task data. It is a grounding
@@ -116,7 +150,7 @@ see, even if the engine ranked it first. Retrieval is a suggestion; permission i
 the gate.
 
 **Security hardening.** The engine is built to be safe to expose behind a reverse
-proxy, the way Analog Elk hosts `rag.analogelk.com`:
+proxy, the way Analog Elk runs its own production instance:
 
 - **Read-key auth.** `/query`, `/stats`, and the ingest routes require an
   `X-API-Key` header (constant-time comparison) once a key is set.
@@ -138,9 +172,10 @@ permission-aware intelligence, packaged as one reproducible self-host stack.
 
 > **Honest note on generation.** Retrieval and embeddings are local and keyless.
 > The step that *writes* an answer uses whatever model provider you configure
-> (`ASSISTANT_MODEL` + key). Muster's "no external inference" claim is scoped to
-> the engine, which is where your documents live. Without a generation key the
-> chat degrades gracefully to an instructive empty state rather than failing.
+> (`ANTHROPIC_API_KEY` + `ASSISTANT_MODEL`, both passed through `.env`; see
+> `.env.example`). Muster's "no external inference" claim is scoped to the
+> engine, which is where your documents live. Without a generation key the chat
+> answers with an honest in-chat notice rather than a broken box.
 
 ## Profiles
 
@@ -171,6 +206,8 @@ point and pick the sequence back up):
 | `seed` | Load the profile's seed data (idempotent upsert). |
 | `wire` | Render the Claude-side OS, enable the native MCP server, prove the loop. |
 | `doctor` | Per-subsystem green/red board, the runtime acceptance test. |
+| `logs [service]` | Tail container logs (e.g. `directus`, `elkos-rag-api`). |
+| `rebuild-portal` | Re-prepare the pinned context + rebuild the portal image. |
 | `down` | Stop the stack (`--volumes` to wipe data). |
 
 ## Deploy options (honest about what's local vs needs a host)
@@ -185,9 +222,10 @@ point and pick the sequence back up):
 **The honest caveat:** the portal **fail-fasts without a reachable Directus
 backend**. A front-end-only host (Netlify) hosts the UI, not the backend. The
 backend (Postgres + Directus + RAG + native MCP) needs a real host: the box is
-the reliable full-stack path. And the portal image is published to GHCR (it can't
-be built on a bare PaaS), see [`provision/`](./provision/) and
-[`deploy/README.md`](./deploy/README.md).
+the reliable full-stack path. And the portal image ships via GHCR (it can't
+be built on a bare PaaS); the GHCR packages currently require a `docker login
+ghcr.io` while the public image release is prepared (tracked). See
+[`provision/`](./provision/) and [`deploy/README.md`](./deploy/README.md).
 
 The live demo *is* the box path: [`site/`](./site/) is the whitepaper homepage
 Caddy serves at the demo root, and [`provision/`](./provision/) includes the

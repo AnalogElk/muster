@@ -104,7 +104,7 @@ if (!navigator.globalPrivacyControl) {
     <h1 class="hero__wordmark">Muster</h1>
     <p class="hero__lede">A self-hostable operating system for agentic software teams. It built itself.</p>
 
-    <p class="hero__pitch">You and a fleet of AI coding agents work <b>one shared task board</b> over MCP. The row you drag is the row an agent picks up and writes back when it is done. On top runs a <b>local RAG engine</b> and <b>Elk Chat</b>, a private assistant over your own knowledge base and task data: no API key, nothing leaves the box. <b>One command</b> stands the whole loop up on a laptop or a cloud box, with Docker as the only dependency.</p>
+    <p class="hero__pitch">You and a fleet of AI coding agents work <b>one shared task board</b> over MCP. The row you drag is the row an agent picks up and writes back when it is done. On top runs a <b>local RAG engine</b> and <b>Elk Chat</b>, a private assistant over your own knowledge base and task data: no API key, nothing leaves the box. <b>One command</b> stands the stack up on a laptop or a cloud box, six take an empty volume to a green doctor board, and Docker is the only hard dependency.</p>
 
     <p class="hero__sub mono">This page is the build log. The links are the live system. Designed, governed, and shipped by <a href="#author">Mike Walliser</a>.</p>
     <p class="hero__sub mono">Week one in service: 18 production PRs across 8 repos in 48 hours, behind a 3-reviewer gate that said no four times. <a href="#service">The receipts ↓</a></p>
@@ -137,7 +137,7 @@ if (!navigator.globalPrivacyControl) {
     <p class="kicker">§1 · Abstract</p>
     <p class="lead">On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock, spanned 8 phases, 27 commits and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations consuming over 2 million tokens. It runs on a single AWS instance for about $2–4 per month at demo duty-cycle (stopped when idle), and you can open it right now.</p>
     <p>That an agent fleet emits files quickly is not the interesting part; volume is unfalsifiable and ages badly. The interesting part is the apparatus that let a long, multi-session, ship-grade build hold together without a human reviewing every diff, and the fact that the system used that apparatus on itself. The thesis: <strong>the value is the architecture, not the prompt.</strong></p>
-    <p class="note">Three costs, kept apart on purpose: hosting (~$3/mo) is not the one-time build model-spend, and neither is the ongoing cost of running the fleet on your next project. The cheap number is only the box.</p>
+    <p class="note">Three costs, kept apart on purpose: hosting (~$3/mo at demo duty-cycle) is not the one-time build model-spend, and neither is the ongoing cost of running the fleet on your next project. The cheap number is only the box.</p>
   </div>
 </section>
 
@@ -153,7 +153,7 @@ if (!navigator.globalPrivacyControl) {
       <div class="ledger__row ledger__head"><div>The bottleneck is not the model</div><div>It is shared coordination state</div></div>
       <div class="ledger__row"><div>The task record, not the chat transcript,</div><div>is the coordination substrate between a human and a fleet of agents.</div></div>
     </div>
-    <p>The real build board, the 18 tasks that built this demo, exported live from the working CMS with hierarchy and statuses preserved, is browsable read-only.
+    <p>The real build board that built this demo, exported live from the working CMS with hierarchy and statuses preserved, is browsable read-only, inside a seeded working agency: 8 organizations, 11 projects, and a live, still-growing task board.
       <a class="livechip" href="https://app.musterr.dev" target="_blank" rel="noopener">app.musterr.dev</a>
       <span class="fineprint mono">· demo login <code>demo@muster.dev</code> / <code>muster-demo</code></span></p>
     <p class="fineprint">Origin clause: Muster began as the internal OS of one agency, Analog&nbsp;Elk. That lineage is now just the first profile (<code>analogelk</code>) shipped alongside a generic one: a demonstrated feature, not the headline.</p>
@@ -306,13 +306,14 @@ if (!navigator.globalPrivacyControl) {
 <!-- ===================== §11 SERVICE RECORD (ADDENDUM) ===================== -->
 <section class="band band-paper" id="service">
   <div class="doc">
-    <p class="kicker">§11 · Addendum · one week in service · 2026-07-02</p>
+    <p class="kicker">§11 · Addendum · in service · updated 2026-07-14</p>
     <h2 class="h2">The build log ends June 29. The system didn't.</h2>
     <p>Everything above was written the night of the build. What follows happened after, in production, and is checkable in public repo history. The same apparatus runs a real agency: real clients, real invoices, uptime monitoring, backup restore drills, release automation.</p>
     <ul class="tight">
       <li><strong>18 pull requests to production in one 48-hour window, across 8 repositories</strong>, including 10 to the agency platform that pays the bills, with releases cut by automation (Muster <span class="mono">v0.1.1</span> and the platform's <span class="mono">v1.21.0</span>, both 2026-07-02).</li>
       <li><strong>The 3-reviewer adversarial gate said no four times, with evidence.</strong> One "fix" it proved a complete no-op via its own deploy preview: the real defect was a CMS value, fixed at the source instead. One broke a test mock: fixed, re-verified, then shipped. One sitemap change would have advertised noindexed soft-404 pages: split, the safe half shipped. One blog rollout is still held, because indexing thin pages before the content exists is an SEO regression. A gate that only ever says yes is decoration.</li>
       <li><strong>The orchestrating session was killed mid-flight by a machine crash.</strong> Because every unit of work lives in the task record and per-agent journals, a fresh session reconstructed the full state and resumed with zero lost work: §9's thesis, demonstrated the hard way, on itself.</li>
+      <li><strong>2026-07-14: the intelligent layer shipped into the demo.</strong> The portal now carries Elk Chat and the local RAG engine of §3; retrieval runs behind the same read-only login (generation stays keyless on the public demo, the exact boundary the whitepaper draws). The demo workspace grew to a seeded working agency: 8 organizations and 11 projects alongside the original build record. Write posture re-verified the same day: create, update, and delete all return 403 for the demo role.</li>
     </ul>
     <p class="fineprint">Same rule as the rest of this page: logged, reproducible events, not projections.</p>
   </div>
@@ -350,7 +351,8 @@ bin/elk-os <span class="e">doctor</span>    <span class="c"># green/red from-scr
       <a class="btn" href="https://github.com/AnalogElk/muster" target="_blank" rel="noopener">GitHub repo ↗</a>
     </p>
 
-    <p class="note">TLS note: real browser-trusted Let's Encrypt on a $3/mo box. The demo is read-only, and may sleep between showings to save cost.</p>
+    <p class="note">TLS note: real browser-trusted Let's Encrypt, auto-provisioned by Caddy. The demo is read-only, and may sleep between showings to save cost.</p>
+    <p class="note">Analytics, same posture: self-hosted Matomo, first-party, IP-anonymized, skipped entirely when your browser sends Global Privacy Control. No third-party trackers. <a href="privacy.html">The privacy page</a> spells it out.</p>
   </div>
 </section>
 
@@ -371,7 +373,7 @@ bin/elk-os <span class="e">doctor</span>    <span class="c"># green/red from-scr
 <!-- ===================== FOOTER ===================== -->
 <footer class="footer">
   <div class="doc">
-    <div><a href="https://analogelk.com" target="_blank" rel="noopener">Muster by Analog Elk</a> · the shared operating system for agentic software teams · built by agents</div>
+    <div><a href="https://analogelk.com" target="_blank" rel="noopener">Muster by Analog Elk</a> · the operating system for agentic software teams · built by agents</div>
     <div>Built by <a href="https://walliser.me" target="_blank" rel="noopener">Michael Walliser</a> · design and system architecture · 2026-06-29</div>
     <div class="footer__links">
       <a href="/paper.html">Whitepaper</a>

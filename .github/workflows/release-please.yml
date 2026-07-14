@@ -30,8 +30,9 @@
 #   Resource:    AnalogElk/muster (this repo only)
 #   Permissions: Contents: Read and write, Pull requests: Read and write
 #
-# Until the secret exists, the step falls back to github.token (read-only) and
-# release-please will fail on push to main — that is the current known state.
+# RELEASE_PLEASE_TOKEN is configured and working (releases v0.1.1+ were cut by
+# it); the PAT recipe above is kept as setup reference for forks/new repos.
+# Without the secret the step falls back to github.token (read-only) and fails.
 name: release-please
 
 on:
