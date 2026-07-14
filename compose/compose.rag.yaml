@@ -121,8 +121,18 @@ services:
       QDRANT_HOST: elkos-qdrant
       QDRANT_PORT: "6333"
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      # Empty = write endpoints (/ingest) are open on the internal network only.
+      # The bundled engine runs on the internal elkos-rag network only, so it
+      # ships in DEVELOPMENT mode: no api key is required and its ports are never
+      # published — network isolation is the perimeter. To EXPOSE the engine
+      # (public reverse-proxy, the way Analog Elk prod hosts rag.analogelk.com),
+      # set ELK_OS_RAG_ENV=production AND RAG_API_KEY in .env — the engine then
+      # requires the key on /query, /stats, /ingest and REFUSES to boot without
+      # one (fail-closed). RAG_ALLOW_PUBLIC_READ=true keeps reads open on a
+      # trusted network even with a key set.
+      ENVIRONMENT: ${ELK_OS_RAG_ENV:-development}
       RAG_API_KEY: ${RAG_API_KEY:-}
+      RAG_ALLOW_PUBLIC_READ: ${RAG_ALLOW_PUBLIC_READ:-false}
+      RAG_RATE_LIMIT_PER_MINUTE: ${RAG_RATE_LIMIT_PER_MINUTE:-300}
     networks:
       - elkos-rag
     depends_on:
