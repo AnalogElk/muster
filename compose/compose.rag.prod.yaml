@@ -3,10 +3,10 @@
 # the host. Only the RAG API is reachable, and only on loopback
 # (127.0.0.1:${RAG_API_PORT:-19100}), so the host-side Claude/MCP can query it
 # while the box stays closed to the public internet (Caddy fronts Directus; it
-# does not proxy the RAG API). Note the portal does NOT consume the RAG API:
-# the portal service sits on the elk-os network only (the RAG stack is on
-# elkos-rag) and no RAG env is wired into it — the KB search it ships reads
-# kb_* collections through Directus.
+# does not proxy the RAG API). The portal consumes the RAG API over the internal
+# elkos-rag network via compose.portal.rag.yaml (ELK_OS_WITH_INTELLIGENCE,
+# default true, layers it in); set ELK_OS_WITH_INTELLIGENCE=false for the old
+# Directus-full-text-only KB search.
 
 services:
   elkos-rag-postgres:

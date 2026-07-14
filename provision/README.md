@@ -41,9 +41,10 @@ export ELK_OS_PROFILE=generic                  # generic | analogelk
 export ELK_OS_REPO=https://github.com/AnalogElk/muster.git
 
 # Optional — add the portal surface using PUBLISHED images (see "The portal" below;
-# only once images are published via publish-images.yml)
-# export PORTAL_IMAGE=ghcr.io/analogelk/elk-os-portal:0.1.0
-# export RAG_IMAGE=ghcr.io/analogelk/elk-os-rag-api:0.1.0
+# current tags: github.com/orgs/AnalogElk/packages. Note ae-42d8fb3c predates
+# the intelligent layer; build locally for the current pin.)
+# export PORTAL_IMAGE=ghcr.io/analogelk/elk-os-portal:ae-42d8fb3c
+# export RAG_IMAGE=ghcr.io/analogelk/elk-os-rag-api:0.1.2
 
 curl -fsSL https://raw.githubusercontent.com/AnalogElk/muster/main/provision/cloud-init.sh | bash
 ```

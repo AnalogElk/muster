@@ -13,8 +13,9 @@
 # via fastembed, ONNX/CPU) — no external inference API, no key, no quota.
 #
 # This base file declares NO host port exposure; the dev/prod overlays decide:
-#   - compose.rag.dev.yaml  → bind ports to 127.0.0.1 (laptop)
-#   - compose.rag.prod.yaml → internal-only (reachable on the elkos-rag network)
+#   - compose.rag.dev.yaml  → bind all four services to 127.0.0.1 (laptop)
+#   - compose.rag.prod.yaml → DBs internal-only; the RAG API is published on
+#     loopback (127.0.0.1:${RAG_API_PORT:-19100}) for the host CLI/doctor
 #
 # Inclusion is controlled by ELK_OS_WITH_RAG (default: true). See bin/elk-os.
 #
@@ -121,11 +122,12 @@ services:
       QDRANT_HOST: elkos-qdrant
       QDRANT_PORT: "6333"
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
-      # The bundled engine runs on the internal elkos-rag network only, so it
-      # ships in DEVELOPMENT mode: no api key is required and its ports are never
-      # published — network isolation is the perimeter. To EXPOSE the engine
-      # (public reverse-proxy, the way Analog Elk prod hosts rag.analogelk.com),
-      # set ELK_OS_RAG_ENV=production AND RAG_API_KEY in .env — the engine then
+      # The bundled engine lives on the private elkos-rag network and ships in
+      # DEVELOPMENT mode: no api key required. Its only host exposure is the
+      # loopback binding the dev/prod overlays add (127.0.0.1:${RAG_API_PORT},
+      # used by bin/elk-os doctor and host-side tools); nothing is reachable
+      # off the box. To EXPOSE the engine behind a public reverse proxy, set
+      # ELK_OS_RAG_ENV=production AND RAG_API_KEY in .env; the engine then
       # requires the key on /query, /stats, /ingest and REFUSES to boot without
       # one (fail-closed). RAG_ALLOW_PUBLIC_READ=true keeps reads open on a
       # trusted network even with a key set.

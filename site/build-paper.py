@@ -272,7 +272,7 @@ if (!navigator.globalPrivacyControl) {{
   <div class="paper-doc" style="margin-top:3rem;">
     <hr>
     <p class="fineprint">Live exhibit: <a class="livechip" href="{portal}" target="_blank" rel="noopener">app.musterr.dev</a> &nbsp;·&nbsp; read-only demo login <code>demo@muster.dev</code> / <code>muster-demo</code> &nbsp;·&nbsp; <a href="assets/muster-board.png" target="_blank" rel="noopener">board snapshot (archived)</a> if the box is asleep</p>
-    <p class="fineprint">musterr.dev demo · real Let's Encrypt TLS · $3/mo box · live instance may sleep between showings. &nbsp;·&nbsp; <a href="#" onclick="window.print();return false;">Print / PDF</a></p>
+    <p class="fineprint">musterr.dev demo · real Let's Encrypt TLS · live instance may sleep between showings. &nbsp;·&nbsp; <a href="privacy.html">Privacy</a> &nbsp;·&nbsp; <a href="#" onclick="window.print();return false;">Print / PDF</a></p>
     <p class="fineprint">Rendered from <code>docs/whitepaper/elk-os-whitepaper.md</code>. Product name resolved to <strong>Muster</strong> per the identity brief; "Analog Elk" (origin/case study) and <code>bin/elk-os</code> (command) are preserved verbatim.</p>
   </div>
 </main>
