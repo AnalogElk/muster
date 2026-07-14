@@ -7,9 +7,9 @@
 #   app.${ELK_OS_DOMAIN}    → the portal (the human surface)
 #   cms.${ELK_OS_DOMAIN}    → Directus (the os_* board + native MCP at /mcp)
 #
-# All subnames resolve automatically under sslip.io (e.g. 1.2.3.4.sslip.io,
-# app.1.2.3.4.sslip.io and cms.1.2.3.4.sslip.io all point at 1.2.3.4), or add
-# `app` + `cms` A/CNAME records for a real domain. The portal's
+# All three hosts resolve to the box once the apex plus `app` + `cms`
+# A/CNAME records point at it (e.g. musterr.dev, app.musterr.dev and
+# cms.musterr.dev). The portal's
 # NEXT_PUBLIC_DIRECTUS_URL + Directus PUBLIC_URL are pinned to the cms.* host by
 # the prod compose overrides.
 #

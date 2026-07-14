@@ -495,5 +495,83 @@ Catching the ledger up (dated corrections, per the header rule — nothing above
 
 ---
 
+## 2026-07-13, Session 12: the intelligent layer lands, and the whitepaper deepens to carry it
+
+This session is content and capability, not new install phases. The headline new
+capability, the **intelligent layer**, is designed and building, and the thesis
+document was elevated to fully articulate what Muster is and why. Branding is
+locked to **Muster by Analog Elk**; author is **Michael Walliser**
+([walliser.me](https://walliser.me)).
+
+**The intelligent layer** (design:
+`analog-elk-v3/docs/superpowers/specs/2026-07-13-intelligent-layer-design.md`;
+CMS `os_task` 743b8087):
+
+- **Private engine.** The vendored engine (`rag-engine/`) is a local FastAPI
+  service on `:9100` (the self-host overlay binds `127.0.0.1:19100`); embeddings
+  are computed on-box with `fastembed` running `BAAI/bge-small-en-v1.5` (384-dim,
+  ONNX/CPU), backed by Postgres + Qdrant + Redis. No API key, no external
+  inference, no data leaves the box. Lineage: the standalone `analog-elk-v3`
+  Claude Code plugin, synthesized with the production portal.
+- **Elk Chat.** An in-portal assistant over your own KB + task data, built by
+  upgrading the existing read-only Ask Elk surface (role-allowlisted Directus
+  tools, caller's token): a `kb_search` tool, SSE streaming, rate limiting (D4).
+- **The re-gating model (the load-bearing idea).** The engine is an UNTRUSTED
+  ranking oracle: it indexes gated/unpublished pages. `kb_search` uses `/query`
+  only to rank slugs, then re-fetches content through Directus with the caller's
+  own token via `buildPageFilter` (the `gateCandidateSlugs` path). Every result
+  is re-gated by the caller's real permissions before it reaches the model, so
+  the assistant can surface only what that user could open by hand (D5).
+- **Security hardening (real, in `rag-engine/rag_server.py` + `models.py`).**
+  `X-API-Key` read auth on `/query`,`/stats`,`/ingest*` (constant-time compare);
+  `enforce_startup_security` fails closed when a non-development engine has no key
+  (the dependency is otherwise fail-open); `/docs`,`/redoc`,`/openapi` disabled
+  outside dev; rate limiting keyed by API key; delete/reconcile across Postgres +
+  Qdrant with `/query` dropping orphaned vectors so unpublished content can't leak
+  via a stale snippet (D3).
+- **Generation is opt-in and external by design.** No local generation model
+  (measured ~0.4 tok/s); generation uses the deployment's own
+  `ANTHROPIC_API_KEY`/`ASSISTANT_MODEL`; dark (503 + instructive empty state)
+  without a key. "No external inference" stays exact: it covers the engine, not
+  the assistant's generation (D6).
+- **Positioning (D8).** Elk Chat is a grounding window over the knowledge
+  substrate, not a coordination surface. The task record stays the coordination
+  substrate; chat still does not dispatch work.
+
+**The whitepaper** (`docs/whitepaper/elk-os-whitepaper.md`):
+
+- Added a new **§4 "The intelligent layer"** and renumbered the downstream
+  sections (recursion→§5, evidence→§6, comparison→§7, economics→§8,
+  limitations→§9, generalization→§10, run-it→§11); every internal cross-reference
+  was updated to match.
+- Sharpened the problem framing to name the industry's "bolt a chatbot on the
+  side" reflex as the mirror of the context-window fixation, and stated the
+  inversion (the shared task substrate) in the abstract and §1.
+- Honest temporal framing: §4 is dated as a later capability that did not build
+  itself, and the recursion claim is scoped to the original 2.5-hour build.
+- All em dashes removed (Michael's standing voice rule).
+
+**Consistency pass (all three thesis files):**
+
+- URLs finalized: portal `https://app.musterr.dev`, landing + paper
+  `https://musterr.dev`, Directus `cms.musterr.dev`; all `sslip.io` serving URLs
+  and cert-warning hedging removed; demo login stays `demo@muster.dev` /
+  `muster-demo`.
+- `identity-brief.md` gained status-note amendment (7): DNS cutover complete, TLS
+  resolved, intelligent layer noted, branding + author locked.
+
+**Not touched:** `site/paper.html` is regenerated from the `.md` by a separate
+step after this content pass, so it was left alone.
+
+**Real vs aspirational:** the whitepaper content is real and committed. The
+engine code (with the hardening above) is vendored and real in `rag-engine/`.
+Elk Chat and the portal integration are at Approach-C design + AE-first
+implementation; per-phase shipped status tracks in `analog-elk-v3` +
+`analog-elk-front-end` and CMS task 743b8087. Muster consumes the portal side
+downstream via a pinned commit bump + a `compose.portal.rag.yaml` bridge overlay
+(D7).
+
+---
+
 <!-- Append new sessions/phases below. Each phase flips from aspirational to real
      only when `doctor` proves it. -->
