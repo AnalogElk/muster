@@ -15,14 +15,14 @@ absent; pages are upserted by slug; permissions are reconciled.
 
 Usage:
     DIRECTUS_ADMIN_TOKEN=... \\
-    DIRECTUS_URL=https://cms.<box>.sslip.io \\
+    DIRECTUS_URL=https://cms.musterr.dev \\
     POLICY_NAME="Demo Read-Only" \\
         python3 provision/re-add-kb.py
 """
 import os, sys, json, urllib.request, urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-B = os.environ.get("DIRECTUS_URL", "https://cms.34.220.64.149.sslip.io").rstrip("/")
+B = os.environ.get("DIRECTUS_URL", "https://cms.musterr.dev").rstrip("/")
 TOKEN = os.environ["DIRECTUS_ADMIN_TOKEN"]
 POLICY_NAME = os.environ.get("POLICY_NAME", "Demo Read-Only")
 

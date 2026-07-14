@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-build-paper.py — render the whitepaper markdown into site/paper.html.
+build-paper.py: render the whitepaper markdown into site/paper.html.
 
 Dependency-free (Python 3.9 stdlib only). Handles the subset of Markdown the
 whitepaper uses: ATX headings, GFM pipe tables, fenced code, blockquotes,
@@ -25,8 +25,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.normpath(os.path.join(HERE, "..", "docs", "whitepaper", "elk-os-whitepaper.md"))
 OUT = os.path.join(HERE, "paper.html")
 
-PORTAL = "https://app.34.220.64.149.sslip.io"
-BOARD = "https://cms.34.220.64.149.sslip.io"
+PORTAL = "https://app.musterr.dev"
+BOARD = "https://cms.musterr.dev"
 
 
 def product_swap(text: str) -> str:
@@ -35,8 +35,8 @@ def product_swap(text: str) -> str:
 
     As of 2026-07-02 the markdown source itself is titled/written 'Muster'
     (identity-brief §7 apex coherence), so this is normally a no-op. The one
-    intentional 'Elk OS' left in the source — the byline's working-name note
-    ('Working name: "Elk OS" — …') — must NOT be swapped ('Working name:
+    intentional 'Elk OS' left in the source, the byline's working-name note
+    ('Working name: "Elk OS", …'), must NOT be swapped ('Working name:
     "Muster"' would be false), so it is protected before the generic sub."""
     text = text.replace('Working name: "Elk OS"', "Working name: \x00WN\x00")
     text = re.sub(r"\bElk OS\b", "Muster", text)
@@ -205,9 +205,9 @@ TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Muster — the whitepaper · The Task Record Is the Coordination Substrate</title>
-<meta name="description" content="A field report by Mike Walliser. How a governed fleet of AI agents built and publicly shipped the product that packages its own governance — in roughly 2.5 hours, on a $3-a-month box.">
-<!-- canonical = https://musterr.dev/ (double R — deliberate); serving host stays sslip.io until DNS cutover -->
+<title>Muster: the whitepaper · The Task Record Is the Coordination Substrate</title>
+<meta name="description" content="A field report by Mike Walliser. How a governed fleet of AI agents built and publicly shipped the product that packages its own governance, in roughly 2.5 hours, on a $3-a-month box.">
+<!-- canonical = https://musterr.dev/ (double R, deliberate) -->
 <link rel="canonical" href="https://musterr.dev/paper.html">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Cpolyline points='6,58 18,58 18,44 30,44 30,30 42,30' fill='none' stroke='%2325402F' stroke-width='5' stroke-linecap='square'/%3E%3Cpolyline points='30,30 30,16 42,16' fill='none' stroke='%23DE7330' stroke-width='5' stroke-linecap='square'/%3E%3Ccircle cx='42' cy='16' r='5' fill='%23DE7330'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -251,7 +251,7 @@ if (!navigator.globalPrivacyControl) {{
 <body>
 <a class="skip" href="#paper-main">Skip to the paper</a>
 <header class="topbar is-visible" style="transform:none;">
-  <a class="topbar__brand" href="index.html" aria-label="Muster — home">
+  <a class="topbar__brand" href="index.html" aria-label="Muster: home">
     <svg viewBox="0 0 48 64" aria-hidden="true"><polyline points="6,58 18,58 18,44 30,44 30,30 42,30" fill="none" stroke="var(--pine)" stroke-width="4.5" stroke-linecap="square"/><polyline points="30,30 30,16 42,16" fill="none" stroke="var(--ember)" stroke-width="4.5" stroke-linecap="square"/><circle cx="42" cy="16" r="4.5" fill="var(--ember)"/></svg>
     Muster
   </a>
@@ -271,8 +271,8 @@ if (!navigator.globalPrivacyControl) {{
   </article>
   <div class="paper-doc" style="margin-top:3rem;">
     <hr>
-    <p class="fineprint">Live exhibit: <a class="livechip" href="{portal}" target="_blank" rel="noopener">app.34.220.64.149.sslip.io</a> &nbsp;·&nbsp; read-only demo login <code>demo@muster.dev</code> / <code>muster-demo</code> &nbsp;·&nbsp; <a href="assets/muster-board.png" target="_blank" rel="noopener">board snapshot (archived)</a> if the box is asleep</p>
-    <p class="fineprint">sslip.io demo · real Let's Encrypt TLS · $3/mo box · live instance may sleep between showings. &nbsp;·&nbsp; <a href="#" onclick="window.print();return false;">Print / PDF</a></p>
+    <p class="fineprint">Live exhibit: <a class="livechip" href="{portal}" target="_blank" rel="noopener">app.musterr.dev</a> &nbsp;·&nbsp; read-only demo login <code>demo@muster.dev</code> / <code>muster-demo</code> &nbsp;·&nbsp; <a href="assets/muster-board.png" target="_blank" rel="noopener">board snapshot (archived)</a> if the box is asleep</p>
+    <p class="fineprint">musterr.dev demo · real Let's Encrypt TLS · $3/mo box · live instance may sleep between showings. &nbsp;·&nbsp; <a href="#" onclick="window.print();return false;">Print / PDF</a></p>
     <p class="fineprint">Rendered from <code>docs/whitepaper/elk-os-whitepaper.md</code>. Product name resolved to <strong>Muster</strong> per the identity brief; "Analog Elk" (origin/case study) and <code>bin/elk-os</code> (command) are preserved verbatim.</p>
   </div>
 </main>

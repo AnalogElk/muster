@@ -217,7 +217,7 @@ find . -type f \( -name '*.tsx' -o -name '*.ts' -o -name '*.json' -o -name '*.md
 # --- Self-host portability: single-domain routing + host-only cookies ---------
 # The source app is wired to the analogelk.com multi-subdomain topology
 # (login./client./employee.*) and scopes auth cookies to `.analogelk.com`. On a
-# single-domain self-host box (sslip.io / a custom domain) that breaks the authed
+# single-domain self-host box (musterr.dev or a custom domain) that breaks the authed
 # portal: the proxy 301s /employee-portal/* off to employee.analogelk.com, and
 # the browser rejects the `.analogelk.com` cookies so no session ever sticks.
 #
@@ -295,7 +295,7 @@ echo "[portal] rebrand: replaced AE logo mark with Muster M monogram"
 # ---------------------------------------------------------------------------
 # 6c. Demo mode — pre-fill the login credentials (idempotent, build-time gated)
 # ---------------------------------------------------------------------------
-# The public demo (cms/app.34.220.64.149.sslip.io) ships a single read-only user
+# The public demo (cms/app.musterr.dev) ships a single read-only user
 # (demo@muster.dev / muster-demo). To make that demo one-click, seed the login
 # form's email + password from a build-time flag. NEXT_PUBLIC_* is inlined at
 # `pnpm build`, so this is FULLY gated on NEXT_PUBLIC_DEMO_MODE === "true": a

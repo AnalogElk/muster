@@ -38,9 +38,9 @@ FROM ${NODE_IMAGE} AS builder
 WORKDIR /app
 # Browser-facing origins. NEXT_PUBLIC_* are inlined into the client bundle at
 # build time, so they must be present during `pnpm build` (not just at runtime).
-# Defaults target the sslip.io demo box; override per-deploy with --build-arg.
-ARG NEXT_PUBLIC_DIRECTUS_URL=https://cms.34.220.64.149.sslip.io
-ARG NEXT_PUBLIC_SITE_URL=https://app.34.220.64.149.sslip.io
+# Defaults target the musterr.dev demo box; override per-deploy with --build-arg.
+ARG NEXT_PUBLIC_DIRECTUS_URL=https://cms.musterr.dev
+ARG NEXT_PUBLIC_SITE_URL=https://app.musterr.dev
 # [elk-os demo-prefill] Off by default → template/self-host builds ship EMPTY
 # login fields. The public demo image is built with --build-arg
 # NEXT_PUBLIC_DEMO_MODE=true to pre-fill the read-only demo creds (one-click).
