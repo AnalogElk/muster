@@ -1,0 +1,23 @@
+# Intelligent-layer bridge — wires the portal to the RAG engine.
+#
+# Layered by bin/elk-os ONLY when BOTH the portal and RAG subsystems are enabled
+# (ELK_OS_WITH_INTELLIGENCE, default true). It joins the portal to the private
+# `elkos-rag` network and points it at the in-network engine, so the portal's KB
+# semantic search and Elk Chat (Ask Elk grounding) consume the engine over HTTP —
+# exactly how Analog Elk prod consumes rag.analogelk.com, but entirely internal.
+#
+# KB_RAG_API_KEY only matters when the engine runs WITH auth (ELK_OS_RAG_ENV=
+# production + RAG_API_KEY). On the default internal-dev engine it is empty and
+# reads are open on the private network, which is the perimeter.
+#
+# The portal reaches the engine at the compose service alias `elkos-rag-api`
+# (declared in compose.rag.yaml); `elk-os` + `elkos-rag` here place the portal on
+# both networks so it can still reach Directus AND the engine.
+services:
+  portal:
+    environment:
+      KB_RAG_URL: http://elkos-rag-api:9100
+      KB_RAG_API_KEY: ${RAG_API_KEY:-}
+    networks:
+      - elk-os
+      - elkos-rag

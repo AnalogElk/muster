@@ -7,7 +7,7 @@ typing so that FastAPI can auto-generate accurate OpenAPI docs.
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 # ---------------------------------------------------------------------------
@@ -166,4 +166,51 @@ class StatsResponse(BaseModel):
     domains: List[str] = Field(default_factory=list, description="Distinct source_type values")
     last_indexed: Optional[datetime] = Field(
         default=None, description="UTC timestamp of the most-recently ingested document"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Delete / reconcile
+# ---------------------------------------------------------------------------
+
+
+class DeleteRequest(BaseModel):
+    """Remove documents from the knowledge base.
+
+    Provide ``source_urls`` (exact matches) and/or ``domain`` (all documents in
+    that knowledge domain). At least one must be given so a bare ``{}`` cannot
+    accidentally purge the whole corpus. This is how a KB page that was
+    unpublished or deleted upstream is forgotten by the engine — without it the
+    append-only store keeps serving stale/gated text forever.
+    """
+
+    source_urls: Optional[List[str]] = Field(
+        default=None,
+        description="Exact source_url values to delete (each may match multiple rows).",
+    )
+    domain: Optional[str] = Field(
+        default=None,
+        description="Delete every document in this knowledge domain (purge for reconcile).",
+    )
+
+    @model_validator(mode="after")
+    def _at_least_one_selector(self) -> "DeleteRequest":
+        if not self.source_urls and not self.domain:
+            raise ValueError("Provide source_urls and/or domain — refusing to delete everything.")
+        return self
+
+
+class DeleteResponse(BaseModel):
+    """Result of a delete/reconcile operation."""
+
+    deleted: int = Field(description="Number of PostgreSQL rows removed")
+    vectors_deleted: int = Field(description="Number of Qdrant vectors removed")
+    vectors_pending: int = Field(
+        default=0,
+        description=(
+            "Vectors that could NOT be confirmed deleted (Qdrant down or FTS-only "
+            "mode). The rows are gone and /query drops orphaned vectors, so content "
+            "is already unqueryable, but a reconcile should retry to reclaim disk. "
+            ">0 means the operation was not fully clean."
+        ),
     )

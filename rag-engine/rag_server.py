@@ -20,7 +20,9 @@ Or via Docker Compose::
     docker compose up rag-api
 """
 
+import hashlib
 import logging
+import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
@@ -35,6 +37,8 @@ from .embeddings import EmbeddingService, get_embedding_service
 from .models import (
     BatchIngestRequest,
     BatchIngestResponse,
+    DeleteRequest,
+    DeleteResponse,
     HealthStatus,
     IngestRequest,
     IngestResponse,
@@ -100,11 +104,48 @@ CREATE INDEX IF NOT EXISTS idx_documents_ingested_at
 # ---------------------------------------------------------------------------
 
 
+def enforce_startup_security(settings) -> None:
+    """Fail closed when a non-development engine has no api key.
+
+    The auth dependency is fail-open (no key configured -> all requests allowed),
+    which is correct for local dev but dangerous once the engine is hosted: a
+    deployment that forgets RAG_API_KEY would serve a completely open API with no
+    signal. In any non-development environment we refuse to boot unless a key is
+    set, or ``RAG_ALLOW_INSECURE=true`` explicitly opts out (logged loudly).
+    """
+    is_prod = settings.environment.lower() not in ("development", "dev", "test", "testing", "local")
+    if not settings.rag_api_key:
+        # Warn loudly whenever there is no key, in ANY environment — an open API
+        # is easy to ship by accident (a forgotten env var), and a warning in the
+        # dev log is the cheapest way to make that visible before it reaches a box.
+        logger.warning(
+            "SECURITY: RAG API has NO RAG_API_KEY set (environment=%r). /query, "
+            "/stats and /ingest are UNAUTHENTICATED. This is fine only on a "
+            "trusted local/dev host; never expose this instance publicly.",
+            settings.environment,
+        )
+        if is_prod:
+            if settings.rag_allow_insecure:
+                logger.warning(
+                    "SECURITY: booting a non-development engine with NO key anyway "
+                    "(RAG_ALLOW_INSECURE=true). The API is OPEN to anyone who can "
+                    "reach the port.",
+                )
+            else:
+                raise RuntimeError(
+                    f"Refusing to start: environment={settings.environment!r} but "
+                    "RAG_API_KEY is empty. A non-development RAG API must require a "
+                    "key. Set RAG_API_KEY, or set RAG_ALLOW_INSECURE=true to "
+                    "override (not recommended)."
+                )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialise shared connections on startup; tear them down on shutdown."""
     global _db_pool, _redis, _embed, _rag
 
+    enforce_startup_security(cfg)
     logger.info("Starting Analog Elk v3 RAG server…")
 
     # PostgreSQL
@@ -160,6 +201,11 @@ async def lifespan(app: FastAPI):
 # FastAPI application
 # ---------------------------------------------------------------------------
 
+# Interactive API docs (/docs, /redoc, /openapi.json) enumerate the whole
+# surface; keep them off in non-development environments where the engine may be
+# publicly reachable.
+_docs_enabled = cfg.environment.lower() in ("development", "dev", "test", "testing", "local")
+
 app = FastAPI(
     title="Analog Elk v3 — RAG API",
     description=(
@@ -168,13 +214,16 @@ app = FastAPI(
     ),
     version="3.0.0",
     lifespan=lifespan,
+    docs_url="/docs" if _docs_enabled else None,
+    redoc_url="/redoc" if _docs_enabled else None,
+    openapi_url="/openapi.json" if _docs_enabled else None,
 )
 
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["Content-Type", "X-API-Key"],
 )
 
@@ -188,6 +237,44 @@ async def limit_request_body(request, call_next):
             status_code=413,
             content={"detail": "Request body too large (max 2MB)"}
         )
+    return await call_next(request)
+
+
+@app.middleware("http")
+async def rate_limit(request, call_next):
+    """Fixed-window per-caller rate limit, backed by Redis.
+
+    This is the ONLY rate limiter on the hosted path — stock Caddy has no
+    rate-limit module, and swapping the Caddy image on the production ingress
+    (which fronts every client site) to add one is not worth it. Enforcing it in
+    the engine also means Muster self-hosters get it for free. Keyed by X-API-Key
+    when present (so a leaked key cannot hammer the corpus) else the client IP.
+    /health is never limited (uptime probes). Fails OPEN if Redis is unavailable —
+    a rate limiter must never take the service down.
+    """
+    limit = cfg.rag_rate_limit_per_minute
+    if limit <= 0 or request.url.path == "/health" or _redis is None:
+        return await call_next(request)
+
+    ident = request.headers.get("x-api-key")
+    if not ident:
+        fwd = request.headers.get("x-forwarded-for", "")
+        ident = fwd.split(",")[0].strip() or (request.client.host if request.client else "unknown")
+    ident_hash = hashlib.sha256(ident.encode("utf-8", "surrogateescape")).hexdigest()[:16]
+    bucket = f"ratelimit:{ident_hash}:{int(time.time() // 60)}"
+    try:
+        count = int(await _redis.incr(bucket))
+        if count == 1:
+            await _redis.expire(bucket, 60)
+        if count > limit:
+            from starlette.responses import JSONResponse
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Rate limit exceeded"},
+                headers={"Retry-After": "60"},
+            )
+    except Exception as exc:  # noqa: BLE001 — fail open on limiter failure
+        logger.warning("Rate-limit check failed, allowing request: %s", exc)
     return await call_next(request)
 
 # ---------------------------------------------------------------------------
@@ -213,17 +300,49 @@ def _require_db() -> asyncpg.Pool:
     return _db_pool
 
 
-async def _verify_api_key(x_api_key: Optional[str] = Header(default=None)) -> None:
-    """Verify the X-API-Key header for write endpoints.
+def _api_key_ok(x_api_key: Optional[str]) -> bool:
+    """True when the request may proceed under the current key config.
 
-    When ``RAG_API_KEY`` is not configured, all requests are allowed (local dev).
+    When ``RAG_API_KEY`` is not configured, all requests are allowed (local dev /
+    trusted network). Otherwise the header must match in constant time.
     """
     import hmac
 
     required_key = cfg.rag_api_key
     if not required_key:
-        return  # Auth disabled — local dev mode
-    if not x_api_key or not hmac.compare_digest(x_api_key, required_key):
+        return True  # Auth disabled — local dev / trusted-network mode
+    if not x_api_key:
+        return False
+    # Compare bytes, not str: Starlette decodes headers as latin-1, so a
+    # non-ASCII X-API-Key would make hmac.compare_digest(str, str) raise
+    # TypeError (surfacing as a 500). Bytes comparison has no such restriction,
+    # so a junk header yields a clean 401 like any other wrong key.
+    return hmac.compare_digest(
+        x_api_key.encode("utf-8", "surrogateescape"),
+        required_key.encode("utf-8"),
+    )
+
+
+async def _verify_api_key(x_api_key: Optional[str] = Header(default=None)) -> None:
+    """Auth for write endpoints (/ingest, /ingest/batch)."""
+    if not _api_key_ok(x_api_key):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing X-API-Key header",
+        )
+
+
+async def _verify_read_key(x_api_key: Optional[str] = Header(default=None)) -> None:
+    """Auth for read endpoints (/query, /stats).
+
+    When a key is configured, reads require it too, because a hosted engine may
+    be publicly reachable and the KB can contain gated content. Set
+    ``RAG_ALLOW_PUBLIC_READ=true`` to keep reads open on a trusted network (the
+    original tailnet-only posture).
+    """
+    if cfg.rag_allow_public_read:
+        return
+    if not _api_key_ok(x_api_key):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or missing X-API-Key header",
@@ -308,7 +427,7 @@ async def health() -> HealthStatus:
     response_model=RAGResponse,
     summary="Hybrid knowledge-base search",
 )
-async def query(req: RAGQuery) -> RAGResponse:
+async def query(req: RAGQuery, _auth: None = Depends(_verify_read_key)) -> RAGResponse:
     """Retrieve relevant context using hybrid semantic + full-text search.
 
     The response ``context`` field is formatted for direct injection into an
@@ -457,7 +576,7 @@ async def ingest_batch(
     response_model=StatsResponse,
     summary="Knowledge-base statistics",
 )
-async def stats() -> StatsResponse:
+async def stats(_auth: None = Depends(_verify_read_key)) -> StatsResponse:
     """Return aggregate statistics: document count, vector count, and domains."""
     db = _require_db()
 
@@ -501,6 +620,78 @@ async def stats() -> StatsResponse:
         vector_count=vector_count,
         domains=domains,
         last_indexed=last_indexed,
+    )
+
+
+@app.delete(
+    "/documents",
+    response_model=DeleteResponse,
+    summary="Delete documents by source_url and/or domain",
+)
+async def delete_documents(
+    req: DeleteRequest, _auth: None = Depends(_verify_api_key)
+) -> DeleteResponse:
+    """Remove documents from PostgreSQL and their vectors from Qdrant.
+
+    This is how the engine forgets a KB page that was unpublished or deleted
+    upstream. Without it the append-only store keeps serving stale/gated text
+    forever. Auth is the write key (deletion is a mutation). ``DeleteRequest``
+    guarantees at least one selector, so a bare body cannot purge everything.
+
+    The domain match mirrors ``/stats`` and ``/query`` (``COALESCE(domain,
+    source_type)``) so a per-domain purge removes exactly what those endpoints
+    treat as that domain — the basis of a reconcile (purge domain, re-ingest the
+    currently-published set).
+    """
+    db = _require_db()
+
+    conditions: list[str] = []
+    params: list[Any] = []
+    if req.source_urls:
+        params.append(req.source_urls)
+        conditions.append(f"source_url = ANY(${len(params)})")
+    if req.domain:
+        # Exact domain match, same semantics as /query's `domain = $N` filter, so
+        # a purge removes exactly what a domain-scoped query would return (and not
+        # unrelated legacy rows that merely share a source_type).
+        params.append(req.domain)
+        conditions.append(f"domain = ${len(params)}")
+    where = " OR ".join(conditions)
+
+    try:
+        async with db.acquire() as conn:
+            rows = await conn.fetch(
+                f"DELETE FROM documents WHERE {where} RETURNING id", *params
+            )
+        doc_ids = [r["id"] for r in rows]
+    except Exception as exc:
+        logger.exception("Failed to delete documents")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Delete failed — check server logs for details",
+        ) from exc
+
+    # Delete the vectors too. delete_by_ids returns the count it handled (len on
+    # success, 0 on Qdrant failure); it returns 0 without trying when the engine
+    # is in FTS-only mode (_embed is None). Anything not confirmed deleted is
+    # reported as vectors_pending — the rows are already gone and /query's
+    # existence reconcile drops orphaned vectors, so content is unqueryable now,
+    # but a reconcile pass should retry to reclaim Qdrant disk.
+    vectors_deleted = 0
+    if doc_ids and _embed is not None:
+        vectors_deleted = await _embed.delete_by_ids(doc_ids)
+    vectors_pending = len(doc_ids) - vectors_deleted if doc_ids else 0
+
+    log = logger.warning if vectors_pending else logger.info
+    log(
+        "Deleted %d documents (%d vectors, %d pending) — source_urls=%s domain=%s",
+        len(doc_ids), vectors_deleted, vectors_pending,
+        len(req.source_urls) if req.source_urls else 0, req.domain,
+    )
+    return DeleteResponse(
+        deleted=len(doc_ids),
+        vectors_deleted=vectors_deleted,
+        vectors_pending=vectors_pending,
     )
 
 

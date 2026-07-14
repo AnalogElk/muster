@@ -244,7 +244,7 @@ class EmbeddingService:
         documents: List[Dict[str, Any]],
         batch_size: int = 50,
     ) -> int:
-        """Index many documents with rate-limited batching.
+        """Index many documents with concurrency-capped embedding + batched upsert.
 
         Each *document* dict must contain ``doc_id``, ``title``, and
         ``content`` keys.  ``source_url`` and ``metadata`` are optional.
@@ -269,8 +269,6 @@ class EmbeddingService:
                 embedding = await self.generate_embedding(
                     f"{doc['title']}\n\n{doc['content']}"
                 )
-                # Honour Google's ~10 req/s free-tier rate limit.
-                await asyncio.sleep(0.1)
                 if embedding:
                     payload: Dict[str, Any] = {
                         "doc_id": doc["doc_id"],
@@ -303,6 +301,34 @@ class EmbeddingService:
                     logger.error("Batch upsert failed: %s", exc)
 
         return indexed
+
+    # ------------------------------------------------------------------
+    # Deletion
+    # ------------------------------------------------------------------
+
+    async def delete_by_ids(self, doc_ids: List[int]) -> int:
+        """Remove vectors for the given document ids from Qdrant.
+
+        Returns the number of ids submitted (Qdrant delete is idempotent and does
+        not report per-point counts). Returns 0 in degraded/FTS-only mode so the
+        caller can still delete the PostgreSQL rows.
+        """
+        if not doc_ids:
+            return 0
+        if not self._initialized:
+            await self.initialize()
+        if not self._initialized:
+            return 0
+        try:
+            await self._qdrant.delete(
+                collection_name=COLLECTION_NAME,
+                points_selector=list(doc_ids),
+            )
+            logger.info("Deleted %d vectors from Qdrant", len(doc_ids))
+            return len(doc_ids)
+        except Exception as exc:
+            logger.error("Failed to delete vectors %s: %s", doc_ids, exc)
+            return 0
 
     # ------------------------------------------------------------------
     # Retrieval

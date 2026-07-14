@@ -8,9 +8,26 @@ must never depend on a sibling `../analog-elk-v3` checkout existing on the box.
 
 - **Repo:** `analog-elk-v3` (private, AnalogElk)
 - **Path:** `engine/` (Python app) + `migrations/` (SQL schema + runner)
-- **Commit:** `02a38e5e79763813b505b9f7891a7e6a4ff8b17a`
-  — _feat(engine): replace Gemini embedding API with local fastembed (#5)_
-- **Vendored:** 2026-06-29 (P3 — RAG engine integration)
+- **Commit:** `39dacd3` (origin/main) — includes the hosting-hardening PRs
+  #13 _require api key on /query + /stats; fail closed in prod_ and
+  #14 _DELETE /documents (forget) + engine-side rate limiting_.
+- **Vendored:** 2026-06-29 (P3, base) · **re-vendored 2026-07-13** to pick up the
+  hardened engine so Muster ships the same secured build that runs at
+  rag.analogelk.com.
+
+## Hardening carried in from #13/#14 (2026-07-13)
+
+- **Auth on reads:** `/query` + `/stats` require `X-API-Key` when `RAG_API_KEY` is
+  set. `RAG_ALLOW_PUBLIC_READ=true` keeps them open on a trusted network.
+- **Fail-closed default:** `ENVIRONMENT` now defaults to `production`, so a
+  non-development engine with no key REFUSES to boot. The bundled Muster engine
+  therefore ships `ELK_OS_RAG_ENV=development` (internal network only, no key);
+  exposing it publicly requires `production` + `RAG_API_KEY` (see compose.rag.yaml).
+- **`DELETE /documents`** (by source_url and/or domain): the engine can now FORGET
+  unpublished/deleted pages; `_hybrid_search` also reconciles orphaned vectors so
+  deleted content is never served.
+- **Engine-side rate limiter** (`RAG_RATE_LIMIT_PER_MINUTE`, Redis-backed) — the
+  only limiter on a hosted path, since stock Caddy has none.
 
 ## What was copied
 
