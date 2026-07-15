@@ -7,6 +7,17 @@ automatically by [release-please](https://github.com/googleapis/release-please)
 history; do not edit released sections by hand. The version of record lives in
 [`version.txt`](./version.txt).
 
+## [0.1.3](https://github.com/AnalogElk/muster/compare/v0.1.2...v0.1.3) (2026-07-15)
+
+
+### Added
+
+* add cookieless Matomo analytics to musterr.dev site ([#9](https://github.com/AnalogElk/muster/issues/9)) ([8eb203b](https://github.com/AnalogElk/muster/commit/8eb203bb47b2fe364121e9512edb4d014751b2de))
+* docs currency audit, assistant key passthrough, live-board exhibits ([#15](https://github.com/AnalogElk/muster/issues/15)) ([847d4a0](https://github.com/AnalogElk/muster/commit/847d4a09fb6e1dc20f412ca9f33809abc05c2d83))
+* intelligent-layer port (part 1) — hardened engine + portal↔RAG bridge ([#12](https://github.com/AnalogElk/muster/issues/12)) ([53fe661](https://github.com/AnalogElk/muster/commit/53fe661ffec57032a2387ddf48a8f6bcfb9b29c4))
+* skip analytics entirely for Global Privacy Control browsers ([#11](https://github.com/AnalogElk/muster/issues/11)) ([8ec9572](https://github.com/AnalogElk/muster/commit/8ec95728f33dec9b67bc7176c1bfbfca99faeccd))
+* switch to cookie'd analytics with a privacy page ([#10](https://github.com/AnalogElk/muster/issues/10)) ([7d6a604](https://github.com/AnalogElk/muster/commit/7d6a604c8d58d2d1a41f480a7272ebe409db35ab))
+
 ## [0.1.2](https://github.com/AnalogElk/muster/compare/v0.1.1...v0.1.2) (2026-07-02)
 
 
