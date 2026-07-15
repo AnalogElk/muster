@@ -30,9 +30,20 @@
 #   Resource:    AnalogElk/muster (this repo only)
 #   Permissions: Contents: Read and write, Pull requests: Read and write
 #
-# RELEASE_PLEASE_TOKEN is configured and working (releases v0.1.1+ were cut by
-# it); the PAT recipe above is kept as setup reference for forks/new repos.
-# Without the secret the step falls back to github.token (read-only) and fails.
+# CURRENT STATE (verified 2026-07-14): RELEASE_PLEASE_TOKEN is NOT set, so the
+# step falls back to github.token and the run FAILS on every push to main with
+# "GitHub Actions is not permitted to create or approve pull requests". Note
+# what still works: release-please computes the release and force-updates the
+# `release-please--branches--main` ref BEFORE it fails on PR creation. So every
+# release so far (v0.1.0 through v0.1.2) was cut by hand from that branch:
+#
+#   gh pr create --base main --head release-please--branches--main \
+#     --title "chore(main): release X.Y.Z" --body "..."
+#   gh pr merge <n> --squash --delete-branch
+#   gh release create vX.Y.Z --target <merge-sha> --title "Muster vX.Y.Z" --notes "..."
+#
+# The red X on main is this known gap, not a broken build. Setting the PAT
+# above (or lifting the enterprise policy) makes the workflow self-service.
 name: release-please
 
 on:
