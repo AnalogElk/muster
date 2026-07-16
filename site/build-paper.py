@@ -264,7 +264,7 @@ if (!navigator.globalPrivacyControl) {{
 
 <main class="band band-paper" id="paper-main">
   <div class="paper-doc paper-hd">
-    <a class="backhome" href="index.html">← back to the build log</a>
+    <a class="backhome" href="about.html">← back to the build log</a>
   </div>
   <article class="paper-doc">
 {body}
