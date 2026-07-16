@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "muster-board": {
+      "type": "http",
+      "url": "${user_config.directus_url}/mcp",
+      "headers": {
+        "Authorization": "Bearer ${user_config.directus_token}"
+      }
+    }
+  }
+}
