@@ -20,8 +20,9 @@
     "directus_token": {
       "type": "string",
       "title": "Board API token",
-      "description": "Directus static token. Stored in your OS keychain, never written to the repo.",
-      "sensitive": true
+      "description": "Directus static token for your board. Stored in your OS keychain. The default is the public read-only token for the musterr.dev demo board, so /muster:connect works with no setup. Replace it when you point at your own board.",
+      "sensitive": true,
+      "default": "muster_demo_70220c56f3b9c77c1c6f9721e1130a9e3e45dc8d8a8267e9"
     }
   }
 }
