@@ -7,6 +7,19 @@ automatically by [release-please](https://github.com/googleapis/release-please)
 history; do not edit released sections by hand. The version of record lives in
 [`version.txt`](./version.txt).
 
+## [0.1.4](https://github.com/AnalogElk/muster/compare/v0.1.3...v0.1.4) (2026-07-16)
+
+
+### Added
+
+* **plugin:** make Muster an installable Claude Code plugin ([#19](https://github.com/AnalogElk/muster/issues/19)) ([340d721](https://github.com/AnalogElk/muster/commit/340d72101a668de41be20fd6e508bcdeb434640f))
+* **site:** product homepage, build log moves to /about ([#20](https://github.com/AnalogElk/muster/issues/20)) ([b7eb613](https://github.com/AnalogElk/muster/commit/b7eb61354f2ed8e11acc6dbd7b94810a9282a4b4))
+
+
+### Fixed
+
+* **caddy:** send app.* root to /login, not the portal image's marketing page ([#18](https://github.com/AnalogElk/muster/issues/18)) ([815e309](https://github.com/AnalogElk/muster/commit/815e30911e1691a1d579be0ce656110840b4ae4a))
+
 ## [0.1.3](https://github.com/AnalogElk/muster/compare/v0.1.2...v0.1.3) (2026-07-15)
 
 
