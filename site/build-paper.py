@@ -258,13 +258,13 @@ if (!navigator.globalPrivacyControl) {{
   <span class="topbar__spacer"></span>
   <div class="topbar__cta">
     <a class="btn btn--live btn--sm" href="{portal}" target="_blank" rel="noopener">Live portal ↗</a>
-    <a class="btn btn--sm" href="index.html">← The build log</a>
+    <a class="btn btn--sm" href="about.html">← The build log</a>
   </div>
 </header>
 
 <main class="band band-paper" id="paper-main">
   <div class="paper-doc paper-hd">
-    <a class="backhome" href="index.html">← back to the build log</a>
+    <a class="backhome" href="about.html">← back to the build log</a>
   </div>
   <article class="paper-doc">
 {body}
