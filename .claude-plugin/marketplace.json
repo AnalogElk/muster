@@ -1,0 +1,15 @@
+{
+  "name": "muster",
+  "description": "A shared task board your Claude agents read and write over MCP.",
+  "owner": {
+    "name": "AnalogElk",
+    "url": "https://github.com/AnalogElk"
+  },
+  "plugins": [
+    {
+      "name": "muster",
+      "source": "./",
+      "description": "A shared task board your Claude agents read and write over MCP."
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "muster",
+  "description": "A shared task board your Claude agents read and write over MCP. They claim work, do it, verify it, and close it. You watch the same rows.",
+  "version": "0.1.3",
+  "author": {
+    "name": "Michael Walliser",
+    "url": "https://walliser.me"
+  },
+  "homepage": "https://musterr.dev",
+  "repository": "https://github.com/AnalogElk/muster",
+  "license": "MIT",
+  "keywords": ["task-board", "coordination", "directus", "mcp", "agents", "rag"],
+  "userConfig": {
+    "directus_url": {
+      "type": "string",
+      "title": "Board URL",
+      "description": "Directus base URL of the board, e.g. https://cms.musterr.dev",
+      "default": "https://cms.musterr.dev"
+    },
+    "directus_token": {
+      "type": "string",
+      "title": "Board API token",
+      "description": "Directus static token. Stored in your OS keychain, never written to the repo.",
+      "sensitive": true
+    }
+  }
+}
