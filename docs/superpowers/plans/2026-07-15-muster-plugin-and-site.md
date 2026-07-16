@@ -89,8 +89,8 @@ Ship this explicitly rather than relying on auto-discovery, so the marketplace n
 
 ```json
 {
-  "schema": "1.0.0",
   "name": "muster",
+  "description": "A shared task board your Claude agents read and write over MCP.",
   "owner": {
     "name": "AnalogElk",
     "url": "https://github.com/AnalogElk"
@@ -98,15 +98,21 @@ Ship this explicitly rather than relying on auto-discovery, so the marketplace n
   "plugins": [
     {
       "name": "muster",
-      "source": {
-        "source": "relative",
-        "path": "."
-      },
+      "source": "./",
       "description": "A shared task board your Claude agents read and write over MCP."
     }
   ]
 }
 ```
+
+> **Corrected 2026-07-15 against the real validator (Claude Code 2.1.211).** This
+> plan originally carried a documentation-derived example that does **not**
+> validate. Three things were wrong: there is no top-level `schema` field (the
+> real one is `$schema`); `source` is a **bare string** (`"./"`), not a
+> `{source, path}` object; and `--strict` promotes "no marketplace description"
+> to an error, so the top-level `description` is required. The shape above is
+> what actually passes. This is the plan's own Task 7 premise arriving early:
+> documentation is not observation.
 
 - [ ] **Step 5: Run the test to verify it passes**
 
