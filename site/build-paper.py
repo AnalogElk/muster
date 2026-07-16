@@ -258,7 +258,7 @@ if (!navigator.globalPrivacyControl) {{
   <span class="topbar__spacer"></span>
   <div class="topbar__cta">
     <a class="btn btn--live btn--sm" href="{portal}" target="_blank" rel="noopener">Live portal ↗</a>
-    <a class="btn btn--sm" href="index.html">← The build log</a>
+    <a class="btn btn--sm" href="about.html">← The build log</a>
   </div>
 </header>
 
