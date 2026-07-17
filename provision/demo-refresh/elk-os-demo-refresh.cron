@@ -1,0 +1,12 @@
+# Elk OS demo box: daily refresh of perishable demo rows (analytics_snapshots,
+# os_insights, infra_snapshots). See provision/demo-refresh/refresh-demo.sh.
+#
+# Install:  sudo cp provision/demo-refresh/elk-os-demo-refresh.cron /etc/cron.d/elk-os-demo-refresh
+#           sudo chmod 644 /etc/cron.d/elk-os-demo-refresh
+#
+# 05:17 UTC daily: analytics_snapshots go stale at 26 h, so a fixed daily slot
+# keeps them fresh; os_insights are same-UTC-day, so an early-morning run
+# covers the whole day; infra_snapshots get one appended row per day.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+17 5 * * * ubuntu /home/ubuntu/elk-os/provision/demo-refresh/refresh-demo.sh >> /home/ubuntu/elk-os/logs/refresh.log 2>&1

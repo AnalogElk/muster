@@ -335,6 +335,144 @@ if [ -f "$LOGIN" ] && ! grep -q 'elk-os demo-prefill' "$LOGIN"; then
 fi
 
 # ---------------------------------------------------------------------------
+# 6d. Self-host fix pack: CSP Directus origin + env-driven Migadu base + three
+#     frozen-build rendering fixes. All idempotent (marker-guarded), all with
+#     anchor-drift guards in the style of steps 4/6 (a silently unmatched
+#     pattern must fail HERE, not as a broken page in production).
+# ---------------------------------------------------------------------------
+# a) next.config.js CSP: the baked Content-Security-Policy allowlists only the
+#    analogelk.com origins, so browsers refuse images (org logos, photos)
+#    served from a self-host Directus (e.g. https://cms.musterr.dev) even when
+#    the asset request itself returns 200. Derive the Directus origin from
+#    NEXT_PUBLIC_DIRECTUS_URL and append it to img-src, connect-src, style-src
+#    and media-src. headers() is evaluated during `pnpm build` (the Dockerfile
+#    exports NEXT_PUBLIC_DIRECTUS_URL in the builder stage), so the origin is
+#    serialized into the standalone server's route manifest.
+if ! grep -q 'elk-os csp-directus-origin' next.config.js; then
+  node -e '
+    const fs=require("fs");
+    const p="next.config.js";
+    let s=fs.readFileSync(p,"utf8");
+    const anchor="    return [\n      {\n        // Apply security headers to all routes";
+    const block=[
+      "    // [elk-os csp-directus-origin] Self-host: allowlist the Directus origin",
+      "    // (NEXT_PUBLIC_DIRECTUS_URL) in the fetch directives that load CMS assets,",
+      "    // so org logos / photos / uploaded files render on a non-analogelk domain.",
+      "    try {",
+      "      const rawDirectus = process.env.NEXT_PUBLIC_DIRECTUS_URL || \"\";",
+      "      const directusOrigin = rawDirectus ? new URL(rawDirectus).origin : \"\";",
+      "      if (directusOrigin) {",
+      "        const csp = securityHeaders.find((h) => h.key === \"Content-Security-Policy\");",
+      "        if (csp) {",
+      "          csp.value = csp.value.replace(",
+      "            /(img-src|connect-src|style-src|media-src)([^;]*)/g,",
+      "            (m, d, rest) =>",
+      "              rest.split(/\\s+/).includes(directusOrigin) ? m : `${d}${rest} ${directusOrigin}`,",
+      "          );",
+      "        }",
+      "      }",
+      "    } catch { /* invalid NEXT_PUBLIC_DIRECTUS_URL: keep the baked CSP */ }",
+      "",
+      ""
+    ].join("\n");
+    if (!s.includes(anchor)) {
+      console.error("[portal] csp-directus-origin: anchor not found in next.config.js (securityHeaders return shape changed); update prepare-context.sh step 6d(a)");
+      process.exit(1);
+    }
+    s=s.replace(anchor, block+anchor);
+    fs.writeFileSync(p,s);
+    console.log("[portal] patch next.config.js: CSP allows the NEXT_PUBLIC_DIRECTUS_URL origin (img/connect/style/media-src)");
+  '
+fi
+
+# b) lib/portal/email/migadu.ts: the Migadu Admin API base URL is hardcoded,
+#    which blocks pointing a self-host box at a local mock (or a relay proxy).
+#    Make it env-overridable via MIGADU_API_BASE; the default is unchanged, so
+#    deploys without the env var behave exactly as before.
+MIGADU="lib/portal/email/migadu.ts"
+if [ -f "$MIGADU" ] && ! grep -q 'elk-os migadu-base' "$MIGADU"; then
+  perl -0pi -e "s/const MIGADU_API_BASE = 'https:\/\/api\.migadu\.com\/v1';/const MIGADU_API_BASE = process.env.MIGADU_API_BASE || 'https:\/\/api.migadu.com\/v1'; \/\/ [elk-os migadu-base] env-overridable for self-host mocks/" "$MIGADU"
+  grep -q 'elk-os migadu-base' "$MIGADU" || {
+    echo "[portal] migadu.ts: MIGADU_API_BASE anchor not found; update prepare-context.sh step 6d(b)" >&2
+    exit 1
+  }
+  echo "[portal] patch ${MIGADU}: MIGADU_API_BASE env-overridable"
+fi
+
+# c) lib/portal/graphql.ts: INVOICE_FIELDS never queries term_months, so the
+#    invoice slide-out and detail pages can only render a generic "Fixed term"
+#    badge (invoice-slide-out.tsx reads invoice.term_months). Add the field to
+#    the fragment; the column exists in the source schema (invoices/new writes
+#    it) and on the demo Directus.
+GQL="lib/portal/graphql.ts"
+if [ -f "$GQL" ] && ! grep -q 'term_months' "$GQL"; then
+  perl -0pi -e "s/    billing_interval\n/    billing_interval\n    term_months\n/" "$GQL"
+  grep -q 'term_months' "$GQL" || {
+    echo "[portal] graphql.ts: billing_interval anchor not found in INVOICE_FIELDS; update prepare-context.sh step 6d(c)" >&2
+    exit 1
+  }
+  echo "[portal] patch ${GQL}: INVOICE_FIELDS + term_months"
+fi
+
+# d) client dashboard "Invoices due" series is always zero: buildClientSeries
+#    reads inv.dueDate but the dashboard payload passes raw invoice rows with
+#    snake_case due_date, so the invoice line of the timeline never plots.
+CDASH="app/(client-portal)/client-portal/dashboard/page.tsx"
+if [ -f "$CDASH" ] && ! grep -q 'elk-os invoices-due-date' "$CDASH"; then
+  node -e '
+    const fs=require("fs");
+    const p="app/(client-portal)/client-portal/dashboard/page.tsx";
+    let s=fs.readFileSync(p,"utf8");
+    const pairs=[
+      ["interface ClientInvoiceView {\n  status?: string | null;\n  dueDate?: string | null;\n}",
+       "interface ClientInvoiceView {\n  status?: string | null;\n  // [elk-os invoices-due-date] the payload passes raw invoice rows (snake_case)\n  due_date?: string | null;\n}"],
+      ["if (!inv.dueDate) continue;", "if (!inv.due_date) continue;"],
+      ["new Date(inv.dueDate)", "new Date(inv.due_date)"],
+    ];
+    for (const [from,to] of pairs) {
+      if (!s.includes(from)) {
+        console.error("[portal] invoices-due-date: anchor not found: "+JSON.stringify(from.slice(0,60))+"; update prepare-context.sh step 6d(d)");
+        process.exit(1);
+      }
+      s=s.split(from).join(to);
+    }
+    fs.writeFileSync(p,s);
+    console.log("[portal] patch "+p+": invoice series reads due_date (snake_case)");
+  '
+fi
+
+# e) services list cards always show "Price TBD": the page reads service.price
+#    but the services schema (and the SERVICE_FIELDS fragment) carries
+#    default_rate. Fall back to default_rate so seeded catalogs render prices.
+USESVC="lib/portal/hooks/use-services.ts"
+SVCPAGE="app/(employee-portal)/employee-portal/services/page.tsx"
+if [ -f "$SVCPAGE" ] && ! grep -q 'elk-os services-price' "$SVCPAGE"; then
+  node -e '
+    const fs=require("fs");
+    const hook="lib/portal/hooks/use-services.ts";
+    const page="app/(employee-portal)/employee-portal/services/page.tsx";
+    let h=fs.readFileSync(hook,"utf8");
+    const hFrom="  price?: number;";
+    if (!h.includes(hFrom)) {
+      console.error("[portal] services-price: PortalService.price anchor not found in "+hook+"; update prepare-context.sh step 6d(e)");
+      process.exit(1);
+    }
+    h=h.replace(hFrom, hFrom+"\n  default_rate?: number | null; // [elk-os services-price] schema field behind SERVICE_FIELDS");
+    fs.writeFileSync(hook,h);
+    let s=fs.readFileSync(page,"utf8");
+    const from="{service.price != null ? formatCurrency(service.price) : \"Price TBD\"}";
+    const to="{/* [elk-os services-price] schema carries default_rate, not price */}\n                  {(service.price ?? service.default_rate) != null ? formatCurrency((service.price ?? service.default_rate)!) : \"Price TBD\"}";
+    if (!s.includes(from)) {
+      console.error("[portal] services-price: price render anchor not found in "+page+"; update prepare-context.sh step 6d(e)");
+      process.exit(1);
+    }
+    s=s.replace(from,to);
+    fs.writeFileSync(page,s);
+    console.log("[portal] patch services page + hook: price falls back to default_rate");
+  '
+fi
+
+# ---------------------------------------------------------------------------
 # 7. Drop the build-context .dockerignore in place (docker reads it from the
 #    context root = .build). Committed source of truth lives at ../.dockerignore.
 # ---------------------------------------------------------------------------
