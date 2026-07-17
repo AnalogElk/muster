@@ -1,0 +1,6580 @@
+{
+ "documents": [
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_activities",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "activity_type"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_time"
+      },
+      {
+       "f": "end_time"
+      },
+      {
+       "f": "activity_notes"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        }
+       ]
+      },
+      {
+       "f": "deal",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      },
+      {
+       "f": "contacts",
+       "sel": [
+        {
+         "f": "contacts_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "first_name"
+          },
+          {
+           "f": "last_name"
+          },
+          {
+           "f": "job_title"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/activities/[id]/route.ts:66",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_activities",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "activity_type"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_time"
+      },
+      {
+       "f": "end_time"
+      },
+      {
+       "f": "activity_notes"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        }
+       ]
+      },
+      {
+       "f": "deal",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/activities/route.ts:74",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "contacts",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "first_name"
+      },
+      {
+       "f": "last_name"
+      },
+      {
+       "f": "email"
+      },
+      {
+       "f": "phone"
+      },
+      {
+       "f": "job_title"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "contact_notes"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "organizations",
+       "sel": [
+        {
+         "f": "organizations_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "deals",
+       "sel": [
+        {
+         "f": "os_deals_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "deal_value"
+          },
+          {
+           "f": "deal_stage",
+           "sel": [
+            {
+             "f": "name"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "activities",
+       "sel": [
+        {
+         "f": "os_activities_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "activity_type"
+          },
+          {
+           "f": "status"
+          },
+          {
+           "f": "due_date"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/contacts/[id]/route.ts:86",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "contacts",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "first_name"
+      },
+      {
+       "f": "last_name"
+      },
+      {
+       "f": "email"
+      },
+      {
+       "f": "phone"
+      },
+      {
+       "f": "job_title"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "contact_notes"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "organizations",
+       "sel": [
+        {
+         "f": "organizations_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/contacts/route.ts:66",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_deals",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "deal_value"
+      },
+      {
+       "f": "close_date"
+      },
+      {
+       "f": "next_contact_date"
+      },
+      {
+       "f": "deal_notes"
+      },
+      {
+       "f": "deal_stage",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "owner",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        }
+       ]
+      },
+      {
+       "f": "activities",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "activity_type"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "due_date"
+        }
+       ]
+      },
+      {
+       "f": "contacts",
+       "sel": [
+        {
+         "f": "contacts_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "first_name"
+          },
+          {
+           "f": "last_name"
+          },
+          {
+           "f": "email"
+          },
+          {
+           "f": "job_title"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/deals/[id]/route.ts:60",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_expenses",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "cost"
+      },
+      {
+       "f": "date"
+      },
+      {
+       "f": "category"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "is_billable"
+      },
+      {
+       "f": "is_reimbursable"
+      },
+      {
+       "f": "vendor"
+      },
+      {
+       "f": "billing_term"
+      },
+      {
+       "f": "recurrence_interval"
+      },
+      {
+       "f": "next_billing_date"
+      },
+      {
+       "f": "notify_on_renewal"
+      },
+      {
+       "f": "notify_days_before"
+      },
+      {
+       "f": "last_confirmed_at"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "file",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "filename_download"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "items",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "quantity"
+        },
+        {
+         "f": "amount"
+        },
+        {
+         "f": "notes"
+        }
+       ]
+      },
+      {
+       "f": "invoice_item",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "invoice",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "invoice_number"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/expenses/route.ts:65",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_invoices_by_id",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "invoice_number"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "total"
+      },
+      {
+       "f": "subtotal"
+      },
+      {
+       "f": "total_tax"
+      },
+      {
+       "f": "amount_due"
+      },
+      {
+       "f": "amount_paid"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "issue_date"
+      },
+      {
+       "f": "allow_partial_payments"
+      },
+      {
+       "f": "billing_type"
+      },
+      {
+       "f": "payment_deadline"
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "contact",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/invoices/checkout/route.ts:46",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_invoices_by_id",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "invoice_number"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "reference"
+      },
+      {
+       "f": "total"
+      },
+      {
+       "f": "subtotal"
+      },
+      {
+       "f": "total_tax"
+      },
+      {
+       "f": "amount_due"
+      },
+      {
+       "f": "amount_paid"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "issue_date"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "line_items",
+       "sel": [
+        {
+         "f": "description"
+        },
+        {
+         "f": "item_name"
+        },
+        {
+         "f": "quantity"
+        },
+        {
+         "f": "unit_price"
+        },
+        {
+         "f": "line_amount"
+        },
+        {
+         "f": "tax_rate"
+        },
+        {
+         "f": "tax_amount"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "contact",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/invoices/pdf/route.ts:70",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_invoices_by_id",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "invoice_number"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "total"
+      },
+      {
+       "f": "subtotal"
+      },
+      {
+       "f": "amount_due"
+      },
+      {
+       "f": "amount_paid"
+      },
+      {
+       "f": "billing_type"
+      },
+      {
+       "f": "term_months"
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/invoices/subscribe/route.ts:51",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "organizations",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "email"
+      },
+      {
+       "f": "phone"
+      },
+      {
+       "f": "website"
+      },
+      {
+       "f": "tier"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "service_status"
+      },
+      {
+       "f": "brand_color"
+      },
+      {
+       "f": "client_portal_enabled"
+      },
+      {
+       "f": "organization_notes"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "logo",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "filename_download"
+        }
+       ]
+      },
+      {
+       "f": "owner",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        }
+       ]
+      },
+      {
+       "f": "addresses",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "street_address"
+        },
+        {
+         "f": "address_locality"
+        },
+        {
+         "f": "address_region"
+        },
+        {
+         "f": "postal_code"
+        },
+        {
+         "f": "address_country"
+        },
+        {
+         "f": "is_primary_billing"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/organizations/[id]/route.ts:96",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "organizations",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "email"
+      },
+      {
+       "f": "phone"
+      },
+      {
+       "f": "website"
+      },
+      {
+       "f": "tier"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "service_status"
+      },
+      {
+       "f": "brand_color"
+      },
+      {
+       "f": "client_portal_enabled"
+      },
+      {
+       "f": "organization_notes"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "logo",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "filename_download"
+        }
+       ]
+      },
+      {
+       "f": "owner",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        }
+       ]
+      },
+      {
+       "f": "addresses",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "street_address"
+        },
+        {
+         "f": "address_locality"
+        },
+        {
+         "f": "address_region"
+        },
+        {
+         "f": "postal_code"
+        },
+        {
+         "f": "address_country"
+        },
+        {
+         "f": "is_primary_billing"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/organizations/[id]/route.ts:310",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "organizations",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "is_test_data"
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/organizations/route.ts:122",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "organizations",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "email"
+      },
+      {
+       "f": "phone"
+      },
+      {
+       "f": "website"
+      },
+      {
+       "f": "tier"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "service_status"
+      },
+      {
+       "f": "brand_color"
+      },
+      {
+       "f": "client_portal_enabled"
+      },
+      {
+       "f": "organization_notes"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "logo",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "filename_download"
+        }
+       ]
+      },
+      {
+       "f": "owner",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        }
+       ]
+      },
+      {
+       "f": "addresses",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "street_address"
+        },
+        {
+         "f": "address_locality"
+        },
+        {
+         "f": "address_region"
+        },
+        {
+         "f": "postal_code"
+        },
+        {
+         "f": "address_country"
+        },
+        {
+         "f": "is_primary_billing"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/organizations/route.ts:134",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "packages",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "price"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "billing_cycle"
+      },
+      {
+       "f": "hours_included"
+      },
+      {
+       "f": "overage_rate"
+      },
+      {
+       "f": "support_hours"
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/packages/route.ts:30",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_payments",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "amount"
+      },
+      {
+       "f": "payment_date"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "payment_method_type"
+      },
+      {
+       "f": "receipt_url"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "invoice",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "invoice_number"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/payments/route.ts:36",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_proposals",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "expiration_date"
+      },
+      {
+       "f": "total"
+      },
+      {
+       "f": "proposal_notes"
+      },
+      {
+       "f": "line_items"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "deal",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      },
+      {
+       "f": "contacts",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "contacts_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "first_name"
+          },
+          {
+           "f": "last_name"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/proposals/route.ts:74",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "releases",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "title"
+      },
+      {
+       "f": "version"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "release_date"
+      },
+      {
+       "f": "release_type"
+      },
+      {
+       "f": "summary"
+      },
+      {
+       "f": "changelog"
+      },
+      {
+       "f": "client_notes"
+      },
+      {
+       "f": "commit_hash"
+      },
+      {
+       "f": "is_client_visible"
+      },
+      {
+       "f": "repository_id",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "project_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/releases/[id]/route.ts:58",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "releases",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "title"
+      },
+      {
+       "f": "version"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "release_date"
+      },
+      {
+       "f": "release_type"
+      },
+      {
+       "f": "summary"
+      },
+      {
+       "f": "changelog"
+      },
+      {
+       "f": "client_notes"
+      },
+      {
+       "f": "commit_hash"
+      },
+      {
+       "f": "is_client_visible"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "repository_id",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "project_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "organization",
+           "sel": [
+            {
+             "f": "id"
+            },
+            {
+             "f": "service_status"
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/releases/route.ts:92",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "repositories_by_id",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "url"
+      },
+      {
+       "f": "platform"
+      },
+      {
+       "f": "default_branch"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "is_private"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "project_id",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/repositories/[id]/route.ts:69",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "repositories",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "url"
+      },
+      {
+       "f": "platform"
+      },
+      {
+       "f": "default_branch"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "is_private"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "project_id",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/repositories/route.ts:69",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "services",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "title"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "default_rate"
+      },
+      {
+       "f": "unit_cost"
+      },
+      {
+       "f": "pricing_type"
+      },
+      {
+       "f": "category"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "sort"
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/services/route.ts:30",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "tools_by_id",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "category"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "website"
+      },
+      {
+       "f": "login_url"
+      },
+      {
+       "f": "cost"
+      },
+      {
+       "f": "billing_cycle"
+      },
+      {
+       "f": "is_subscription"
+      },
+      {
+       "f": "renewal_date"
+      },
+      {
+       "f": "auto_renew"
+      },
+      {
+       "f": "account_email"
+      },
+      {
+       "f": "vendor"
+      },
+      {
+       "f": "icon"
+      },
+      {
+       "f": "color"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "expense",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "cost"
+        },
+        {
+         "f": "status"
+        }
+       ]
+      },
+      {
+       "f": "projects",
+       "sel": [
+        {
+         "f": "project_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/tools/[id]/route.ts:64",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "tools",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "category"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "website"
+      },
+      {
+       "f": "login_url"
+      },
+      {
+       "f": "cost"
+      },
+      {
+       "f": "billing_cycle"
+      },
+      {
+       "f": "is_subscription"
+      },
+      {
+       "f": "renewal_date"
+      },
+      {
+       "f": "auto_renew"
+      },
+      {
+       "f": "account_email"
+      },
+      {
+       "f": "vendor"
+      },
+      {
+       "f": "icon"
+      },
+      {
+       "f": "color"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "expense",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "cost"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "next_billing_date"
+        },
+        {
+         "f": "recurrence_interval"
+        }
+       ]
+      },
+      {
+       "f": "projects",
+       "sel": [
+        {
+         "f": "project_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/tools/route.ts:104",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "organizations",
+     "sel": [
+      {
+       "f": "logo",
+       "sel": [
+        {
+         "f": "id"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "app/api/portal/user/route.ts:99",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_invoices",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "total"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/analytics/budget-source.ts:62",
+   "unresolved_interp": [
+    "gqlId(projectId)"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_projects",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "budget_cap"
+      }
+     ]
+    },
+    {
+     "f": "os_invoices",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "total"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/analytics/budget-source.ts:193",
+   "unresolved_interp": [
+    "gqlId(String(orgId))",
+    "gqlId(String(orgId))"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "organization_emails",
+     "sel": [
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/auth.ts:431",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "contacts",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "email"
+      },
+      {
+       "f": "organizations",
+       "sel": [
+        {
+         "f": "organizations_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/auth.ts:485",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "organizations",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "website"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/email/service.ts:15",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_activities",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "activity_type"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_time"
+      },
+      {
+       "f": "end_time"
+      },
+      {
+       "f": "activity_notes"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        }
+       ]
+      },
+      {
+       "f": "deal",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/activities.ts:18",
+   "unresolved_interp": [
+    "limit"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_activity_log",
+     "sel": [
+      {
+       "f": "verb"
+      },
+      {
+       "f": "timestamp"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/activity-log.ts:31",
+   "unresolved_interp": [
+    "since"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "is_visible_to_client"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/client-activity.ts:126",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_project_updates",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_client_visible"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/client-activity.ts:175",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_activity_log",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "verb"
+      },
+      {
+       "f": "timestamp"
+      },
+      {
+       "f": "target_collection"
+      },
+      {
+       "f": "target_id"
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "metadata"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/client-activity.ts:206",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_deals",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "deal_value"
+      },
+      {
+       "f": "close_date"
+      },
+      {
+       "f": "next_contact_date"
+      },
+      {
+       "f": "deal_notes"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "deal_stage",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      },
+      {
+       "f": "owner",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/deals.ts:35",
+   "unresolved_interp": [
+    "varDecl",
+    "limit",
+    "filterClause"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_invoices",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "invoice_number"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "reference"
+      },
+      {
+       "f": "total"
+      },
+      {
+       "f": "subtotal"
+      },
+      {
+       "f": "total_tax"
+      },
+      {
+       "f": "amount_due"
+      },
+      {
+       "f": "amount_paid"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "issue_date"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "billing_type"
+      },
+      {
+       "f": "billing_interval"
+      },
+      {
+       "f": "allow_partial_payments"
+      },
+      {
+       "f": "stripe_subscription_id"
+      },
+      {
+       "f": "subscription_status"
+      },
+      {
+       "f": "contact",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "invoice_number"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "reference"
+      },
+      {
+       "f": "total"
+      },
+      {
+       "f": "subtotal"
+      },
+      {
+       "f": "total_tax"
+      },
+      {
+       "f": "amount_due"
+      },
+      {
+       "f": "amount_paid"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "issue_date"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "billing_type"
+      },
+      {
+       "f": "billing_interval"
+      },
+      {
+       "f": "allow_partial_payments"
+      },
+      {
+       "f": "stripe_subscription_id"
+      },
+      {
+       "f": "subscription_status"
+      },
+      {
+       "f": "line_items",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "line_item_number"
+        },
+        {
+         "f": "item_name"
+        },
+        {
+         "f": "description"
+        },
+        {
+         "f": "quantity"
+        },
+        {
+         "f": "unit_price"
+        },
+        {
+         "f": "line_amount"
+        },
+        {
+         "f": "tax_amount"
+        }
+       ]
+      },
+      {
+       "f": "payments",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "amount"
+        },
+        {
+         "f": "payment_date"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "payment_method_type"
+        }
+       ]
+      },
+      {
+       "f": "contact",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/invoices.ts:77",
+   "unresolved_interp": [
+    "varDecl",
+    "limit",
+    "filterClause"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_invoices_by_id",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "invoice_number"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "reference"
+      },
+      {
+       "f": "total"
+      },
+      {
+       "f": "subtotal"
+      },
+      {
+       "f": "total_tax"
+      },
+      {
+       "f": "amount_due"
+      },
+      {
+       "f": "amount_paid"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "issue_date"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "billing_type"
+      },
+      {
+       "f": "billing_interval"
+      },
+      {
+       "f": "allow_partial_payments"
+      },
+      {
+       "f": "stripe_subscription_id"
+      },
+      {
+       "f": "subscription_status"
+      },
+      {
+       "f": "contact",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "invoice_number"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "reference"
+      },
+      {
+       "f": "total"
+      },
+      {
+       "f": "subtotal"
+      },
+      {
+       "f": "total_tax"
+      },
+      {
+       "f": "amount_due"
+      },
+      {
+       "f": "amount_paid"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "issue_date"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "billing_type"
+      },
+      {
+       "f": "billing_interval"
+      },
+      {
+       "f": "allow_partial_payments"
+      },
+      {
+       "f": "stripe_subscription_id"
+      },
+      {
+       "f": "subscription_status"
+      },
+      {
+       "f": "line_items",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "line_item_number"
+        },
+        {
+         "f": "item_name"
+        },
+        {
+         "f": "description"
+        },
+        {
+         "f": "quantity"
+        },
+        {
+         "f": "unit_price"
+        },
+        {
+         "f": "line_amount"
+        },
+        {
+         "f": "tax_amount"
+        }
+       ]
+      },
+      {
+       "f": "payments",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "amount"
+        },
+        {
+         "f": "payment_date"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "payment_method_type"
+        }
+       ]
+      },
+      {
+       "f": "contact",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/invoices.ts:107",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_invoices",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "invoice_number"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "total"
+      },
+      {
+       "f": "amount_due"
+      },
+      {
+       "f": "amount_paid"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "issue_date"
+      },
+      {
+       "f": "billing_type"
+      },
+      {
+       "f": "payments",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "amount"
+        },
+        {
+         "f": "payment_date"
+        },
+        {
+         "f": "status"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/project-detail.ts:94",
+   "unresolved_interp": [
+    "gqlId(projectId)"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_products",
+     "sel": [
+      {
+       "f": "name"
+      },
+      {
+       "f": "assets"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/project-detail.ts:155",
+   "unresolved_interp": [
+    "gqlId(projectId)"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "releases",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "version"
+      },
+      {
+       "f": "title"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "release_type"
+      },
+      {
+       "f": "release_date"
+      },
+      {
+       "f": "summary"
+      },
+      {
+       "f": "changelog"
+      },
+      {
+       "f": "is_client_visible"
+      },
+      {
+       "f": "repository_id",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/project-detail.ts:202",
+   "unresolved_interp": [
+    "visibilityFilter",
+    "repoIds.map(gqlId).join(\", \")"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_project_updates",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "message"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        }
+       ]
+      },
+      {
+       "f": "user_created",
+       "sel": [
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        }
+       ]
+      },
+      {
+       "f": "is_client_visible"
+      },
+      {
+       "f": "video_url"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/project-updates.ts:91",
+   "unresolved_interp": [
+    "visibilityFilter"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_projects",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "project_type"
+      },
+      {
+       "f": "client_visible_sections"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "budget_cap"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "archived"
+      },
+      {
+       "f": "archived_at"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "repositories",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "url"
+        },
+        {
+         "f": "platform"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "tier"
+        },
+        {
+         "f": "brand_color"
+        },
+        {
+         "f": "client_portal_enabled"
+        },
+        {
+         "f": "matomo_site_id"
+        },
+        {
+         "f": "service_status"
+        },
+        {
+         "f": "logo",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "filename_download"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "owner",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "kind"
+      },
+      {
+       "f": "parent_project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "is_test_data"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/projects.ts:53",
+   "unresolved_interp": [
+    "varDecl",
+    "filterClause"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_projects",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "project_type"
+      },
+      {
+       "f": "client_visible_sections"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "budget_cap"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "archived"
+      },
+      {
+       "f": "archived_at"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "repositories",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "url"
+        },
+        {
+         "f": "platform"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "tier"
+        },
+        {
+         "f": "brand_color"
+        },
+        {
+         "f": "client_portal_enabled"
+        },
+        {
+         "f": "matomo_site_id"
+        },
+        {
+         "f": "service_status"
+        },
+        {
+         "f": "logo",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "filename_download"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "owner",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "kind"
+      },
+      {
+       "f": "parent_project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "is_test_data"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/projects.ts:83",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_sprints",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "goal"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "end_date"
+      },
+      {
+       "f": "capacity_points"
+      },
+      {
+       "f": "rank"
+      },
+      {
+       "f": "review_notes"
+      },
+      {
+       "f": "retro_notes"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/sprints.ts:19",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_sprints",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "goal"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "end_date"
+      },
+      {
+       "f": "capacity_points"
+      },
+      {
+       "f": "rank"
+      },
+      {
+       "f": "review_notes"
+      },
+      {
+       "f": "retro_notes"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/sprints.ts:33",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_sprints",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "goal"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "end_date"
+      },
+      {
+       "f": "capacity_points"
+      },
+      {
+       "f": "rank"
+      },
+      {
+       "f": "review_notes"
+      },
+      {
+       "f": "retro_notes"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/sprints.ts:47",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_sprints",
+     "sel": [
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "end_date"
+      },
+      {
+       "f": "tasks",
+       "sel": [
+        {
+         "f": "points"
+        }
+       ]
+      },
+      {
+       "f": "snapshots",
+       "sel": [
+        {
+         "f": "snapshot_date"
+        },
+        {
+         "f": "remaining_points"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/sprints.ts:180",
+   "unresolved_interp": []
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "priority"
+      },
+      {
+       "f": "responsibility"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "date_completed"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "is_visible_to_client"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "parent_task",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "archived"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "points"
+      },
+      {
+       "f": "hours_estimate"
+      },
+      {
+       "f": "backlog_rank"
+      },
+      {
+       "f": "sprint",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/tasks.ts:153",
+   "unresolved_interp": [
+    "varDecl",
+    "filterClause"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "priority"
+      },
+      {
+       "f": "responsibility"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "date_completed"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "is_visible_to_client"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "points"
+      },
+      {
+       "f": "hours_estimate"
+      },
+      {
+       "f": "backlog_rank"
+      },
+      {
+       "f": "sprint",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "archived"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/tasks.ts:168",
+   "unresolved_interp": [
+    "varDecl",
+    "filterClause"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "priority"
+      },
+      {
+       "f": "responsibility"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "date_completed"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "is_visible_to_client"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "parent_task",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "archived"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "points"
+      },
+      {
+       "f": "hours_estimate"
+      },
+      {
+       "f": "backlog_rank"
+      },
+      {
+       "f": "sprint",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "priority"
+      },
+      {
+       "f": "responsibility"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "date_completed"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "is_visible_to_client"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "parent_task",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "archived"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "points"
+      },
+      {
+       "f": "hours_estimate"
+      },
+      {
+       "f": "backlog_rank"
+      },
+      {
+       "f": "sprint",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "priority"
+      },
+      {
+       "f": "responsibility"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "date_completed"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "is_visible_to_client"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "parent_task",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "archived"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "points"
+      },
+      {
+       "f": "hours_estimate"
+      },
+      {
+       "f": "backlog_rank"
+      },
+      {
+       "f": "sprint",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "priority"
+      },
+      {
+       "f": "responsibility"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "date_completed"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "is_visible_to_client"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "parent_task",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "archived"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "points"
+      },
+      {
+       "f": "hours_estimate"
+      },
+      {
+       "f": "backlog_rank"
+      },
+      {
+       "f": "sprint",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "priority"
+      },
+      {
+       "f": "responsibility"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "date_completed"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "is_visible_to_client"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "parent_task",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "archived"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "points"
+      },
+      {
+       "f": "hours_estimate"
+      },
+      {
+       "f": "backlog_rank"
+      },
+      {
+       "f": "sprint",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "f": "os_tasks_aggregated",
+     "sel": [
+      {
+       "f": "count",
+       "sel": [
+        {
+         "f": "id"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "f": "os_tasks_aggregated",
+     "sel": [
+      {
+       "f": "count",
+       "sel": [
+        {
+         "f": "id"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/tasks.ts:250",
+   "unresolved_interp": [
+    "varDecl",
+    "scope",
+    "COMPLETED_STATUSES_GQL",
+    "BOARD_COMPLETED_PAGE_SIZE",
+    "scope",
+    "COMPLETED_STATUSES_GQL",
+    "scope",
+    "COMPLETED_STATUSES_GQL",
+    "scope",
+    "COMPLETED_STATUSES_GQL",
+    "COMPLETED_STATUSES_GQL",
+    "scope",
+    "COMPLETED_STATUSES_GQL",
+    "scope",
+    "COMPLETED_STATUSES_GQL",
+    "scope"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "priority"
+      },
+      {
+       "f": "responsibility"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "date_completed"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "is_visible_to_client"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "parent_task",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "archived"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "points"
+      },
+      {
+       "f": "hours_estimate"
+      },
+      {
+       "f": "backlog_rank"
+      },
+      {
+       "f": "sprint",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/tasks.ts:375",
+   "unresolved_interp": [
+    "varDecl",
+    "BOARD_COMPLETED_PAGE_SIZE",
+    "scope",
+    "COMPLETED_STATUSES_GQL",
+    "JSON.stringify(before)"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "priority"
+      },
+      {
+       "f": "responsibility"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "date_completed"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "is_visible_to_client"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "parent_task",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "archived"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "points"
+      },
+      {
+       "f": "hours_estimate"
+      },
+      {
+       "f": "backlog_rank"
+      },
+      {
+       "f": "sprint",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/tasks.ts:394",
+   "unresolved_interp": [
+    "idList"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "priority"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "date_completed"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "is_visible_to_client"
+      },
+      {
+       "f": "points"
+      },
+      {
+       "f": "parent_task",
+       "sel": [
+        {
+         "f": "id"
+        }
+       ]
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "avatar",
+         "sel": [
+          {
+           "f": "id"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "project_type"
+        },
+        {
+         "f": "archived"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "sprint",
+       "sel": [
+        {
+         "f": "id"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/services/tasks.ts:500",
+   "unresolved_interp": [
+    "since"
+   ]
+  },
+  {
+   "op": "query",
+   "roots": [
+    {
+     "f": "contacts",
+     "sel": [
+      {
+       "f": "user",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "role",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/view-as.ts:85",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "os_projects",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "project_type"
+      },
+      {
+       "f": "client_visible_sections"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "budget_cap"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "archived"
+      },
+      {
+       "f": "archived_at"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "repositories",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "url"
+        },
+        {
+         "f": "platform"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "tier"
+        },
+        {
+         "f": "brand_color"
+        },
+        {
+         "f": "client_portal_enabled"
+        },
+        {
+         "f": "matomo_site_id"
+        },
+        {
+         "f": "service_status"
+        },
+        {
+         "f": "logo",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "filename_download"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "owner",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "kind"
+      },
+      {
+       "f": "parent_project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "is_test_data"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.PROJECT_FIELDS",
+   "fragment_collection": "os_projects",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "priority"
+      },
+      {
+       "f": "responsibility"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "date_completed"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "is_visible_to_client"
+      },
+      {
+       "f": "embed_url"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "parent_task",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "archived"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "points"
+      },
+      {
+       "f": "hours_estimate"
+      },
+      {
+       "f": "backlog_rank"
+      },
+      {
+       "f": "sprint",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      },
+      {
+       "f": "acceptance_criteria"
+      },
+      {
+       "f": "dod_checklist"
+      },
+      {
+       "f": "blocked_by",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "repo_url"
+      },
+      {
+       "f": "branch_url"
+      },
+      {
+       "f": "pr_url"
+      },
+      {
+       "f": "feature_url"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.TASK_FIELDS",
+   "fragment_collection": "os_tasks",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "os_tasks",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "priority"
+      },
+      {
+       "f": "responsibility"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "date_completed"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "is_visible_to_client"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "parent_task",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "archived"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "points"
+      },
+      {
+       "f": "hours_estimate"
+      },
+      {
+       "f": "backlog_rank"
+      },
+      {
+       "f": "sprint",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.TASK_BOARD_FIELDS",
+   "fragment_collection": "os_tasks",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "os_sprints",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "goal"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "start_date"
+      },
+      {
+       "f": "end_date"
+      },
+      {
+       "f": "capacity_points"
+      },
+      {
+       "f": "rank"
+      },
+      {
+       "f": "review_notes"
+      },
+      {
+       "f": "retro_notes"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.SPRINT_FIELDS",
+   "fragment_collection": "os_sprints",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "os_sprint_snapshots",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "snapshot_date"
+      },
+      {
+       "f": "remaining_points"
+      },
+      {
+       "f": "completed_points"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.SNAPSHOT_FIELDS",
+   "fragment_collection": "os_sprint_snapshots",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "os_invoices",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "invoice_number"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "reference"
+      },
+      {
+       "f": "total"
+      },
+      {
+       "f": "subtotal"
+      },
+      {
+       "f": "total_tax"
+      },
+      {
+       "f": "amount_due"
+      },
+      {
+       "f": "amount_paid"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "issue_date"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "billing_type"
+      },
+      {
+       "f": "billing_interval"
+      },
+      {
+       "f": "allow_partial_payments"
+      },
+      {
+       "f": "stripe_subscription_id"
+      },
+      {
+       "f": "subscription_status"
+      },
+      {
+       "f": "line_items",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "line_item_number"
+        },
+        {
+         "f": "item_name"
+        },
+        {
+         "f": "description"
+        },
+        {
+         "f": "quantity"
+        },
+        {
+         "f": "unit_price"
+        },
+        {
+         "f": "line_amount"
+        },
+        {
+         "f": "tax_amount"
+        }
+       ]
+      },
+      {
+       "f": "payments",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "amount"
+        },
+        {
+         "f": "payment_date"
+        },
+        {
+         "f": "status"
+        },
+        {
+         "f": "payment_method_type"
+        }
+       ]
+      },
+      {
+       "f": "contact",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        },
+        {
+         "f": "email"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.INVOICE_FIELDS",
+   "fragment_collection": "os_invoices",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "contacts",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "first_name"
+      },
+      {
+       "f": "last_name"
+      },
+      {
+       "f": "email"
+      },
+      {
+       "f": "phone"
+      },
+      {
+       "f": "job_title"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "contact_notes"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "organizations",
+       "sel": [
+        {
+         "f": "organizations_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "name"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.CONTACT_FIELDS",
+   "fragment_collection": "contacts",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "organizations",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "email"
+      },
+      {
+       "f": "phone"
+      },
+      {
+       "f": "website"
+      },
+      {
+       "f": "tier"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "service_status"
+      },
+      {
+       "f": "brand_color"
+      },
+      {
+       "f": "client_portal_enabled"
+      },
+      {
+       "f": "organization_notes"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "logo",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "filename_download"
+        }
+       ]
+      },
+      {
+       "f": "owner",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        }
+       ]
+      },
+      {
+       "f": "addresses",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "street_address"
+        },
+        {
+         "f": "address_locality"
+        },
+        {
+         "f": "address_region"
+        },
+        {
+         "f": "postal_code"
+        },
+        {
+         "f": "address_country"
+        },
+        {
+         "f": "is_primary_billing"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.ORGANIZATION_FIELDS",
+   "fragment_collection": "organizations",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "os_deals",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "deal_value"
+      },
+      {
+       "f": "close_date"
+      },
+      {
+       "f": "next_contact_date"
+      },
+      {
+       "f": "deal_notes"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "deal_stage",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      },
+      {
+       "f": "owner",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.DEAL_FIELDS",
+   "fragment_collection": "os_deals",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "os_payments",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "amount"
+      },
+      {
+       "f": "payment_date"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "payment_method_type"
+      },
+      {
+       "f": "receipt_url"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "invoice",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "invoice_number"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.PAYMENT_FIELDS",
+   "fragment_collection": "os_payments",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "os_expenses",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "cost"
+      },
+      {
+       "f": "date"
+      },
+      {
+       "f": "category"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "is_billable"
+      },
+      {
+       "f": "is_reimbursable"
+      },
+      {
+       "f": "vendor"
+      },
+      {
+       "f": "billing_term"
+      },
+      {
+       "f": "recurrence_interval"
+      },
+      {
+       "f": "next_billing_date"
+      },
+      {
+       "f": "notify_on_renewal"
+      },
+      {
+       "f": "notify_days_before"
+      },
+      {
+       "f": "last_confirmed_at"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "file",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "filename_download"
+        }
+       ]
+      },
+      {
+       "f": "project",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "organization",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "service_status"
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "f": "items",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "quantity"
+        },
+        {
+         "f": "amount"
+        },
+        {
+         "f": "notes"
+        }
+       ]
+      },
+      {
+       "f": "invoice_item",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "invoice",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "invoice_number"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.EXPENSE_FIELDS",
+   "fragment_collection": "os_expenses",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "os_activities",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "activity_type"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "due_date"
+      },
+      {
+       "f": "start_time"
+      },
+      {
+       "f": "end_time"
+      },
+      {
+       "f": "activity_notes"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "assigned_to",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "first_name"
+        },
+        {
+         "f": "last_name"
+        }
+       ]
+      },
+      {
+       "f": "deal",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.ACTIVITY_FIELDS",
+   "fragment_collection": "os_activities",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "os_proposals",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "is_test_data"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "expiration_date"
+      },
+      {
+       "f": "total"
+      },
+      {
+       "f": "proposal_notes"
+      },
+      {
+       "f": "line_items"
+      },
+      {
+       "f": "date_created"
+      },
+      {
+       "f": "date_updated"
+      },
+      {
+       "f": "sort"
+      },
+      {
+       "f": "deal",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        }
+       ]
+      },
+      {
+       "f": "organization",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "name"
+        },
+        {
+         "f": "service_status"
+        }
+       ]
+      },
+      {
+       "f": "contacts",
+       "sel": [
+        {
+         "f": "id"
+        },
+        {
+         "f": "contacts_id",
+         "sel": [
+          {
+           "f": "id"
+          },
+          {
+           "f": "first_name"
+          },
+          {
+           "f": "last_name"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.PROPOSAL_FIELDS",
+   "fragment_collection": "os_proposals",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "services",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "title"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "default_rate"
+      },
+      {
+       "f": "unit_cost"
+      },
+      {
+       "f": "pricing_type"
+      },
+      {
+       "f": "category"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "sort"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.SERVICE_FIELDS",
+   "fragment_collection": "services",
+   "unresolved_interp": []
+  },
+  {
+   "op": "fragment",
+   "roots": [
+    {
+     "f": "packages",
+     "sel": [
+      {
+       "f": "id"
+      },
+      {
+       "f": "name"
+      },
+      {
+       "f": "description"
+      },
+      {
+       "f": "price"
+      },
+      {
+       "f": "status"
+      },
+      {
+       "f": "type"
+      },
+      {
+       "f": "billing_cycle"
+      },
+      {
+       "f": "hours_included"
+      },
+      {
+       "f": "overage_rate"
+      },
+      {
+       "f": "support_hours"
+      }
+     ]
+    }
+   ],
+   "source": "lib/portal/graphql.ts#GQL_FRAGMENTS.PACKAGE_FIELDS",
+   "fragment_collection": "packages",
+   "unresolved_interp": []
+  }
+ ],
+ "problems": []
+}

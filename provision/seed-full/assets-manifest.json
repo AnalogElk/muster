@@ -1,0 +1,297 @@
+{
+  "generated_at": "2026-07-16T20:55:58.637694+00:00",
+  "task": "F2 foundation-files-assets",
+  "folders": {
+    "Branding": "116595bf-8255-4ac0-8965-f878936decee",
+    "Avatars": "c743e2af-8d3c-465a-8dda-681c3f1b8690",
+    "Photos": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+    "Receipts": "461b7a34-9b59-49bd-9e1e-c865e51778af",
+    "Deliverables": "359aa943-0c3c-4720-95ba-5f48296c39bd",
+    "Attachments": "8b692666-5a00-4f14-a39d-a89d54c13437"
+  },
+  "files": [
+    {
+      "id": "0de6e142-c5d7-4ba4-a686-c66c91db9b30",
+      "title": "Project photo 01",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "f82fed74-f2fd-4ae4-8e76-3ba3caa7fbff",
+      "title": "Project photo 02",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "4ccc0388-111d-4a8a-96c8-ffc29674a41d",
+      "title": "Project photo 03",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "7cc4963e-cdb9-4a26-b01e-4e6c966b51b6",
+      "title": "Project photo 04",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "60f8488b-430d-487b-9361-aca3d0534881",
+      "title": "Project photo 05",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "cf9847ee-6281-403a-b2e7-bf46684df53d",
+      "title": "Project photo 06",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "ac56b9e1-1a41-4fad-8bc5-47f718bddc74",
+      "title": "Project photo 07",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "24132b54-79cd-43d4-aaf8-e553dcf4465b",
+      "title": "Project photo 08",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "b3bb2e16-8824-4049-b667-10da41a17312",
+      "title": "Project photo 09",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "837c3ebf-44e3-42d7-afff-da031cb60b8c",
+      "title": "Project photo 10",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "c2720258-817a-4f72-b214-21e075b3534f",
+      "title": "Project photo 11",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "2cf34128-3566-41b6-acd3-a7e0e0d5149c",
+      "title": "Project photo 12",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "65805960-25e2-4e94-8370-991a0d78fb19",
+      "title": "Project photo 13",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "6a7f74fb-3d58-4f66-b213-94d340a8af6d",
+      "title": "Project photo 14",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "83e09c92-42f9-43a1-a948-b6fac7083a86",
+      "title": "Project photo 15",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "305cc540-5b2a-4d71-b9f2-1829c1e332ee",
+      "title": "Project photo 16",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "de835aae-dec5-4268-9582-df681c35ca58",
+      "title": "Project photo 17",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "d46156cd-b917-432d-8062-59fa8cbc9dee",
+      "title": "Project photo 18",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "89fb480a-2fcd-41d6-a09d-ef3adcb14362",
+      "title": "Project photo 19",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "33da56da-91fc-40f0-8a59-2e4b021d1d47",
+      "title": "Project photo 20",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "9f6c21f1-7e80-48c2-9d7a-a2741ab77caf",
+      "title": "Project photo 21",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "8195733d-1314-445c-8506-c2227d8fecd5",
+      "title": "Project photo 22",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "2e537207-343d-4e29-9154-0b38eece5f90",
+      "title": "Project photo 23",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "f7e1d259-1e2e-47d3-aba7-0aa2beb6fc54",
+      "title": "Project photo 24",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "454ed00f-3624-4499-afc5-cfb0a072ffd7",
+      "title": "Site photography 01",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "4986a741-4518-4d29-aca1-67c5925717f8",
+      "title": "Site photography 02",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "97c4c195-7cd2-4b42-839f-1c528e93766b",
+      "title": "Site photography 03",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "573b7d86-4931-4f8d-be00-c728d24c233b",
+      "title": "Moodboard frame 01",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "14f9e9d2-acbb-477f-9af0-f4fa676c57d9",
+      "title": "Moodboard frame 02",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "0ac9a1da-c668-4659-b536-54ce832a3952",
+      "title": "Moodboard frame 03",
+      "folder": "0b0b24a6-ca85-406a-bac4-ae11d1760056",
+      "folder_name": "Photos"
+    },
+    {
+      "id": "20957fe3-228a-4321-97b9-f7e86ae3bfcd",
+      "title": "Receipt - Figma 2026-06",
+      "folder": "461b7a34-9b59-49bd-9e1e-c865e51778af",
+      "folder_name": "Receipts"
+    },
+    {
+      "id": "145b4826-42e4-4606-a888-d55177ec261c",
+      "title": "Receipt - AWS 2026-06",
+      "folder": "461b7a34-9b59-49bd-9e1e-c865e51778af",
+      "folder_name": "Receipts"
+    },
+    {
+      "id": "88a0cc37-3f44-4cc4-83d2-5cbf909ca2e2",
+      "title": "Receipt - Linear 2026-05",
+      "folder": "461b7a34-9b59-49bd-9e1e-c865e51778af",
+      "folder_name": "Receipts"
+    },
+    {
+      "id": "741e4d99-c094-41c6-8304-f8554d3a3aec",
+      "title": "Receipt - Amtrak 2026-04",
+      "folder": "461b7a34-9b59-49bd-9e1e-c865e51778af",
+      "folder_name": "Receipts"
+    },
+    {
+      "id": "ff17219c-ed64-4418-a7a0-21d4cae524e6",
+      "title": "Receipt - Moo Print 2026-03",
+      "folder": "461b7a34-9b59-49bd-9e1e-c865e51778af",
+      "folder_name": "Receipts"
+    },
+    {
+      "id": "35049b7c-d6be-4482-a14a-27ea6b0ec38d",
+      "title": "Receipt - Adobe Creative Cloud 2026-05",
+      "folder": "461b7a34-9b59-49bd-9e1e-c865e51778af",
+      "folder_name": "Receipts"
+    },
+    {
+      "id": "b65fb252-a34d-4f1a-be54-a6fb59540f29",
+      "title": "Receipt - Notion 2026-07",
+      "folder": "461b7a34-9b59-49bd-9e1e-c865e51778af",
+      "folder_name": "Receipts"
+    },
+    {
+      "id": "092d753c-3cea-4a6f-9a20-a1361f2ef0e1",
+      "title": "Receipt - Uline 2026-02",
+      "folder": "461b7a34-9b59-49bd-9e1e-c865e51778af",
+      "folder_name": "Receipts"
+    }
+  ],
+  "receipts": [
+    {
+      "file_id": "20957fe3-228a-4321-97b9-f7e86ae3bfcd",
+      "vendor": "Figma",
+      "month": "2026-06",
+      "title": "Receipt - Figma 2026-06"
+    },
+    {
+      "file_id": "145b4826-42e4-4606-a888-d55177ec261c",
+      "vendor": "AWS",
+      "month": "2026-06",
+      "title": "Receipt - AWS 2026-06"
+    },
+    {
+      "file_id": "88a0cc37-3f44-4cc4-83d2-5cbf909ca2e2",
+      "vendor": "Linear",
+      "month": "2026-05",
+      "title": "Receipt - Linear 2026-05"
+    },
+    {
+      "file_id": "741e4d99-c094-41c6-8304-f8554d3a3aec",
+      "vendor": "Amtrak",
+      "month": "2026-04",
+      "title": "Receipt - Amtrak 2026-04"
+    },
+    {
+      "file_id": "ff17219c-ed64-4418-a7a0-21d4cae524e6",
+      "vendor": "Moo Print",
+      "month": "2026-03",
+      "title": "Receipt - Moo Print 2026-03"
+    },
+    {
+      "file_id": "35049b7c-d6be-4482-a14a-27ea6b0ec38d",
+      "vendor": "Adobe Creative Cloud",
+      "month": "2026-05",
+      "title": "Receipt - Adobe Creative Cloud 2026-05"
+    },
+    {
+      "file_id": "b65fb252-a34d-4f1a-be54-a6fb59540f29",
+      "vendor": "Notion",
+      "month": "2026-07",
+      "title": "Receipt - Notion 2026-07"
+    },
+    {
+      "file_id": "092d753c-3cea-4a6f-9a20-a1361f2ef0e1",
+      "vendor": "Uline",
+      "month": "2026-02",
+      "title": "Receipt - Uline 2026-02"
+    }
+  ],
+  "logo_gate": {
+    "ran": false,
+    "reason": "NULLFILL_APPROVED not passed; default SKIP",
+    "org_1_logo": null
+  }
+}

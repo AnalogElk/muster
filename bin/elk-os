@@ -119,6 +119,15 @@ use_published_images() {
   [ "$v" = "true" ]
 }
 
+# Demo mock-integrations overlay (compose.mocks.yaml): a single stdlib-Python
+# container faking the Matomo Reporting API + Migadu Admin API for demo boxes
+# with no external credentials, plus the portal env wiring at it. Off by
+# default; enable with ELK_OS_WITH_MOCKS=true in .env (demo boxes only).
+with_mocks() {
+  local v; v="$(get_env ELK_OS_WITH_MOCKS)"; v="${v:-false}"
+  [ "$v" = "true" ]
+}
+
 # Build the compose invocation for the current target (reads .env).
 # Overlays (RAG, portal) are appended consistently for every subcommand
 # (up/down/logs) so the same service set is always addressed.
@@ -163,6 +172,11 @@ compose() {
   # service (compose.portal.yaml) and the elkos-rag network (compose.rag.yaml).
   if with_intelligence; then
     files+=(-f "${COMPOSE_DIR}/compose.portal.rag.yaml")
+  fi
+  # Demo mock-integrations: layered after every portal overlay so its
+  # portal.environment additions (MATOMO_*/MIGADU_*) merge on top.
+  if with_mocks; then
+    files+=(-f "${COMPOSE_DIR}/compose.mocks.yaml")
   fi
   "${DC[@]}" --project-directory "$ROOT" --env-file "$ENV_FILE" "${files[@]}" "$@"
 }

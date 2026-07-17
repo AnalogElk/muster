@@ -32,6 +32,14 @@ applies a small set of self-host patches on top.
 4. **`components/three-background-wrapper.tsx`** — stub to a no-op so the
    removed private package is never imported.
 5. **`.dockerignore`** — copied into the build-context root.
+6. **Self-host fix pack** (step 6d): `next.config.js` CSP allowlists the
+   `NEXT_PUBLIC_DIRECTUS_URL` origin in `img-src`/`connect-src`/`style-src`/
+   `media-src` (CMS-hosted logos and photos render on non-analogelk domains);
+   `lib/portal/email/migadu.ts` base URL becomes env-overridable via
+   `MIGADU_API_BASE` (points a demo box at `compose.mocks.yaml`); plus three
+   frozen-build rendering fixes: `INVOICE_FIELDS` gains `term_months`, the
+   client dashboard invoice series reads snake_case `due_date`, and the
+   services list falls back to `default_rate` when `price` is absent.
 
 ## Build + run
 
