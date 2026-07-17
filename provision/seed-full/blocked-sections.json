@@ -1,0 +1,719 @@
+{
+  "generated_at": "2026-07-16T00:00:00Z",
+  "generated_by": "seed task D6 domain-content-client (Muster demo populate run, 2026-07-16)",
+  "target": "https://cms.musterr.dev",
+  "policy": {
+    "rule": "DO NOT create any collection listed here without explicit orchestrator sign-off.",
+    "signoff_order": [
+      "1. POST /collections (collection)",
+      "2. POST /fields/<collection> (fields, in listed order)",
+      "3. POST /relations (relations)",
+      "4. POST /permissions demo policy read grant: {policy: 'c69b84d1-8957-4687-a6dd-b049b3e890b9', collection: <name>, action: 'read', fields: ['*']} (action=read ONLY)",
+      "5. seed rows (idempotent upsert by the natural key listed per collection)"
+    ],
+    "demo_policy_id": "c69b84d1-8957-4687-a6dd-b049b3e890b9",
+    "notes": "All field specs below are derived from the frozen portal source running on the box (scratchpad portal-src). File refs are portal-src relative. Types use Directus field types. 'choices' lists enum values the portal code validates or renders; unlisted string fields are free text."
+  },
+  "blocked_sections": [
+    {
+      "id": "help-center",
+      "portal_paths": [
+        "employee-portal/help",
+        "employee-portal/help/[slug]",
+        "client-portal/help",
+        "client-portal/help/[slug]",
+        "support page Popular Articles rail (both portals)"
+      ],
+      "status": "blocked_missing_collections",
+      "missing_collections": ["help_collections", "help_articles"],
+      "evidence": [
+        "app/api/portal/help/collections/route.ts:42-59 (GET /items/help_collections fields=id,title,slug,description,icon,sort; article counts grouped by help_collection)",
+        "app/api/portal/help/articles/route.ts:76-95 (fields id,title,slug,summary,content,audience,sort,date_updated,help_collection.id,help_collection.title,help_collection.slug; filter status=published, clients audience _in [all,client])",
+        "components/portals/help/help-icons.tsx:15 (help_collections.icon stores a Material icon name)"
+      ],
+      "collections": {
+        "help_collections": {
+          "primary_key": {"field": "id", "type": "integer", "autoincrement": true},
+          "fields": [
+            {"field": "title", "type": "string", "required": true},
+            {"field": "slug", "type": "string", "required": true, "note": "natural key; unique"},
+            {"field": "description", "type": "text", "required": false},
+            {"field": "icon", "type": "string", "required": false, "note": "Material icon name (Directus convention)"},
+            {"field": "sort", "type": "integer", "required": false}
+          ],
+          "relations": [],
+          "upsert_key": "slug",
+          "notes": "Collections with zero visible published articles are omitted from both portals (route filters articleCount > 0), so every seeded collection needs articles."
+        },
+        "help_articles": {
+          "primary_key": {"field": "id", "type": "integer", "autoincrement": true},
+          "fields": [
+            {"field": "title", "type": "string", "required": true},
+            {"field": "slug", "type": "string", "required": true, "note": "natural key; unique; detail route is /help/[slug]"},
+            {"field": "summary", "type": "text", "required": false},
+            {"field": "content", "type": "text", "required": false, "note": "markdown body"},
+            {"field": "audience", "type": "string", "required": true, "choices": ["all", "client", "employee"], "note": "clients see _in [all, client]; employees see every published article"},
+            {"field": "status", "type": "string", "required": true, "choices": ["published", "draft", "archived"], "note": "portal filters _eq published"},
+            {"field": "sort", "type": "integer", "required": false},
+            {"field": "date_updated", "type": "timestamp", "required": false, "special": ["date-updated"]},
+            {"field": "help_collection", "type": "integer", "required": false, "note": "m2o"}
+          ],
+          "relations": [
+            {"many": "help_articles.help_collection", "one": "help_collections", "meta_one_field": null}
+          ],
+          "upsert_key": "slug"
+        }
+      }
+    },
+    {
+      "id": "services",
+      "portal_paths": ["employee-portal/services", "employee-portal/services/[id]"],
+      "status": "blocked_missing_collections",
+      "missing_collections": ["services"],
+      "evidence": [
+        "app/api/portal/services/route.ts:31-38 (GQL services(limit:100, sort:[sort,name]) with GQL_FRAGMENTS.SERVICE_FIELDS; employee/admin only)",
+        "lib/portal/graphql.ts:577-589 (SERVICE_FIELDS: id name title description default_rate unit_cost pricing_type category status sort; fragment comment: no date_created/date_updated)",
+        "app/api/portal/services/route.ts:66-69 (POST whitelist: name,title,description,default_rate,unit_cost,pricing_type,category,status,sort)"
+      ],
+      "collections": {
+        "services": {
+          "primary_key": {"field": "id", "type": "integer", "autoincrement": true, "note": "mirror of the AEFE services collection (integer ids there); uuid also works, the portal only stringifies id"},
+          "fields": [
+            {"field": "name", "type": "string", "required": true},
+            {"field": "title", "type": "string", "required": false},
+            {"field": "description", "type": "text", "required": false},
+            {"field": "default_rate", "type": "decimal", "precision": 10, "scale": 2, "required": false},
+            {"field": "unit_cost", "type": "decimal", "precision": 10, "scale": 2, "required": false},
+            {"field": "pricing_type", "type": "string", "required": false, "choices_suggested": ["hourly", "fixed", "retainer", "per_unit"], "note": "portal does not validate; rendered as label"},
+            {"field": "category", "type": "string", "required": false},
+            {"field": "status", "type": "string", "required": false, "choices_suggested": ["published", "draft", "archived"]},
+            {"field": "sort", "type": "integer", "required": false}
+          ],
+          "relations": [],
+          "upsert_key": "name",
+          "notes": "Deliberately NO date_created/date_updated (fragment comment in graphql.ts says the source collection lacks them; adding them is harmless but unnecessary). Clients get an empty list by design (route guard)."
+        }
+      }
+    },
+    {
+      "id": "packages",
+      "portal_paths": ["employee-portal/packages", "employee-portal/packages/[id]"],
+      "status": "blocked_missing_collections",
+      "missing_collections": ["packages"],
+      "evidence": [
+        "lib/portal/graphql.ts:592-604 (PACKAGE_FIELDS: id name description price status type billing_cycle hours_included overage_rate support_hours; fragment comment: no sort/date_created/date_updated)",
+        "lib/portal/hooks/use-packages.ts (list hook)",
+        "app/api/portal/packages/route.ts (GET via GraphQL, employee/admin only)"
+      ],
+      "collections": {
+        "packages": {
+          "primary_key": {"field": "id", "type": "integer", "autoincrement": true},
+          "fields": [
+            {"field": "name", "type": "string", "required": true},
+            {"field": "description", "type": "text", "required": false},
+            {"field": "price", "type": "decimal", "precision": 10, "scale": 2, "required": false},
+            {"field": "status", "type": "string", "required": false, "choices_suggested": ["published", "draft", "archived"]},
+            {"field": "type", "type": "string", "required": false, "choices_suggested": ["retainer", "project", "support"]},
+            {"field": "billing_cycle", "type": "string", "required": false, "choices_suggested": ["monthly", "quarterly", "yearly", "one-time"]},
+            {"field": "hours_included", "type": "integer", "required": false},
+            {"field": "overage_rate", "type": "decimal", "precision": 10, "scale": 2, "required": false},
+            {"field": "support_hours", "type": "string", "required": false}
+          ],
+          "relations": [],
+          "upsert_key": "name"
+        }
+      }
+    },
+    {
+      "id": "tools",
+      "portal_paths": ["employee-portal/tools"],
+      "status": "blocked_missing_collections",
+      "missing_collections": ["tools", "tools_projects"],
+      "evidence": [
+        "lib/portal/tool-fields.ts:16-38 (ALLOWED_TOOL_FIELDS write whitelist)",
+        "lib/portal/tool-terms.ts:14-72 (category/billing_cycle/status enums)",
+        "app/api/portal/tools/route.ts:27-54 (GQL read shape incl. expense join + projects{project_id{id name}})",
+        "lib/portal/tool-expense-sync.ts (paid tool mirrors an os_expenses row; expense m2o)"
+      ],
+      "collections": {
+        "tools": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "name", "type": "string", "required": true, "note": "natural key"},
+            {"field": "category", "type": "string", "required": false, "choices": ["ORGANIZATION", "SERVER", "DESIGN", "DATABASE_PROVIDER", "AUTHENTICATION", "LLM_SERVICE", "MONITORING", "EMAIL_SERVICE", "COMMUNICATION", "ANALYTICS", "CI_CD", "STORAGE", "CDN", "DOMAIN_REGISTRY", "VERSION_CONTROL", "OTHER"]},
+            {"field": "description", "type": "text", "required": false},
+            {"field": "website", "type": "string", "required": false},
+            {"field": "login_url", "type": "string", "required": false},
+            {"field": "cost", "type": "decimal", "precision": 10, "scale": 2, "required": false},
+            {"field": "billing_cycle", "type": "string", "required": false, "choices": ["monthly", "yearly", "one-time"]},
+            {"field": "is_subscription", "type": "boolean", "required": false},
+            {"field": "renewal_date", "type": "date", "required": false},
+            {"field": "auto_renew", "type": "boolean", "required": false},
+            {"field": "account_email", "type": "string", "required": false},
+            {"field": "vendor", "type": "string", "required": false},
+            {"field": "icon", "type": "string", "required": false},
+            {"field": "color", "type": "string", "required": false},
+            {"field": "status", "type": "string", "required": false, "choices": ["published", "archived"]},
+            {"field": "notes", "type": "text", "required": false},
+            {"field": "frequently_used", "type": "boolean", "required": false},
+            {"field": "start_date", "type": "date", "required": false},
+            {"field": "has_subscription", "type": "boolean", "required": false},
+            {"field": "is_test_data", "type": "boolean", "required": false, "default": false},
+            {"field": "expense", "type": "uuid", "required": false, "note": "m2o -> os_expenses, managed by tool-expense-sync, NOT caller-writable"},
+            {"field": "projects", "type": "alias", "special": ["o2m"], "note": "one_field for tools_projects junction"}
+          ],
+          "relations": [
+            {"many": "tools.expense", "one": "os_expenses"}
+          ],
+          "upsert_key": "name"
+        },
+        "tools_projects": {
+          "primary_key": {"field": "id", "type": "integer", "autoincrement": true},
+          "fields": [
+            {"field": "tools_id", "type": "uuid", "required": false, "note": "FK to tools; NAME INFERRED from Directus m2m convention, confirm against the AEFE schema before creating (portal only reads the projects->project_id direction and writes junction rows as {project_id})"},
+            {"field": "project_id", "type": "uuid", "required": false, "note": "FK to os_projects; EXACT name, portal reads projects{project_id{id name}} and writes {project_id: <uuid>} (lib/portal/tool-fields.ts normalizeProjects)"}
+          ],
+          "relations": [
+            {"many": "tools_projects.tools_id", "one": "tools", "meta_one_field": "projects"},
+            {"many": "tools_projects.project_id", "one": "os_projects"}
+          ],
+          "upsert_key": "(tools_id, project_id)"
+        }
+      }
+    },
+    {
+      "id": "project-links",
+      "portal_paths": [
+        "employee-portal/organizations/[id] (Links hub)",
+        "employee-portal/projects/[id] (links widget)",
+        "client-portal/dashboard (OrgLinksHub card)",
+        "client-portal/projects/[id] (links widget)"
+      ],
+      "status": "blocked_missing_collections",
+      "missing_collections": ["project_links"],
+      "evidence": [
+        "lib/portal/org-links.ts:20-121 (org aggregate read: fields id,type,label,url,notes,sort[,role_visibility,status],project.id,project.name,project.status,project.archived; filter project.organization + archived-is-not-true; clients only status=published AND role_visibility _in [client_only, both])",
+        "app/api/portal/projects/[id]/links/route.ts:28-100 (per-project read, same fields)",
+        "lib/portal/project-links.ts:6-17 (VALID_TYPES, VALID_VISIBILITIES, VALID_STATUSES)"
+      ],
+      "collections": {
+        "project_links": {
+          "primary_key": {"field": "id", "type": "integer", "autoincrement": true},
+          "fields": [
+            {"field": "project", "type": "uuid", "required": true, "note": "m2o -> os_projects"},
+            {"field": "type", "type": "string", "required": false, "choices": ["frontend", "cms", "analytics", "repository", "hosting", "database", "staging", "other"], "default": "other"},
+            {"field": "label", "type": "string", "required": true, "note": "max 120 chars enforced by route"},
+            {"field": "url", "type": "string", "required": true, "note": "must start http(s)://"},
+            {"field": "notes", "type": "text", "required": false, "note": "max 500 chars enforced by route"},
+            {"field": "sort", "type": "integer", "required": false},
+            {"field": "role_visibility", "type": "string", "required": false, "choices": ["client_only", "internal_only", "both"], "note": "clients only ever see client_only|both"},
+            {"field": "status", "type": "string", "required": false, "choices": ["published", "draft", "archived"], "note": "clients only see published"}
+          ],
+          "relations": [
+            {"many": "project_links.project", "one": "os_projects"}
+          ],
+          "upsert_key": "(project, url)",
+          "notes": "This is the collection that lights the client dashboard OrgLinksHub card for the demo user (org 2) once seeded. Seed links per active project: frontend, cms, repository, staging at minimum, role_visibility both, status published."
+        }
+      }
+    },
+    {
+      "id": "dam",
+      "portal_paths": [
+        "employee-portal/dam",
+        "employee-portal/dam/review",
+        "employee-portal/dam/guidelines",
+        "client-portal/brand-assets",
+        "client-portal/brand-assets/guidelines"
+      ],
+      "status": "blocked_missing_collections_AND_env_gated",
+      "missing_collections": [
+        "dam_assets",
+        "dam_collections",
+        "dam_assets_collections",
+        "dam_share_links",
+        "dam_guidelines",
+        "dam_guideline_blocks",
+        "dam_render_jobs"
+      ],
+      "env_gated_on": {
+        "thumbnails_and_downloads": ["S3_EXPLORER_AWS_ACCESS_KEY_ID", "S3_EXPLORER_AWS_SECRET_ACCESS_KEY", "S3_EXPLORER_AWS_REGION"],
+        "review_queue_enrichment": ["ANTHROPIC_API_KEY", "VOYAGE_API_KEY", "DAM_ENRICH_ENABLED"]
+      },
+      "env_gate_note": "Even with all 7 collections created and seeded, asset thumbnails/downloads presign against S3 (lib/dam/presign.ts, lib/s3-explorer/s3.ts credentials block at lib/s3-explorer/s3.ts:24-27); without S3_EXPLORER_AWS_* the grid renders rows but images 404/fallback. Guidelines (brand books) are the exception: dam_guidelines + dam_guideline_blocks render fully from CMS data (colors, typography, voice blocks) and directus_files images, so seeding those two gives visible value without S3.",
+      "collections": {
+        "dam_assets": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "org", "type": "integer", "required": false, "note": "m2o -> organizations"},
+            {"field": "s3_uri", "type": "string", "required": true},
+            {"field": "bucket", "type": "string", "required": true},
+            {"field": "key", "type": "string", "required": true, "note": "natural key with bucket"},
+            {"field": "checksum", "type": "string", "required": false},
+            {"field": "mime", "type": "string", "required": false},
+            {"field": "width", "type": "integer", "required": false},
+            {"field": "height", "type": "integer", "required": false},
+            {"field": "size_bytes", "type": "bigInteger", "required": false},
+            {"field": "exif", "type": "json", "required": false},
+            {"field": "title", "type": "string", "required": false},
+            {"field": "description", "type": "text", "required": false},
+            {"field": "alt_text", "type": "text", "required": false},
+            {"field": "seo_filename", "type": "string", "required": false},
+            {"field": "tags", "type": "json", "required": false},
+            {"field": "dominant_colors", "type": "json", "required": false},
+            {"field": "status", "type": "string", "required": true, "choices": ["draft", "internal", "client_approved", "archived"], "note": "clients only ever see client_approved"},
+            {"field": "ai_state", "type": "string", "required": false, "choices": ["none", "suggested", "accepted"]},
+            {"field": "ai_suggestions", "type": "json", "required": false},
+            {"field": "embedding", "type": "json", "required": false},
+            {"field": "rights_note", "type": "text", "required": false},
+            {"field": "rights_expiry", "type": "date", "required": false},
+            {"field": "credit", "type": "string", "required": false},
+            {"field": "download_count", "type": "integer", "required": false, "default": 0},
+            {"field": "edits", "type": "json", "required": false, "note": "non-destructive edit doc, lib/dam/edit-doc.ts"},
+            {"field": "date_created", "type": "timestamp", "special": ["date-created"]},
+            {"field": "date_updated", "type": "timestamp", "special": ["date-updated"]},
+            {"field": "collections", "type": "alias", "special": ["m2m"], "note": "one_field for dam_assets_collections"}
+          ],
+          "relations": [
+            {"many": "dam_assets.org", "one": "organizations"}
+          ],
+          "upsert_key": "(bucket, key)",
+          "evidence": ["lib/dam/types.ts:9-40 (DamAsset)", "lib/dam/assets-service.ts (list/read fields)"]
+        },
+        "dam_collections": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "org", "type": "integer", "required": false, "note": "m2o -> organizations"},
+            {"field": "name", "type": "string", "required": true},
+            {"field": "slug", "type": "string", "required": true, "note": "natural key"},
+            {"field": "description", "type": "text", "required": false},
+            {"field": "is_client_visible", "type": "boolean", "required": false, "default": false},
+            {"field": "assets", "type": "alias", "special": ["m2m"], "note": "one_field for dam_assets_collections"}
+          ],
+          "relations": [{"many": "dam_collections.org", "one": "organizations"}],
+          "upsert_key": "slug",
+          "evidence": ["lib/dam/types.ts:54-62 (DamCollection)"]
+        },
+        "dam_assets_collections": {
+          "primary_key": {"field": "id", "type": "integer", "autoincrement": true},
+          "fields": [
+            {"field": "dam_assets_id", "type": "uuid"},
+            {"field": "dam_collections_id", "type": "uuid"}
+          ],
+          "relations": [
+            {"many": "dam_assets_collections.dam_assets_id", "one": "dam_assets", "meta_one_field": "collections"},
+            {"many": "dam_assets_collections.dam_collections_id", "one": "dam_collections", "meta_one_field": "assets"}
+          ],
+          "upsert_key": "(dam_assets_id, dam_collections_id)",
+          "evidence": ["lib/dam/types.ts:37 (collections: Array<{dam_collections_id: {id, name}}>)"]
+        },
+        "dam_share_links": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "label", "type": "string", "required": false},
+            {"field": "token_hash", "type": "string", "required": true},
+            {"field": "asset", "type": "uuid", "required": false, "note": "m2o -> dam_assets"},
+            {"field": "collection_ref", "type": "uuid", "required": false, "note": "m2o -> dam_collections"},
+            {"field": "expires_at", "type": "timestamp", "required": true},
+            {"field": "password_hash", "type": "string", "required": false},
+            {"field": "max_downloads", "type": "integer", "required": false},
+            {"field": "download_count", "type": "integer", "required": false, "default": 0}
+          ],
+          "relations": [
+            {"many": "dam_share_links.asset", "one": "dam_assets"},
+            {"many": "dam_share_links.collection_ref", "one": "dam_collections"}
+          ],
+          "upsert_key": "token_hash",
+          "evidence": ["lib/dam/types.ts:239-249 (DamShareLink)", "lib/dam/share.ts"],
+          "seed_note": "Do NOT seed share links with real-looking tokens; if seeded at all use obviously fake hashes. Safe to leave empty."
+        },
+        "dam_guidelines": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "org", "type": "integer", "required": false, "note": "m2o -> organizations"},
+            {"field": "title", "type": "string", "required": true},
+            {"field": "body", "type": "text", "required": false, "note": "markdown"},
+            {"field": "sort", "type": "integer", "required": false},
+            {"field": "is_client_visible", "type": "boolean", "required": false, "default": false},
+            {"field": "slug", "type": "string", "required": false, "note": "natural key for brand books"},
+            {"field": "tagline", "type": "string", "required": false},
+            {"field": "accent_color", "type": "string", "required": false, "note": "hex string"},
+            {"field": "cover_image", "type": "uuid", "required": false, "note": "m2o -> directus_files"},
+            {"field": "logo", "type": "uuid", "required": false, "note": "m2o -> directus_files"},
+            {"field": "logo_plate", "type": "string", "required": false, "choices": ["none", "light", "dark"]},
+            {"field": "blocks", "type": "alias", "special": ["o2m"], "note": "one_field for dam_guideline_blocks"}
+          ],
+          "relations": [
+            {"many": "dam_guidelines.org", "one": "organizations"},
+            {"many": "dam_guidelines.cover_image", "one": "directus_files"},
+            {"many": "dam_guidelines.logo", "one": "directus_files"}
+          ],
+          "upsert_key": "slug (fallback (org, title))",
+          "evidence": ["lib/dam/types.ts:64-88 (DamGuideline)", "lib/dam/guidelines-service.ts"]
+        },
+        "dam_guideline_blocks": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "guideline", "type": "uuid", "required": true, "note": "m2o -> dam_guidelines"},
+            {"field": "sort", "type": "integer", "required": false},
+            {"field": "type", "type": "string", "required": true, "choices": ["cover", "palette", "typography", "logo", "voice", "imagery", "usage", "gallery", "richtext", "downloads"]},
+            {"field": "data", "type": "json", "required": false, "note": "per-type payload schemas in lib/dam/types.ts:110-230 (PaletteBlockData{intro,groups[{label,swatches[{name,hex,rgb,oklch,usage}]}]}, TypographyBlockData{intro,families[{name,role,stack,source,weights,specimen}],scale}, LogoBlockData{intro,lockups[{fileId|url,background,label}],clearSpace,minSize,misuse}, VoiceBlockData{personality,adjectives,examples}, etc.)"}
+          ],
+          "relations": [
+            {"many": "dam_guideline_blocks.guideline", "one": "dam_guidelines", "meta_one_field": "blocks"}
+          ],
+          "upsert_key": "(guideline, type, sort)",
+          "evidence": ["lib/dam/types.ts:231-237 (DamGuidelineBlock)"]
+        },
+        "dam_render_jobs": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "asset", "type": "uuid", "required": true, "note": "m2o -> dam_assets"},
+            {"field": "status", "type": "string", "required": true, "choices": ["pending", "processing", "done", "failed", "archived"], "default": "pending"},
+            {"field": "output_key", "type": "string", "required": false},
+            {"field": "last_error", "type": "text", "required": false},
+            {"field": "attempts", "type": "integer", "required": false, "default": 0},
+            {"field": "edits_snapshot", "type": "json", "required": false},
+            {"field": "date_created", "type": "timestamp", "special": ["date-created"]}
+          ],
+          "relations": [{"many": "dam_render_jobs.asset", "one": "dam_assets"}],
+          "upsert_key": "none (queue table; safe to leave empty)",
+          "evidence": ["lib/dam/render-jobs.ts:18-60 (RenderJob, enqueue body)"]
+        }
+      }
+    },
+    {
+      "id": "analytics-site-snapshots",
+      "portal_paths": ["employee-portal/analytics/site", "client-portal/analytics (site overview)"],
+      "status": "blocked_missing_collections_AND_env_gated",
+      "missing_collections": ["analytics_snapshots"],
+      "env_gated_on": {"live_matomo": ["MATOMO_URL", "MATOMO_AUTH_TOKEN"]},
+      "env_gate_note": "analytics_snapshots is the ONLY Matomo-free path for the site overview: the dashboard analytics routes serve a persisted snapshot when fresh (<26h) and fall back to live Matomo otherwise (lib/portal/analytics/snapshot-storage.ts:1-45). Live Matomo calls POST <MATOMO_URL>/index.php with token_auth (lib/portal/analytics/matomo.ts:25-69, throws when MATOMO_AUTH_TOKEN unset). ALSO blocked on organizations.matomo_site_id being null on all orgs (deliberate; dead Matomo would make the site picker list erroring sites; orchestrator decision D5 step 5). If snapshots are seeded, generated payload must match SiteOverviewPayload (lib/portal/analytics/matomo-overview.ts) and collected_at must be < 26h old at render time, so seeding is only useful with a re-stamp cron.",
+      "collections": {
+        "analytics_snapshots": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "matomo_site_id", "type": "integer", "required": true},
+            {"field": "organization", "type": "integer", "required": false, "note": "m2o -> organizations"},
+            {"field": "range_key", "type": "string", "required": true, "choices": ["last7", "last30", "last90"]},
+            {"field": "collected_at", "type": "timestamp", "required": true, "note": "rows older than 26h are treated as missing (SNAPSHOT_MAX_AGE_HOURS)"},
+            {"field": "payload", "type": "json", "required": true, "note": "SiteOverviewPayload shape from lib/portal/analytics/matomo-overview.ts"}
+          ],
+          "relations": [{"many": "analytics_snapshots.organization", "one": "organizations"}],
+          "upsert_key": "(matomo_site_id, range_key)",
+          "evidence": ["lib/portal/analytics/snapshot-storage.ts:26-88", "app/api/cron/analytics-snapshot/route.ts (the writer)"]
+        }
+      }
+    },
+    {
+      "id": "analytics-infra",
+      "portal_paths": ["employee-portal/analytics/infra", "client-portal site-status card"],
+      "status": "blocked_missing_collections_AND_env_gated",
+      "missing_collections": ["infra_snapshots"],
+      "env_gated_on": {
+        "live_collectors": ["ELK_AWS_KEY", "ELK_AWS_SECRET", "ELK_AWS_REGION", "NETLIFY_ACCESS_TOKEN", "NETLIFY_TEAM_SLUG", "HEALTHCHECKS_API_KEY", "GITHUB_PAT", "STRIPE_SECRET_KEY", "STRIPE_RESTRICTED_KEY", "NEON_API_KEY"]
+      },
+      "env_gate_note": "The infra page reads the latest persisted snapshot (lib/infra/storage.ts:39-118, getPersistedSnapshot/getRecentSnapshots) and only the cron collector needs the external env vars. Seeding well-formed infra_snapshots rows lights the page without any external API. Payload is a stringified InfraSnapshot json (lib/infra/types.ts) with flat summary columns for trend charts.",
+      "collections": {
+        "infra_snapshots": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "collected_at", "type": "timestamp", "required": true, "note": "natural key for seeding (one row per collection run)"},
+            {"field": "payload", "type": "text", "required": true, "note": "JSON.stringify(InfraSnapshot); parsed back with JSON.parse (lib/infra/storage.ts:19-27), json column type also works"},
+            {"field": "hc_total", "type": "integer", "required": false},
+            {"field": "hc_up", "type": "integer", "required": false},
+            {"field": "hc_down", "type": "integer", "required": false},
+            {"field": "hc_grace", "type": "integer", "required": false},
+            {"field": "down_slugs", "type": "json", "required": false},
+            {"field": "aws_mtd_cost_usd", "type": "decimal", "precision": 10, "scale": 3, "required": false},
+            {"field": "netlify_bw_used_gib", "type": "decimal", "precision": 10, "scale": 3, "required": false},
+            {"field": "netlify_bw_included_gib", "type": "decimal", "precision": 10, "scale": 3, "required": false},
+            {"field": "neon_cost_usd", "type": "decimal", "precision": 10, "scale": 3, "required": false},
+            {"field": "neon_cu_hours", "type": "decimal", "precision": 10, "scale": 3, "required": false}
+          ],
+          "relations": [],
+          "upsert_key": "collected_at",
+          "evidence": ["lib/infra/storage.ts:9,39-56", "lib/infra/summary.ts:38-58 (flat summary columns)"]
+        }
+      }
+    },
+    {
+      "id": "analytics-ai-ledger",
+      "portal_paths": ["employee-portal/analytics/ai-ledger"],
+      "status": "blocked_missing_collections",
+      "missing_collections": ["os_ai_commits"],
+      "evidence": [
+        "lib/token-usage/queries.ts:44-56 (GET /items/os_ai_commits sort=-committed_at, filters repo_slug/commit_type)",
+        "lib/token-usage/ledger-types.ts:1-24 (AiCommitLedgerRow, the full row shape)"
+      ],
+      "collections": {
+        "os_ai_commits": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "commit_sha", "type": "string", "required": true, "note": "natural key"},
+            {"field": "repo_slug", "type": "string", "required": true},
+            {"field": "project_label", "type": "string", "required": false},
+            {"field": "committed_at", "type": "timestamp", "required": true},
+            {"field": "subject", "type": "string", "required": false},
+            {"field": "commit_type", "type": "string", "required": false, "note": "conventional commit type: feat, fix, chore, docs, refactor, perf, test"},
+            {"field": "loc_added", "type": "integer", "required": false},
+            {"field": "loc_removed", "type": "integer", "required": false},
+            {"field": "loc_net_code", "type": "integer", "required": false},
+            {"field": "files_changed", "type": "integer", "required": false},
+            {"field": "input_tokens", "type": "bigInteger", "required": false},
+            {"field": "output_tokens", "type": "bigInteger", "required": false},
+            {"field": "cache_write_tokens", "type": "bigInteger", "required": false},
+            {"field": "cache_read_tokens", "type": "bigInteger", "required": false},
+            {"field": "total_tokens", "type": "bigInteger", "required": false},
+            {"field": "est_cost_usd", "type": "decimal", "precision": 10, "scale": 4, "required": false},
+            {"field": "models", "type": "json", "required": false, "note": "[{model, tokens, cost}]"},
+            {"field": "token_attribution", "type": "string", "required": false},
+            {"field": "outcome", "type": "string", "required": false, "choices": ["shipped", "reverted"]},
+            {"field": "host", "type": "string", "required": false},
+            {"field": "last_synced", "type": "timestamp", "required": false}
+          ],
+          "relations": [],
+          "upsert_key": "commit_sha"
+        }
+      }
+    },
+    {
+      "id": "analytics-web-vitals-heatmap",
+      "portal_paths": ["employee-portal/analytics (Web Vitals surface)", "employee-portal/analytics (heatmap)"],
+      "status": "blocked_missing_collections",
+      "missing_collections": ["os_web_vitals", "os_interactions"],
+      "evidence": [
+        "lib/portal/analytics/vitals-storage.ts:21-92 (COLLECTION os_web_vitals; insert body field names)",
+        "lib/portal/analytics/interactions-storage.ts:22-76 (COLLECTION os_interactions; insert body field names)",
+        "app/api/vitals/route.ts + app/api/interactions/route.ts (beacon writers via DIRECTUS_TOKEN)"
+      ],
+      "collections": {
+        "os_web_vitals": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "metric", "type": "string", "required": true, "choices": ["LCP", "INP", "CLS", "FCP", "TTFB"]},
+            {"field": "value", "type": "float", "required": true},
+            {"field": "rating", "type": "string", "required": true, "choices": ["good", "needs-improvement", "poor"]},
+            {"field": "route", "type": "string", "required": true},
+            {"field": "portal", "type": "string", "required": true, "choices": ["employee", "client"]},
+            {"field": "nav_type", "type": "string", "required": false},
+            {"field": "user_id", "type": "string", "required": false},
+            {"field": "org_id", "type": "string", "required": false},
+            {"field": "device", "type": "string", "required": false},
+            {"field": "connection", "type": "string", "required": false},
+            {"field": "app_version", "type": "string", "required": false},
+            {"field": "metric_id", "type": "string", "required": false},
+            {"field": "date_created", "type": "timestamp", "special": ["date-created"], "note": "aggregation windows key off this; seeding realistic history requires two-phase create+PATCH date_created (create-stamp special, SEED-PLAN 14b)"}
+          ],
+          "relations": [],
+          "upsert_key": "metric_id (else synthetic deterministic key)"
+        },
+        "os_interactions": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "event_type", "type": "string", "required": true, "choices": ["click", "scroll"]},
+            {"field": "route", "type": "string", "required": true},
+            {"field": "portal", "type": "string", "required": true, "choices": ["employee", "client"]},
+            {"field": "x_pct", "type": "float", "required": false, "note": "0-100, click X as % of viewport width; null for scroll"},
+            {"field": "y_pct", "type": "float", "required": false, "note": "0-100, click Y as % of document height; null for scroll"},
+            {"field": "scroll_pct", "type": "float", "required": false, "note": "0-100 max depth; null for clicks"},
+            {"field": "viewport_w", "type": "integer", "required": false},
+            {"field": "viewport_h", "type": "integer", "required": false},
+            {"field": "user_id", "type": "string", "required": false},
+            {"field": "org_id", "type": "string", "required": false},
+            {"field": "device", "type": "string", "required": false},
+            {"field": "app_version", "type": "string", "required": false},
+            {"field": "date_created", "type": "timestamp", "special": ["date-created"], "note": "same create-stamp caveat as os_web_vitals"}
+          ],
+          "relations": [],
+          "upsert_key": "none (event stream; deterministic seed needs synthetic key in a spare field or count-based idempotency)"
+        }
+      }
+    },
+    {
+      "id": "personal-hub",
+      "portal_paths": ["employee-portal/personal", "employee-portal/personal/inbox", "employee-portal/personal/studio"],
+      "status": "blocked_missing_collections",
+      "missing_collections": ["reminders", "personal_inbox", "studio_projects", "studio_publish_targets"],
+      "evidence": [
+        "lib/personal/reminders-service.ts:22-44 (ReminderRow + FIELDS)",
+        "lib/personal/inbox-service.ts:17-32 (InboxCapture + FIELDS)",
+        "lib/personal/studio-service.ts:14-108 (enums, StudioPublishTarget, FIELDS)",
+        "D3 already seeded the 6 workspace=personal os_tasks; these 4 collections are the remaining personal-hub surface"
+      ],
+      "collections": {
+        "reminders": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "caldav_uid", "type": "string", "required": true, "note": "natural key (CalDAV mirror)"},
+            {"field": "caldav_etag", "type": "string", "required": false},
+            {"field": "list_name", "type": "string", "required": false},
+            {"field": "title", "type": "string", "required": true},
+            {"field": "notes", "type": "text", "required": false},
+            {"field": "due_at", "type": "timestamp", "required": false},
+            {"field": "rrule", "type": "string", "required": false},
+            {"field": "is_completed", "type": "boolean", "required": false, "default": false},
+            {"field": "completed_at", "type": "timestamp", "required": false},
+            {"field": "priority", "type": "integer", "required": false, "default": 0},
+            {"field": "apple_url", "type": "string", "required": false},
+            {"field": "caldav_url", "type": "string", "required": false},
+            {"field": "synced_at", "type": "timestamp", "required": false},
+            {"field": "source", "type": "string", "required": false, "choices": ["ios", "portal", "email", "shortcut"]},
+            {"field": "sync_state", "type": "string", "required": false, "choices": ["synced", "pending_push", "orphaned"]},
+            {"field": "linked_task", "type": "uuid", "required": false, "note": "m2o -> os_tasks"},
+            {"field": "linked_project", "type": "uuid", "required": false, "note": "m2o -> os_projects"}
+          ],
+          "relations": [
+            {"many": "reminders.linked_task", "one": "os_tasks"},
+            {"many": "reminders.linked_project", "one": "os_projects"}
+          ],
+          "upsert_key": "caldav_uid"
+        },
+        "personal_inbox": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "raw_text", "type": "text", "required": true},
+            {"field": "subject", "type": "string", "required": false},
+            {"field": "from_address", "type": "string", "required": false},
+            {"field": "source", "type": "string", "required": false, "choices": ["email", "shortcut", "portal"]},
+            {"field": "attachment", "type": "uuid", "required": false, "note": "m2o -> directus_files"},
+            {"field": "triage_status", "type": "string", "required": true, "choices": ["pending", "converted", "dismissed"], "default": "pending", "note": "list view filters _eq pending"},
+            {"field": "converted_to", "type": "string", "required": false, "choices": ["reminder", "task", "idea"]},
+            {"field": "converted_id", "type": "string", "required": false},
+            {"field": "date_created", "type": "timestamp", "special": ["date-created"], "note": "sorted -date_created; create-stamp caveat applies for backdated seeds"},
+            {"field": "date_updated", "type": "timestamp", "special": ["date-updated"]}
+          ],
+          "relations": [{"many": "personal_inbox.attachment", "one": "directus_files"}],
+          "upsert_key": "(subject, from_address) or raw_text prefix"
+        },
+        "studio_projects": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "project", "type": "uuid", "required": true, "note": "unique m2o -> os_projects (1:1 companion to a workspace=personal project)"},
+            {"field": "discipline", "type": "string", "required": true, "choices": ["photo", "design", "art", "other"]},
+            {"field": "pipeline_stage", "type": "string", "required": true, "choices": ["idea", "plan", "shoot_draft", "cull_edit", "publish", "done"]},
+            {"field": "stage_entered_at", "type": "timestamp", "required": false},
+            {"field": "gallery", "type": "json", "required": false},
+            {"field": "shot_list", "type": "text", "required": false},
+            {"field": "reference_links", "type": "json", "required": false, "note": "[{label, url}]"},
+            {"field": "location_notes", "type": "text", "required": false},
+            {"field": "gear_notes", "type": "text", "required": false},
+            {"field": "publish_targets", "type": "alias", "special": ["o2m"], "note": "one_field for studio_publish_targets"}
+          ],
+          "relations": [{"many": "studio_projects.project", "one": "os_projects"}],
+          "upsert_key": "project"
+        },
+        "studio_publish_targets": {
+          "primary_key": {"field": "id", "type": "uuid"},
+          "fields": [
+            {"field": "studio_project", "type": "uuid", "required": true, "note": "m2o -> studio_projects; EXACT name from lib/personal/studio-service.ts:260,286"},
+            {"field": "target", "type": "string", "required": true, "choices": ["wlsr_me", "portfolio", "outside_door_art", "instagram", "print", "other"]},
+            {"field": "status", "type": "string", "required": true, "choices": ["todo", "done"], "default": "todo"},
+            {"field": "url", "type": "string", "required": false},
+            {"field": "published_at", "type": "timestamp", "required": false}
+          ],
+          "relations": [
+            {"many": "studio_publish_targets.studio_project", "one": "studio_projects", "meta_one_field": "publish_targets"}
+          ],
+          "upsert_key": "(studio_project, target)"
+        }
+      }
+    },
+    {
+      "id": "auth-org-emails",
+      "portal_paths": ["client-portal (auth org resolution, primary strategy)"],
+      "status": "blocked_missing_collections",
+      "missing_collections": ["organization_emails"],
+      "evidence": [
+        "lib/portal/auth.ts:296-341 (lookup strategy 1: organization_emails email _eq userEmail, PRIMARY; currently fail-softs to the contacts strategies)",
+        "lib/portal/auth.ts:426-440 (GQL organization_emails(filter){organization{id name}})"
+      ],
+      "collections": {
+        "organization_emails": {
+          "primary_key": {"field": "id", "type": "integer", "autoincrement": true},
+          "fields": [
+            {"field": "organization", "type": "integer", "required": true, "note": "m2o -> organizations"},
+            {"field": "email", "type": "string", "required": true, "note": "natural key; the login email this row authorizes"}
+          ],
+          "relations": [{"many": "organization_emails.organization", "one": "organizations"}],
+          "upsert_key": "email",
+          "notes": "OPTIONAL for the demo: D6 linked demo@muster.dev to org 2 via a contact + organizations_contacts junction, so the fallback strategy already resolves. Creating this collection would only change WHICH strategy resolves. If created, permission row must scope reads to email == $CURRENT_USER.email for the Client policy (AEFE pattern); the demo policy read grant can stay wildcard read."
+        }
+      }
+    }
+  ],
+  "env_gated_sections": [
+    {
+      "id": "s3-explorer",
+      "portal_paths": ["employee-portal/s3-explorer"],
+      "status": "env_gated_dark_by_design",
+      "decision": "Dark is CORRECT demo behavior. Do NOT inject credentials. No CMS fallback exists or should be seeded.",
+      "env_vars": ["S3_EXPLORER_OWNER_IDS", "S3_EXPLORER_TOTP_SECRET", "S3_EXPLORER_COOKIE_SECRET", "S3_EXPLORER_AWS_ACCESS_KEY_ID", "S3_EXPLORER_AWS_SECRET_ACCESS_KEY", "S3_EXPLORER_AWS_REGION"],
+      "api_calls": [
+        {"endpoint": "AWS S3 ListObjectsV2 / GetObject presign", "file": "lib/s3-explorer/s3.ts:11-120", "response_shape": "BucketInfo{name,...} and ListResult{prefixes, objects[{key,size,lastModified}]}; credentials block at s3.ts:24-27 returns null client when unset"},
+        {"endpoint": "TOTP vault gate", "file": "lib/s3-explorer/vault.ts", "response_shape": "owner-id allowlist + TOTP challenge before any S3 call"}
+      ]
+    },
+    {
+      "id": "client-email",
+      "portal_paths": ["client-portal/email"],
+      "status": "env_gated",
+      "decision": "Mailbox list is HARD-wired to the Migadu Admin API; no CMS collection backs it. Record only; the mock layer follow-up owns standing up a fake.",
+      "env_vars": ["MIGADU_ADMIN_EMAIL", "MIGADU_KEY"],
+      "api_calls": [
+        {
+          "endpoint": "GET https://api.migadu.com/v1/domains/<domain>/mailboxes (Basic auth MIGADU_ADMIN_EMAIL:MIGADU_KEY)",
+          "file": "lib/portal/email/migadu.ts:19-49 (listMailboxesUncached; returns [] when MIGADU_KEY unset, so the section fail-softs to an empty panel)",
+          "response_shape": "{mailboxes: [{address, local_part, name?, is_active?}]} projected to Mailbox{address, localPart, name, isActive}; domain derived from organizations.website via normalizeMailDomain (migadu.ts:30-39). Static MAIL_CONFIG (webmail/imap/smtp hosts, migadu.ts:10-14) renders regardless of env, so the page is not fully dark."
+        }
+      ]
+    },
+    {
+      "id": "dam-thumbnails",
+      "portal_paths": ["employee-portal/dam", "client-portal/brand-assets"],
+      "status": "env_gated (in addition to missing dam_* collections, see blocked_sections.dam)",
+      "env_vars": ["S3_EXPLORER_AWS_ACCESS_KEY_ID", "S3_EXPLORER_AWS_SECRET_ACCESS_KEY", "S3_EXPLORER_AWS_REGION", "ANTHROPIC_API_KEY", "VOYAGE_API_KEY", "DAM_ENRICH_ENABLED"],
+      "api_calls": [
+        {"endpoint": "AWS S3 presigned GET for thumbnails/downloads", "file": "lib/dam/presign.ts + lib/s3-explorer/s3.ts:24-27", "response_shape": "presigned https URL; null when credentials unset"},
+        {"endpoint": "Anthropic + Voyage enrichment (review queue)", "file": "lib/dam/enrich.ts", "response_shape": "DamAiSuggestions{title,description,alt_text,seo_filename,tags,dominant_colors,model,enriched_at} written to dam_assets.ai_suggestions"}
+      ]
+    }
+  ],
+  "static_sections": [
+    {
+      "id": "settings",
+      "portal_paths": ["employee-portal/settings", "client-portal/settings"],
+      "status": "static_no_seed_needed",
+      "evidence": [
+        "app/(employee-portal)/employee-portal/settings/page.tsx:1-9 and app/(client-portal)/client-portal/settings/page.tsx:1-9 (both render SettingsContent hydrated from getSettingsUser, i.e. the caller's own directus_users row)"
+      ],
+      "notes": "Renders the demo user's own account (name, email, avatar, preferences). Populated automatically because the demo directus_user exists. The demo user row itself is owned by board task 7a61a01d; do not touch it. No collection or seed work applicable."
+    }
+  ],
+  "data_bugs": [
+    {
+      "id": "repo-bloom-shopify-mispointed",
+      "severity": "visible",
+      "report_only": true,
+      "description": "repositories aba3e9b9 (bloom-shopify) has project_id pointing at 4ae1d3fa (Vellum Portfolio Platform) instead of 3d5677cf (Bloom Shopify Build). Its existing release 3ee5891c 'Storefront launch v1.0.0' therefore displays under Vellum.",
+      "fix": "PATCH /items/repositories/aba3e9b9 {project_id: '3d5677cf-...'} - a non-null edit, needs orchestrator sign-off (outside the add-only allowance).",
+      "workaround_applied": "D3 worked around it: neutral copy, zero new releases on that repo, Bloom history routed to the new bloom-archive repo."
+    },
+    {
+      "id": "frozen-invoices-null-linkage",
+      "severity": "cosmetic-to-visible",
+      "report_only": true,
+      "condition": "Applies only if the null-fill gate was NOT approved (default SKIP).",
+      "description": "The 17 existing invoices INV-2026-300..316 keep null project/contact, so their detail pages render blank Contact/Project rows. The new invoices (INV-2026-317+) carry full linkage either way.",
+      "fix": "Null-fill project/contact on the 17 frozen invoices; covered by the single NULL-FILL SIGN-OFF GATE decision (SEED-PLAN risk 1)."
+    },
+    {
+      "id": "fixed-term-invoices-null-term-months",
+      "severity": "cosmetic",
+      "report_only": true,
+      "do_not_chase": true,
+      "description": "The 5 existing fixed_term invoices hold null term_months after F1 added the field; their detail pages render an empty term. Unfixable under add-only (backfilling a value on an existing row is a non-null edit).",
+      "fix": "None planned. Verify phase must not re-litigate (SEED-PLAN risk 15)."
+    }
+  ]
+}
