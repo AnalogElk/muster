@@ -7,6 +7,13 @@ automatically by [release-please](https://github.com/googleapis/release-please)
 history; do not edit released sections by hand. The version of record lives in
 [`version.txt`](./version.txt).
 
+## [0.1.5](https://github.com/AnalogElk/muster/compare/v0.1.4...v0.1.5) (2026-07-17)
+
+
+### Added
+
+* **demo:** full demo population: CSP fix pack, mock integrations, seed toolkit, daily refresh ([#23](https://github.com/AnalogElk/muster/issues/23)) ([68d9c8f](https://github.com/AnalogElk/muster/commit/68d9c8f73df7ab95e60bdfb3a520f6b15e1cf4d6))
+
 ## [0.1.4](https://github.com/AnalogElk/muster/compare/v0.1.3...v0.1.4) (2026-07-16)
 
 
