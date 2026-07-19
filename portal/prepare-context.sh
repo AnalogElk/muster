@@ -45,6 +45,11 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Rebrand replacement + assertions live in a sourced, unit-tested helper.
+# shellcheck source=./rebrand-check.sh
+source "${HERE}/rebrand-check.sh"
+
 BUILD_DIR="${HERE}/.build"
 PIN_FILE="${HERE}/PINNED_COMMIT"
 # Portal source checkout: set PORTAL_SOURCE_REPO (env, or via .env — elk-os
@@ -209,10 +214,10 @@ fi
 # is a no-op once no "Analog Elk" remains. Domain strings like "analogelk.com"
 # have no space, so they are intentionally NOT touched (the login redirect logic
 # still checks `hostname.endsWith("analogelk.com")` for prod routing).
-echo "[portal] rebrand: Analog Elk -> Muster (portal surface)"
-find . -type f \( -name '*.tsx' -o -name '*.ts' -o -name '*.json' -o -name '*.mdx' \) \
-  -not -path './node_modules/*' -print0 \
-  | xargs -0 perl -pi -e 's/Analog Elk/Muster/g; s/ANALOG ELK/MUSTER/g'
+# Rebrand the portal surface. rebrand_tree asserts the brand string existed
+# before (else AE renamed it -> fail) and that none survive after (else a
+# half-rebranded portal -> fail). See portal/rebrand-check.sh.
+rebrand_tree . || exit 1
 
 # --- Self-host portability: single-domain routing + host-only cookies ---------
 # The source app is wired to the analogelk.com multi-subdomain topology
