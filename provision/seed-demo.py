@@ -18,13 +18,13 @@ PRIORITY B — fill the bare portal sections with a modest, tasteful, all-synthe
 Idempotent: re-running upserts by natural key and never duplicates.
 
 Usage:
-    DIRECTUS_ADMIN_TOKEN=... DIRECTUS_URL=https://cms.<box>.sslip.io \\
+    DIRECTUS_ADMIN_TOKEN=... DIRECTUS_URL=https://cms.musterr.dev \\
         python3 provision/seed-demo.py
 """
 import os, sys, json, urllib.request, urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-B = os.environ.get("DIRECTUS_URL", "https://cms.34.220.64.149.sslip.io").rstrip("/")
+B = os.environ.get("DIRECTUS_URL", "https://cms.musterr.dev").rstrip("/")
 TOKEN = os.environ["DIRECTUS_ADMIN_TOKEN"]
 
 MUSTER_PROJECT_ID = "0ef5827c-924d-4c2a-a769-d9d7c84097e1"  # reuse prod id for traceability

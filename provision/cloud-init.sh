@@ -8,7 +8,7 @@
 # Claude session on the box reads the deployment's own os_* board.
 #
 # Usage (as cloud-init user-data, or `sudo bash cloud-init.sh`):
-#   export ELK_OS_DOMAIN=demo.example.com        # or 1.2.3.4.sslip.io (no DNS needed)
+#   export ELK_OS_DOMAIN=demo.example.com        # your domain (apex + app + cms A records)
 #   export ELK_OS_ADMIN_EMAIL=you@example.com    # optional (default admin@<domain>)
 #   export ELK_OS_PROFILE=generic                # generic | analogelk
 #   # --- full-stack portal (optional) — needs PUBLISHED images (see README) ---
@@ -45,7 +45,7 @@ ELK_OS_SOURCE_DIR="${ELK_OS_SOURCE_DIR:-}"
 PORTAL_IMAGE="${PORTAL_IMAGE:-}"
 RAG_IMAGE="${RAG_IMAGE:-}"
 
-[ -n "$ELK_OS_DOMAIN" ] || die "ELK_OS_DOMAIN is required (a domain, or <ip>.sslip.io)."
+[ -n "$ELK_OS_DOMAIN" ] || die "ELK_OS_DOMAIN is required (a domain)."
 ELK_OS_ADMIN_EMAIL="${ELK_OS_ADMIN_EMAIL:-admin@${ELK_OS_DOMAIN}}"
 
 if [ "$(id -u)" -ne 0 ]; then

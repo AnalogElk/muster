@@ -238,6 +238,7 @@ class RAGService:
                     key = doc.get("source_url") or doc.get("title") or ""
                     if key and key not in merged:
                         merged[key] = {
+                            "doc_id": doc.get("doc_id"),
                             "title": doc["title"],
                             "content": doc["content"],
                             "source_url": doc.get("source_url"),
@@ -260,12 +261,36 @@ class RAGService:
                 merged[key]["content"] = doc["content"]
             else:
                 merged[key] = {
+                    "doc_id": doc.get("id"),
                     "title": doc["title"],
                     "content": doc["content"],
                     "source_url": doc.get("source_url"),
                     "semantic_score": 0.0,
                     "fts_score": doc["relevance"],
                 }
+
+        # 2.5 — Reconcile semantic-only hits against PostgreSQL existence.
+        # A Qdrant vector can outlive its document: DELETE /documents removes the
+        # row, but a transient Qdrant failure or FTS-only mode can leave the
+        # vector behind (reported as vectors_pending). Serving that vector's
+        # payload snippet would leak content the operator asked to forget. FTS
+        # hits are Postgres-backed by definition; only semantic-only hits
+        # (fts_score == 0) need the check. Drop any whose row no longer exists.
+        stale_candidates = [
+            d for d in merged.values()
+            if d.get("fts_score", 0.0) == 0.0 and d.get("doc_id") is not None
+        ]
+        if stale_candidates:
+            candidate_ids = [d["doc_id"] for d in stale_candidates]
+            live_ids = await self._existing_doc_ids(candidate_ids)
+            merged = {
+                k: d for k, d in merged.items()
+                if not (
+                    d.get("fts_score", 0.0) == 0.0
+                    and d.get("doc_id") is not None
+                    and d["doc_id"] not in live_ids
+                )
+            }
 
         # 3 — Compute combined score
         for doc in merged.values():
@@ -290,6 +315,25 @@ class RAGService:
             query,
         )
         return ranked
+
+    async def _existing_doc_ids(self, doc_ids: List[int]) -> set:
+        """Return the subset of *doc_ids* that still exist in PostgreSQL.
+
+        Used to drop semantic hits backed by an orphaned Qdrant vector. If the
+        DB pool is unavailable we cannot verify, so we conservatively treat all
+        ids as live (never worse than today's behaviour; the vectors_pending
+        signal + reconcile sync remain the durable guard)."""
+        if not doc_ids or self._db_pool is None:
+            return set(doc_ids)
+        try:
+            async with self._db_pool.acquire() as conn:
+                rows = await conn.fetch(
+                    "SELECT id FROM documents WHERE id = ANY($1)", list(doc_ids)
+                )
+            return {r["id"] for r in rows}
+        except Exception as exc:
+            logger.warning("doc-existence reconcile failed, keeping results: %s", exc)
+            return set(doc_ids)
 
     async def _fts_search(
         self, query: str, limit: int, domain: Optional[str] = None

@@ -39,6 +39,10 @@ services:
       # true = marketing reads committed app/data/*.json (no live Directus dep);
       # the fresh generic Directus has no marketing collections, so leave on.
       USE_STATIC_FALLBACK: ${USE_STATIC_FALLBACK:-true}
+      # Elk Chat generation (optional). Empty = the assistant answers with an
+      # honest "not configured" notice; retrieval stays local and keyless.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ASSISTANT_MODEL: ${ASSISTANT_MODEL:-}
       NODE_ENV: production
       PORT: "3000"
       HOSTNAME: 0.0.0.0

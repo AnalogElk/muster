@@ -1,0 +1,69 @@
+# Elk OS: demo mock-integrations overlay (Muster demo box)
+#
+# ADDITIVE. Adds `elk-os-mocks`, a single stdlib-Python container that fakes
+# the two external APIs the demo portal is wired to but has no credentials
+# for:
+#
+#   - Matomo Reporting API   POST http://elk-os-mocks:8080/index.php
+#   - Migadu Admin API       GET  http://elk-os-mocks:8080/v1/domains/<d>/mailboxes
+#
+# Numbers are deterministic pseudo-random seeded by (site_id, date) and are
+# calibrated to the analytics_snapshots rows seeded on cms.musterr.dev, so
+# live charts and persisted snapshot KPIs agree loosely.
+#
+# Internal network ONLY: no host ports are published. The service is reachable
+# solely from other containers on the core `elk-os` network (declared in
+# compose.yaml; this file is always layered on top of it, never run alone).
+#
+# The `portal.environment` block below wires the portal at the mock the next
+# time the portal service is (re)created with this overlay in the -f list.
+# All token values here are FAKE demo placeholders, not secrets.
+#
+# Include by appending to the compose invocation, e.g.:
+#   docker compose --project-directory ~/elk-os \
+#     -f compose/compose.yaml ... -f compose/compose.mocks.yaml up -d
+#
+# NOTE (Migadu only): the baked portal hardcodes the Migadu base URL
+# (portal/.build/lib/portal/email/migadu.ts line 19). MIGADU_API_BASE below
+# is inert until the portal image is rebuilt with that line reading:
+#   const MIGADU_API_BASE = process.env.MIGADU_API_BASE || 'https://api.migadu.com/v1';
+# The Matomo wiring needs no code change (MATOMO_URL is already env-driven).
+
+services:
+  elk-os-mocks:
+    build:
+      # Relative build contexts resolve against --project-directory (the repo
+      # root), the same convention compose.portal.yaml uses.
+      context: ./mocks
+    image: elk-os/mocks:local
+    container_name: elk-os-mocks
+    restart: unless-stopped
+    environment:
+      PORT: "8080"
+      # The Matomo mock rejects any other token_auth, so a wiring typo
+      # surfaces as a Matomo-style error instead of silent wrong data.
+      MOCK_MATOMO_TOKEN: demo-matomo-token
+    networks:
+      - elk-os
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/healthz',timeout=4).status==200 else 1)"
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  portal:
+    environment:
+      # Matomo: works with the current portal image as-is.
+      MATOMO_URL: http://elk-os-mocks:8080
+      MATOMO_AUTH_TOKEN: demo-matomo-token
+      # Migadu: MIGADU_KEY must be non-empty or the portal returns [] before
+      # ever calling the API (lib/portal/email/migadu.ts:43). These values are
+      # fake placeholders; MIGADU_API_BASE additionally needs the one-line
+      # portal patch described in the header before it takes effect.
+      MIGADU_API_BASE: http://elk-os-mocks:8080/v1
+      MIGADU_ADMIN_EMAIL: demo@musterr.dev
+      MIGADU_KEY: demo-migadu-key

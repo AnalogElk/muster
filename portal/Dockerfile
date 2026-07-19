@@ -38,7 +38,7 @@ FROM ${NODE_IMAGE} AS builder
 WORKDIR /app
 # Browser-facing origins. NEXT_PUBLIC_* are inlined into the client bundle at
 # build time, so they must be present during `pnpm build` (not just at runtime).
-# Defaults target musterr.dev; override per-deploy with --build-arg.
+# Defaults target the musterr.dev demo box; override per-deploy with --build-arg.
 ARG NEXT_PUBLIC_DIRECTUS_URL=https://cms.musterr.dev
 ARG NEXT_PUBLIC_SITE_URL=https://app.musterr.dev
 # [elk-os demo-prefill] Off by default → template/self-host builds ship EMPTY

@@ -45,7 +45,15 @@ class Settings(BaseSettings):
     # -------------------------------------------------------------------------
     # General
     # -------------------------------------------------------------------------
-    environment: str = Field(default="development", description="Deployment environment")
+    environment: str = Field(
+        default="production",
+        description=(
+            "Deployment environment. Defaults to 'production' so security is "
+            "fail-closed: a box with no explicit ENVIRONMENT is treated as prod, "
+            "so the keyless-boot guard fires and API docs stay off. Local dev sets "
+            "ENVIRONMENT=development in .env (see .env.example)."
+        ),
+    )
     debug: bool = Field(default=False, description="Enable debug mode")
     log_level: str = Field(default="INFO", description="Logging level")
 
@@ -92,9 +100,36 @@ class Settings(BaseSettings):
     rag_api_key: Optional[str] = Field(
         default=None,
         description=(
-            "API key for protecting write endpoints (/ingest, /ingest/batch). "
-            "When set, requests must include 'X-API-Key' header. "
-            "Leave empty to disable auth (local dev only)."
+            "API key for protecting the RAG API. When set, /ingest, /ingest/batch, "
+            "/query and /stats require the 'X-API-Key' header. Leave empty to "
+            "disable auth (local dev / trusted-network only)."
+        ),
+    )
+    rag_allow_public_read: bool = Field(
+        default=False,
+        description=(
+            "When a key is configured, still allow UNauthenticated /query and "
+            "/stats. Use only on a trusted network (e.g. tailnet-only) where the "
+            "network is the perimeter. Default false: reads require the key too, "
+            "which is the correct posture for a publicly-exposed engine."
+        ),
+    )
+    rag_allow_insecure: bool = Field(
+        default=False,
+        description=(
+            "Permit booting a non-development engine with NO api key. Escape hatch "
+            "only — default false means a production/staging engine refuses to "
+            "start without RAG_API_KEY rather than silently serving an open API."
+        ),
+    )
+    rag_rate_limit_per_minute: int = Field(
+        default=300,
+        description=(
+            "Max requests per minute per caller (keyed by X-API-Key, else client "
+            "IP) enforced by the engine itself, backed by Redis so it holds across "
+            "uvicorn workers. Bounds exfiltration if a key leaks and is the ONLY "
+            "rate limiter on the hosted path (stock Caddy has no rate-limit module). "
+            "0 disables it. /health is never limited. Fails open if Redis is down."
         ),
     )
 

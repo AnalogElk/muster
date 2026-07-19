@@ -17,13 +17,13 @@ reconcile the flags on an existing policy.
 
 Usage:
     DIRECTUS_ADMIN_TOKEN=... \\
-    DIRECTUS_URL=https://cms.<box>.sslip.io \\
+    DIRECTUS_URL=https://cms.musterr.dev \\
     DEMO_EMAIL=demo@muster.dev \\
         python3 provision/demo-readonly-role.py
 """
 import os, sys, json, urllib.request, urllib.error
 
-B = os.environ.get("DIRECTUS_URL", "https://cms.34.220.64.149.sslip.io").rstrip("/")
+B = os.environ.get("DIRECTUS_URL", "https://cms.musterr.dev").rstrip("/")
 TOKEN = os.environ["DIRECTUS_ADMIN_TOKEN"]
 DEMO_EMAIL = os.environ.get("DEMO_EMAIL", "demo@muster.dev")
 ROLE_NAME = "Employee"

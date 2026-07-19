@@ -99,6 +99,16 @@ with_portal() {
   [ "$v" = "true" ]
 }
 
+# Bridge the portal to the RAG engine (KB semantic search + Elk Chat grounding)?
+# On by default whenever BOTH the portal and RAG subsystems are enabled; opt out
+# with ELK_OS_WITH_INTELLIGENCE=false. This is what turns Muster's KB into a live,
+# semantically-searchable memory layer instead of Directus full-text only.
+with_intelligence() {
+  with_rag && with_portal || return 1
+  local v; v="$(get_env ELK_OS_WITH_INTELLIGENCE)"; v="${v:-true}"
+  [ "$v" = "true" ]
+}
+
 # Pull published images (GHCR) instead of building locally? (default off)
 # When on, the compose.images.{portal,rag}.yaml overlays drop the build sections
 # and pin PORTAL_IMAGE / RAG_IMAGE. Each half is layered ONLY when its subsystem
@@ -106,6 +116,15 @@ with_portal() {
 # versa). Only useful once those images exist (post-publish).
 use_published_images() {
   local v; v="$(get_env ELK_OS_USE_PUBLISHED_IMAGES)"; v="${v:-false}"
+  [ "$v" = "true" ]
+}
+
+# Demo mock-integrations overlay (compose.mocks.yaml): a single stdlib-Python
+# container faking the Matomo Reporting API + Migadu Admin API for demo boxes
+# with no external credentials, plus the portal env wiring at it. Off by
+# default; enable with ELK_OS_WITH_MOCKS=true in .env (demo boxes only).
+with_mocks() {
+  local v; v="$(get_env ELK_OS_WITH_MOCKS)"; v="${v:-false}"
   [ "$v" = "true" ]
 }
 
@@ -148,6 +167,16 @@ compose() {
     if use_published_images; then
       files+=(-f "${COMPOSE_DIR}/compose.images.portal.yaml")
     fi
+  fi
+  # Intelligent-layer bridge: layered LAST so it can extend both the portal
+  # service (compose.portal.yaml) and the elkos-rag network (compose.rag.yaml).
+  if with_intelligence; then
+    files+=(-f "${COMPOSE_DIR}/compose.portal.rag.yaml")
+  fi
+  # Demo mock-integrations: layered after every portal overlay so its
+  # portal.environment additions (MATOMO_*/MIGADU_*) merge on top.
+  if with_mocks; then
+    files+=(-f "${COMPOSE_DIR}/compose.mocks.yaml")
   fi
   "${DC[@]}" --project-directory "$ROOT" --env-file "$ENV_FILE" "${files[@]}" "$@"
 }

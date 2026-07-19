@@ -7,9 +7,9 @@
 #   app.${ELK_OS_DOMAIN}    → the portal (the human surface)
 #   cms.${ELK_OS_DOMAIN}    → Directus (the os_* board + native MCP at /mcp)
 #
-# All subnames resolve automatically under sslip.io (e.g. 1.2.3.4.sslip.io,
-# app.1.2.3.4.sslip.io and cms.1.2.3.4.sslip.io all point at 1.2.3.4), or add
-# `app` + `cms` A/CNAME records for a real domain. The portal's
+# All three hosts resolve to the box once the apex plus `app` + `cms`
+# A/CNAME records point at it (e.g. musterr.dev, app.musterr.dev and
+# cms.musterr.dev). The portal's
 # NEXT_PUBLIC_DIRECTUS_URL + Directus PUBLIC_URL are pinned to the cms.* host by
 # the prod compose overrides.
 #
@@ -32,6 +32,16 @@
 # The portal (the human surface) on app.*
 app.{$ELK_OS_DOMAIN} {
 	encode zstd gzip
+
+	# The portal image is built from a real Next.js app whose "/" is that app's
+	# own MARKETING homepage, not the portal. On a Muster deployment that page
+	# is meaningless at best and misleading at worst, and "/" is exactly where
+	# every "open the live demo" link lands. Send the bare root to the sign-in
+	# door instead. Only the exact path "/" matches, so deep links
+	# (/employee-portal/..., /client-portal/...) proxy through untouched.
+	# 302, not 301: this is a demo-posture choice, and a permanent redirect
+	# would be cached in visitors' browsers and painful to walk back.
+	redir / /login 302
 
 	reverse_proxy portal:3000
 

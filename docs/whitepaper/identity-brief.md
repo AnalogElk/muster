@@ -25,6 +25,16 @@
 > until DNS cutover; the seeded demo login stays `demo@muster.dev` (single R,
 > predates the domain move) until the demo user is re-seeded in lockstep with
 > copy.
+> (7) 2026-07-13: musterr.dev is now the live serving URL (DNS cutover
+> complete). `musterr.dev` = landing + the whitepaper, `app.musterr.dev` = the
+> read-only portal demo (`demo@muster.dev` / `muster-demo`), `cms.musterr.dev`
+> = Directus (Studio hidden per note (1)). All `sslip.io` serving URLs and the
+> cert-warning hedging are retired; every exhibit rides a real Let's Encrypt
+> cert. Branding lockup is **Muster by Analog Elk**; author is **Michael
+> Walliser** ([walliser.me](https://walliser.me)). The site and whitepaper now
+> also carry the **intelligent layer** (a local, private, permission-aware RAG
+> plus the in-portal Elk Chat assistant), added 2026-07 and positioned as a
+> grounding window over the knowledge substrate, never a coordination surface.
 
 *This is the decisive, buildable brief. It resolves the four-lens draft against three critique passes (credibility/thesis, identity-sharpness, completeness). Every contested decision is closed here and carried consistently through every section. The product noun is set; the visual identity is decoupled from it; the demo seam is fixed; the perf budget is made real.*
 
@@ -211,8 +221,8 @@ Mike Walliser, creative-technologist / AI-leadership pivot. Short. One "why I bu
 **Sticky top bar** (after hero scrolls past): `MUSTER` wordmark (left) · jump-links `Thesis · Receipt · Build · Proof · Run it` (center) · two **persistent** buttons `Live portal ↗` and `GitHub ↗` (right). A thin **Phase Ticker** progress strip shows P0–P7 as Build-Trail nodes, fills as you scroll, clicks to jump, marked up as `<nav>` (doubles as TOC).
 
 **The exhibits (the only outbound destinations that matter), all `target="_blank"`:**
-1. **Live portal** — `https://34.220.64.149.sslip.io` — labeled *"the running product."* **Demo runs the `generic` profile by default** so the product noun is consistent across the paper↔demo seam (see below). Caption: *"sslip.io demo box — see TLS note."*
-2. **Build board** — `https://cms.34.220.64.149.sslip.io` — labeled *"the actual task spine the agents used to build this."* The headline exhibit. Caption: *"public, read-only — you can browse the receipts, you can't write to them."* Sibling **"archived snapshot ↗"** fallback link always present.
+1. **Live portal** — `https://app.musterr.dev` — labeled *"the running product."* **Demo runs the `generic` profile by default** so the product noun is consistent across the paper↔demo seam (see below). Caption: *"live demo box, real Let's Encrypt cert."*
+2. **Build board** — read through the portal at `https://app.musterr.dev` (Directus at `cms.musterr.dev`, Studio hidden per status note (1)) — labeled *"the actual task spine the agents used to build this."* The headline exhibit. Caption: *"public, read-only, you can browse the receipts, you can't write to them."* Sibling **"archived snapshot ↗"** fallback link always present.
 3. **GitHub repo** — source + the one-command install. First-class, not buried.
 4. **The report itself** — `Download PDF` / `Print` via `@media print`.
 
@@ -222,7 +232,7 @@ In-page jumps smooth-scroll; live exhibits open in a new tab. The Build-Trail ma
 - **(preferred) Boot the public demo on the `generic` profile.** This keeps the noun consistent end-to-end AND proves the `generic` profile actually works (currently an unverified claim). The `analogelk` profile becomes a visible, optional **"view the Analog Elk case-study profile ↗"** toggle/banner — turning the origin into a demonstrated feature.
 - **(fallback)** if only the `analogelk` profile is deployable in time, ship a persistent in-portal banner: `viewing: analogelk profile — this is the case study; switch to generic ↗`, so the seam reads as a feature demonstration, not a branding leak.
 
-**TLS:** prefer a real cert — Caddy + Let's Encrypt is already in the stack; a guessable sslip.io interstitial hands the audience a security warning at the moment of maximum trust. If a real cert can't be issued in time, pre-empt it in copy on **both** the page and the link caption: *"sslip.io demo cert — your browser will warn once; it's a $3/mo demo box."*
+**TLS:** RESOLVED. Caddy + Let's Encrypt issues a real, browser-trusted cert for `musterr.dev` and its subdomains (apex, `app.`, `cms.`); the sslip.io host and its cert-warning interstitial are retired. No security-warning copy is needed on the page or the link captions anymore.
 
 **De-emphasizing Analog Elk (concrete rules — this part of the draft worked, keep it exactly):**
 - `<title>`: `{{PRODUCT}} — the operating system for agentic software teams`. Wordmark: `{{PRODUCT}}`. Do not reuse the Analog Elk marketing logo or skin.
@@ -267,7 +277,7 @@ System-font stack renders all text instantly; the three subset woff2 swap in asy
 
 **Ember discipline:** semantic, never decorative — it marks only the seam between *paper* (the writing) and *machine* (the live demo). That single reserved color does the brand work.
 
-**Signature components:** the self-drawing Build-Trail mark; the Ledger Rail (mono, right-aligned, hairline-separated, count-up-once); the **live-console chip** — inline link `[ ▸ live ]` in ember on a subtle inset showing the bare host `34.220.64.149.sslip.io`, unmistakable from prose links; **metric callouts** as big mono numbers on pine cards (one per band, not a stat-wall); the **bug-ledger / shipped-vs-aspirational** as honest two-column mono ledgers; the **archived-snapshot** sibling link styled as a muted twin of each live chip.
+**Signature components:** the self-drawing Build-Trail mark; the Ledger Rail (mono, right-aligned, hairline-separated, count-up-once); the **live-console chip** — inline link `[ ▸ live ]` in ember on a subtle inset showing the bare host `app.musterr.dev`, unmistakable from prose links; **metric callouts** as big mono numbers on pine cards (one per band, not a stat-wall); the **bug-ledger / shipped-vs-aspirational** as honest two-column mono ledgers; the **archived-snapshot** sibling link styled as a muted twin of each live chip.
 
 **Motion — restraint is the brand.** Total moving parts: **two** one-shot animations (mark draw, metric count-up) plus the passive scroll-linked rail highlight. No parallax, no loops, no gradient shimmer, no scroll-jacking. Everything honors `prefers-reduced-motion`.
 

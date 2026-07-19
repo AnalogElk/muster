@@ -1,8 +1,7 @@
 # Provisioning Elk OS on a VPS — the reliable full-stack path
 
 This is the **recommended way to get a live Elk OS demo**: a small VPS
-(~$6–12/mo) plus a domain — or no domain at all, using a free wildcard
-`sslip.io` hostname. `provision/cloud-init.sh` takes a fresh Ubuntu box from
+(~$6–12/mo) plus a domain. `provision/cloud-init.sh` takes a fresh Ubuntu box from
 nothing to a running, TLS-terminated stack with the human↔agent loop closed.
 
 Why a box and not "just Netlify"? The portal **fail-fasts without a reachable
@@ -15,13 +14,9 @@ elsewhere — see [`../deploy/netlify/`](../deploy/netlify/).)
 
 - A VPS with **2 GB+ RAM** (4 GB if you ever build images on the box), Ubuntu
   22.04 or 24.04, root/sudo.
-- A hostname that resolves to the box's IP. Either:
-  - a real domain (point an `A` record for the apex **and** `app` + `cms` records
-    at the IP), or
-  - **no domain** — use `sslip.io`: if your IP is `1.2.3.4`, set
-    `ELK_OS_DOMAIN=1.2.3.4.sslip.io`. `1.2.3.4.sslip.io`, `app.1.2.3.4.sslip.io`
-    and `cms.1.2.3.4.sslip.io` all resolve automatically, so Caddy gets TLS for
-    all three with zero DNS setup.
+- A hostname that resolves to the box's IP: a real domain — point an `A` record
+  for the apex **and** `app` + `cms` records at the IP (e.g. `musterr.dev`,
+  `app.musterr.dev`, `cms.musterr.dev`), so Caddy gets TLS for all three.
 - Ports **80 and 443** open (Caddy needs them for Let's Encrypt + serving).
 
 ## Routing (what the box serves)
@@ -40,15 +35,16 @@ Caddy provisions and renews TLS for all three hosts automatically.
 SSH to the box as root and:
 
 ```bash
-export ELK_OS_DOMAIN=1.2.3.4.sslip.io          # your IP + .sslip.io, or your domain
+export ELK_OS_DOMAIN=musterr.dev               # your domain (apex + app + cms A records)
 export ELK_OS_ADMIN_EMAIL=you@example.com
 export ELK_OS_PROFILE=generic                  # generic | analogelk
 export ELK_OS_REPO=https://github.com/AnalogElk/muster.git
 
 # Optional — add the portal surface using PUBLISHED images (see "The portal" below;
-# only once images are published via publish-images.yml)
-# export PORTAL_IMAGE=ghcr.io/analogelk/elk-os-portal:0.1.0
-# export RAG_IMAGE=ghcr.io/analogelk/elk-os-rag-api:0.1.0
+# current tags: github.com/orgs/AnalogElk/packages. Note ae-42d8fb3c predates
+# the intelligent layer; build locally for the current pin.)
+# export PORTAL_IMAGE=ghcr.io/analogelk/elk-os-portal:ae-42d8fb3c
+# export RAG_IMAGE=ghcr.io/analogelk/elk-os-rag-api:0.1.2
 
 curl -fsSL https://raw.githubusercontent.com/AnalogElk/muster/main/provision/cloud-init.sh | bash
 ```
@@ -93,7 +89,7 @@ cd /opt/elk-os
 
 - **Directus health red / TLS pending:** Caddy needs DNS resolving to the box and
   ports 80/443 reachable before Let's Encrypt issues a cert. Confirm the `A`
-  records (or that you used an `sslip.io` host) and the firewall.
+  records and the firewall.
 - **`doctor` portal row red but you expected no portal:** that's expected when
   the portal was omitted — `ELK_OS_WITH_PORTAL=false` removes the row entirely;
   if it shows, `PORTAL_IMAGE` was set without a reachable image.
@@ -142,5 +138,5 @@ python3 provision/seed-demo.py
 
 ## Cost
 
-A 2 GB VPS (Hetzner CX22, DigitalOcean, Vultr, etc.) runs ~$6–12/mo. With an
-`sslip.io` host there is **no domain cost** — a genuinely cheap live demo.
+A 2 GB VPS (Hetzner CX22, DigitalOcean, Vultr, etc.) runs ~$6–12/mo — a
+genuinely cheap live demo.
