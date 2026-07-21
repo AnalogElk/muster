@@ -478,6 +478,152 @@ if [ -f "$SVCPAGE" ] && ! grep -q 'elk-os services-price' "$SVCPAGE"; then
 fi
 
 # ---------------------------------------------------------------------------
+# 6e. Client Site heatmap sub-tab: move the Interaction Heatmap out of the
+#     Client Site flat scroll into its own org-gated sub-tab (visible only when
+#     an organization is selected). Adds a client component + a declarative
+#     `subTab` marker on the section registry, and wires the web domain to
+#     render the two panels as sub-tabs. Idempotent; anchors fail loudly on a
+#     pin bump that moves them.
+# ---------------------------------------------------------------------------
+AN="components/portals/analytics"
+if [ -f "${AN}/analytics-domain.tsx" ] && [ -f "${AN}/sections.ts" ] && [ -f "${AN}/section-registry.tsx" ]; then
+  # (a) New client component: the org-gated Web|Heatmap sub-tabs.
+  if [ ! -f "${AN}/client-site-tabs.tsx" ]; then
+    cat > "${AN}/client-site-tabs.tsx" <<'TSX'
+"use client";
+
+// [elk-os heatmap-subtab] Client Site sub-tabs (Web | Heatmap). The Interaction
+// Heatmap is agency-internal and only meaningful scoped to one org, so its
+// trigger + panel render ONLY when an org is selected (?siteId). Both panels are
+// server-rendered section slots passed in as props; Radix unmounts the inactive
+// panel so the hidden panel never fetches. Sub-tab state lives in ?panel; a
+// #interactions deep link opens the Heatmap tab on mount.
+import * as React from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { useAnalyticsView } from "./analytics-view-context";
+
+type Panel = "web" | "heatmap";
+
+export function ClientSiteTabs({
+  webPanel,
+  heatmapPanel,
+}: {
+  webPanel: React.ReactNode;
+  heatmapPanel: React.ReactNode;
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const { siteId } = useAnalyticsView();
+
+  const hasOrg = Boolean(siteId);
+  const active: Panel =
+    params.get("panel") === "heatmap" && hasOrg ? "heatmap" : "web";
+
+  const setPanel = React.useCallback(
+    (panel: string) => {
+      const sp = new URLSearchParams(params.toString());
+      if (panel === "web") sp.delete("panel");
+      else sp.set("panel", panel);
+      const qs = sp.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    },
+    [params, pathname, router],
+  );
+
+  React.useEffect(() => {
+    if (!hasOrg) return;
+    if (window.location.hash.slice(1) === "interactions" && active !== "heatmap") {
+      setPanel("heatmap");
+    }
+    // Run once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <Tabs value={active} onValueChange={setPanel} className="flex flex-col gap-6">
+      <TabsList className="flex h-auto flex-wrap justify-start">
+        <TabsTrigger value="web">Web</TabsTrigger>
+        {hasOrg ? <TabsTrigger value="heatmap">Heatmap</TabsTrigger> : null}
+      </TabsList>
+
+      <TabsContent value="web" className="flex flex-col gap-8">
+        {webPanel}
+      </TabsContent>
+      {hasOrg ? (
+        <TabsContent value="heatmap" className="flex flex-col gap-8">
+          {heatmapPanel}
+        </TabsContent>
+      ) : null}
+    </Tabs>
+  );
+}
+TSX
+    echo "[portal] patch ${AN}/client-site-tabs.tsx: create org-gated Client Site sub-tabs"
+  else
+    echo "[portal] client-site-tabs.tsx already present"
+  fi
+
+  # (b) Registry marker + tag the heatmap section + wire the web domain.
+  node -e '
+    const fs = require("fs");
+    const AN = "components/portals/analytics";
+
+    // section-registry.tsx: add the optional subTab field.
+    {
+      const p = AN + "/section-registry.tsx";
+      let s = fs.readFileSync(p, "utf8");
+      if (!s.includes("subTab?:")) {
+        const from = "  group?: AnalyticsGroup;\n  Component: React.ComponentType;";
+        if (!s.includes(from)) { console.error("[portal] heatmap-subtab: section-registry anchor missing in " + p); process.exit(1); }
+        s = s.replace(from, "  group?: AnalyticsGroup;\n  /** [elk-os heatmap-subtab] Optional sub-tab within a domain; only the web\n   * domain uses it, to isolate the Interaction Heatmap onto its own tab. */\n  subTab?: \"heatmap\";\n  Component: React.ComponentType;");
+        fs.writeFileSync(p, s);
+        console.log("[portal] patch " + p + ": add subTab field");
+      } else { console.log("[portal] section-registry already has subTab"); }
+    }
+
+    // sections.ts: tag the interactions section with subTab: "heatmap".
+    {
+      const p = AN + "/sections.ts";
+      let s = fs.readFileSync(p, "utf8");
+      if (!s.includes("subTab: \"heatmap\"")) {
+        const from = "    group: \"web\",\n    Component: InteractionHeatmapSection,";
+        if (!s.includes(from)) { console.error("[portal] heatmap-subtab: sections.ts interactions anchor missing in " + p); process.exit(1); }
+        s = s.replace(from, "    group: \"web\",\n    subTab: \"heatmap\",\n    Component: InteractionHeatmapSection,");
+        fs.writeFileSync(p, s);
+        console.log("[portal] patch " + p + ": tag interactions subTab");
+      } else { console.log("[portal] sections.ts already tags interactions subTab"); }
+    }
+
+    // analytics-domain.tsx: import + partition + render the sub-tabs for web.
+    {
+      const p = AN + "/analytics-domain.tsx";
+      let s = fs.readFileSync(p, "utf8");
+      if (!s.includes("ClientSiteTabs")) {
+        const imp = "import { SiteSelector } from \"./site-selector\";";
+        if (!s.includes(imp)) { console.error("[portal] heatmap-subtab: analytics-domain import anchor missing"); process.exit(1); }
+        s = s.replace(imp, imp + "\nimport { ClientSiteTabs } from \"./client-site-tabs\";");
+
+        const isWeb = "  const isWeb = group === \"web\";";
+        if (!s.includes(isWeb)) { console.error("[portal] heatmap-subtab: analytics-domain isWeb anchor missing"); process.exit(1); }
+        s = s.replace(isWeb, isWeb + "\n  // [elk-os heatmap-subtab] Client Site splits into Web + an org-gated Heatmap.\n  const mainSections = isWeb ? sections.filter((x) => x.subTab !== \"heatmap\") : sections;\n  const heatmapSections = isWeb ? sections.filter((x) => x.subTab === \"heatmap\") : [];");
+
+        const slots = "        <AnalyticsSectionSlots sections={sections} />";
+        if (!s.includes(slots)) { console.error("[portal] heatmap-subtab: analytics-domain slots anchor missing"); process.exit(1); }
+        s = s.replace(slots, "        {isWeb ? (\n          <ClientSiteTabs\n            webPanel={<AnalyticsSectionSlots sections={mainSections} />}\n            heatmapPanel={<AnalyticsSectionSlots sections={heatmapSections} />}\n          />\n        ) : (\n          <AnalyticsSectionSlots sections={sections} />\n        )}");
+        fs.writeFileSync(p, s);
+        console.log("[portal] patch " + p + ": render heatmap in an org-gated sub-tab");
+      } else { console.log("[portal] analytics-domain already wired for heatmap sub-tab"); }
+    }
+  '
+else
+  echo "[portal] heatmap-subtab: analytics IA not found at this pin — skipping (update prepare-context.sh 6e if the analytics structure moved)"
+fi
+
+# ---------------------------------------------------------------------------
 # 7. Drop the build-context .dockerignore in place (docker reads it from the
 #    context root = .build). Committed source of truth lives at ../.dockerignore.
 # ---------------------------------------------------------------------------
