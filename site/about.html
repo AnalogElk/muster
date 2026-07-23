@@ -45,6 +45,98 @@ if (!navigator.globalPrivacyControl) {
   document.head.appendChild(g);
 }
 </script>
+
+<!-- Interaction heatmap: first-party beacon to our own sink (analogelk.com), the same
+     infrastructure as the analytics above. Anonymous click positions and scroll depth
+     only: no cookies, no PII, no element text. Runs only on the production hostname and
+     is skipped entirely when the browser sends Global Privacy Control.
+     Disclosed in privacy.html -->
+<script>
+if (!navigator.globalPrivacyControl) {
+  (function () {
+    'use strict';
+    if (typeof navigator.sendBeacon !== 'function') return;
+    if (location.hostname !== 'musterr.dev' && location.hostname !== 'www.musterr.dev') return;
+
+    var ENDPOINT = 'https://analogelk.com/api/interactions';
+    var MAX_CLICK_BEACONS = 200; // storm cap per page load
+    var SITE = 'musterr.dev';
+
+    var device = /Mobi|Android|iPhone|iPad|iPod|Tablet/i.test(navigator.userAgent)
+      ? 'mobile'
+      : 'desktop';
+
+    function beacon(body) {
+      try {
+        navigator.sendBeacon(ENDPOINT, JSON.stringify(body));
+      } catch (e) {
+        /* telemetry must never affect the page */
+      }
+    }
+
+    // Clicks: one capture-phase listener, viewport-relative X, document-relative Y.
+    var clickCount = 0;
+    document.addEventListener('click', function (e) {
+      if (clickCount >= MAX_CLICK_BEACONS) return;
+      clickCount += 1;
+      var scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+      var xPct = (e.clientX / window.innerWidth) * 100;
+      var yPct = scrollHeight > 0 ? ((e.clientY + window.scrollY) / scrollHeight) * 100 : 0;
+      beacon({
+        event_type: 'click',
+        route: location.pathname,
+        site: SITE,
+        xPct: Math.min(100, Math.max(0, xPct)),
+        yPct: Math.min(100, Math.max(0, yPct)),
+        viewport_w: window.innerWidth,
+        viewport_h: window.innerHeight,
+        device: device
+      });
+    }, true);
+
+    // Scroll depth: rAF-throttled max tracker, one beacon per page view,
+    // flushed on pagehide or tab-hide (whichever comes first).
+    var maxScroll = 0;
+    var ticking = false;
+
+    function currentScrollPct() {
+      var scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+      if (!scrollHeight) return 0;
+      var raw = ((window.scrollY + window.innerHeight) / scrollHeight) * 100;
+      return Math.min(100, Math.max(0, raw));
+    }
+
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(function () {
+        var p = currentScrollPct();
+        if (p > maxScroll) maxScroll = p;
+        ticking = false;
+      });
+    }, { passive: true });
+
+    function flush() {
+      if (maxScroll <= 0) return;
+      beacon({
+        event_type: 'scroll',
+        route: location.pathname,
+        site: SITE,
+        scroll_pct: maxScroll,
+        viewport_w: window.innerWidth,
+        viewport_h: window.innerHeight,
+        device: device
+      });
+      maxScroll = 0;
+    }
+
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') flush();
+    });
+  })();
+}
+</script>
 </head>
 <body>
 <a class="skip" href="#abstract">Skip to content</a>
