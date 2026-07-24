@@ -16,8 +16,26 @@
 # NOTE: the app.* block proxies `portal:3000`. A Directus-only box (portal
 # disabled via ELK_OS_WITH_PORTAL=false) should remove or repoint that block.
 
+# Shared security headers for every public host. All muster subdomains
+# terminate TLS at this same Caddy, so includeSubDomains is safe. `defer`
+# applies the set-operations just before the response is written, so they
+# overwrite anything an upstream (e.g. Directus' helmet defaults) emits
+# instead of duplicating it, and they land on redirect responses too.
+# No CSP in this wave.
+(security_headers) {
+	header {
+		defer
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+	}
+}
+
 # The whitepaper landing (site/) on the apex.
 {$ELK_OS_DOMAIN} {
+	import security_headers
 	encode zstd gzip
 
 	root * /srv/site
@@ -31,6 +49,7 @@
 
 # The portal (the human surface) on app.*
 app.{$ELK_OS_DOMAIN} {
+	import security_headers
 	encode zstd gzip
 
 	# The portal image is built from a real Next.js app whose "/" is that app's
@@ -53,6 +72,7 @@ app.{$ELK_OS_DOMAIN} {
 
 # Directus — the shared os_* board and the native MCP endpoint — on cms.*
 cms.{$ELK_OS_DOMAIN} {
+	import security_headers
 	encode zstd gzip
 
 	# Hide the Directus Studio (admin app UI) from the public. Only the
