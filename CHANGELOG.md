@@ -7,6 +7,19 @@ automatically by [release-please](https://github.com/googleapis/release-please)
 history; do not edit released sections by hand. The version of record lives in
 [`version.txt`](./version.txt).
 
+## [0.1.6](https://github.com/AnalogElk/muster/compare/v0.1.5...v0.1.6) (2026-07-24)
+
+
+### Added
+
+* **analytics:** first-party interaction heatmap beacon ([#26](https://github.com/AnalogElk/muster/issues/26)) ([6fe0686](https://github.com/AnalogElk/muster/commit/6fe0686d472ae4b29461a34859d8debee3d1a9d6))
+* **portal:** rebrand-check gate, image smoke test + portal sync design docs ([#22](https://github.com/AnalogElk/muster/issues/22)) ([bb3f649](https://github.com/AnalogElk/muster/commit/bb3f6498855f001ade5e8b7336c6e65bcb1a49eb))
+
+
+### Fixed
+
+* **security:** security headers on all Caddy sites ([#27](https://github.com/AnalogElk/muster/issues/27)) ([83ecf5b](https://github.com/AnalogElk/muster/commit/83ecf5bc59371578b8590d2749b49998a67f6e80))
+
 ## [0.1.5](https://github.com/AnalogElk/muster/compare/v0.1.4...v0.1.5) (2026-07-17)
 
 
