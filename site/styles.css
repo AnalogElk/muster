@@ -282,6 +282,14 @@ strong { font-weight: 600; }
   font-size: clamp(3.1rem, 11vw, 5.2rem);
   line-height: 0.95; letter-spacing: -0.02em; margin: 0 0 0.4rem;
 }
+/* The 0.95 leading is set for the one- and two-line desktop headline. On a
+   phone the same headline wraps to four lines, and Fraunces ascenders then
+   collide with the descenders above them: the "ffi" of "office" cuts into
+   "back". Leading is a function of line count, not of taste, so give the
+   wrapped case the room it needs. */
+@media (max-width: 640px) {
+  .hero__wordmark { line-height: 1.04; }
+}
 .hero__lede {
   font-family: var(--display); font-weight: 400;
   font-size: clamp(1.4rem, 3.6vw, 2rem);
