@@ -121,7 +121,7 @@ def render(md: str) -> str:
                 buf.append(lines[i])
                 i += 1
             i += 1  # closing fence
-            out.append('<pre class="code"><code>%s</code></pre>'
+            out.append('<pre class="code" tabindex="0" aria-label="Command example"><code>%s</code></pre>'
                        % html.escape("\n".join(buf)))
             continue
 
@@ -150,7 +150,7 @@ def render(md: str) -> str:
             body = ""
             for r in rows:
                 body += "<tr>" + "".join("<td>%s</td>" % inline(c) for c in r) + "</tr>"
-            out.append('<div class="table-wrap"><table class="proof"><thead><tr>%s</tr></thead><tbody>%s</tbody></table></div>'
+            out.append('<div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable data table"><table class="proof"><thead><tr>%s</tr></thead><tbody>%s</tbody></table></div>'
                        % (thead, body))
             continue
 
@@ -225,10 +225,10 @@ TEMPLATE = """<!DOCTYPE html>
   .paper-doc ul, .paper-doc ol {{ padding-left: 1.3rem; }}
   .paper-doc li {{ margin: 0.4rem 0; line-height: 1.6; }}
   .paper-doc hr {{ border:0; border-top:1px solid var(--bone-rule); margin: 2.4rem 0; }}
-  .paper-doc code {{ font-family: var(--mono); font-size: 0.9em; background: var(--paper-2); padding: 0.08em 0.34em; border-radius: 3px; }}
-  .paper-doc pre.code code {{ background: transparent; padding: 0; }}
-  .paper-hd {{ padding: 1.2rem 0 0; }}
-  .backhome {{ display:inline-flex; gap:0.4rem; align-items:center; font-family:var(--mono); font-size:0.82rem; text-decoration:none; color:var(--pine); }}
+  .paper-doc code {{ font-family: var(--mono); font-size: max(0.9em, var(--type-floor)); background: var(--paper-2); padding: 0.08em 0.34em; border-radius: 3px; }}
+  .paper-doc pre.code code {{ background: transparent; padding: 0; font-size: inherit; }}
+  .paper-hd {{ padding: 1.2rem 1.4rem 0; }}
+  .backhome {{ display:inline-flex; gap:0.4rem; align-items:center; min-height:var(--target-min); font-family:var(--mono); font-size:var(--type-floor); text-decoration:none; color:var(--pine); }}
   .paper-doc table.proof {{ font-size: 0.92rem; }}
 </style>
 <!-- Matomo: self-hosted, first-party cookie, IP-anonymized server-side; skipped entirely
@@ -350,7 +350,7 @@ if (!navigator.globalPrivacyControl) {{
   <span class="topbar__spacer"></span>
   <div class="topbar__cta">
     <a class="btn btn--live btn--sm" href="{portal}" target="_blank" rel="noopener">Live portal ↗</a>
-    <a class="btn btn--sm" href="about.html">← The build log</a>
+    <a class="btn btn--sm topbar__secondary" href="about.html">← The build log</a>
   </div>
 </header>
 

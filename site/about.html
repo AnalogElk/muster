@@ -160,7 +160,7 @@ if (!navigator.globalPrivacyControl) {
   <span class="topbar__spacer"></span>
   <div class="topbar__cta">
     <a class="btn btn--live btn--sm" href="https://app.musterr.dev" target="_blank" rel="noopener" title="demo login: demo@muster.dev / muster-demo (read-only)">Live portal ↗</a>
-    <a class="btn btn--sm" href="/paper.html">Whitepaper</a>
+    <a class="btn btn--sm topbar__secondary" href="/paper.html">Whitepaper</a>
   </div>
 </header>
 
@@ -350,7 +350,7 @@ if (!navigator.globalPrivacyControl) {
   <div class="doc">
     <p class="kicker">§7 · Bugs the machines caught</p>
     <h2 class="h2">~7 functional bugs, 6 brand leaks. None caught by a human running the software.</h2>
-    <div class="table-wrap">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable defect table">
       <table class="proof">
         <thead><tr><th scope="col">Defect / risk</th><th scope="col">What caught it</th><th scope="col">Needed the fleet?</th></tr></thead>
         <tbody>
@@ -402,7 +402,7 @@ if (!navigator.globalPrivacyControl) {
   <div class="doc">
     <p class="kicker">§10 · vs. an ungoverned single-agent workflow</p>
     <h2 class="h2">No strawman. A workflow, not a product.</h2>
-    <div class="table-wrap">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable workflow comparison table">
       <table class="proof">
         <thead><tr><th scope="col">Ungoverned single-agent workflow</th><th scope="col">Muster</th></tr></thead>
         <tbody>
@@ -439,7 +439,7 @@ if (!navigator.globalPrivacyControl) {
     <p class="kicker">§12 · Run it yourself</p>
     <h2 class="h2">Six commands. The doctor board is the proof.</h2>
     <p class="lead">The apparatus is public and self-hostable. <code>bin/elk-os</code> (the CLI keeps the project's working name, Elk OS) is a resumable, idempotent phase machine whose only hard dependency is Docker (<code>migrate</code>/<code>seed</code> additionally use stdlib <code>python3</code>).</p>
-    <pre class="code" aria-label="Six-command install"><span class="c"># scaffold → live, from an empty volume</span>
+    <pre class="code" tabindex="0" aria-label="Six-command install"><span class="c"># scaffold → live, from an empty volume</span>
 bin/elk-os <span class="e">init</span>      <span class="c"># scaffold + env</span>
 bin/elk-os <span class="e">up</span>        <span class="c"># compose core (Directus, Postgres, RAG, portal)</span>
 bin/elk-os <span class="e">migrate</span>   <span class="c"># apply os_* schema</span>

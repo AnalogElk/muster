@@ -19,10 +19,10 @@
   .paper-doc p { margin: 0 0 1.1rem; }
   .paper-doc ul { padding-left: 1.3rem; }
   .paper-doc li { margin: 0.4rem 0; }
-  .paper-doc code { font-family: var(--mono); font-size: 0.9em; background: var(--paper-2); padding: 0.08em 0.34em; border-radius: 3px; }
-  .paper-hd { padding: 1.2rem 0 0; }
-  .backhome { display:inline-flex; gap:0.4rem; align-items:center; font-family:var(--mono); font-size:0.82rem; text-decoration:none; color:var(--pine); }
-  .fineprint-block { font-family: var(--mono); font-size: 0.82rem; color: var(--pine); opacity: 0.75; margin-top: 2.5rem; }
+  .paper-doc code { font-family: var(--mono); font-size: max(0.9em, var(--type-floor)); background: var(--paper-2); padding: 0.08em 0.34em; border-radius: 3px; }
+  .paper-hd { padding: 1.2rem 1.4rem 0; }
+  .backhome { display:inline-flex; gap:0.4rem; align-items:center; min-height:var(--target-min); font-family:var(--mono); font-size:var(--type-floor); text-decoration:none; color:var(--pine); }
+  .fineprint-block { font-family: var(--mono); font-size: var(--type-floor); color: var(--pine); opacity: 0.75; margin-top: 2.5rem; }
 </style>
 <!-- Matomo: self-hosted, first-party cookie, IP-anonymized server-side; skipped entirely
      when the browser sends Global Privacy Control (DNT is honored server-side by Matomo).

@@ -91,8 +91,8 @@ if (!navigator.globalPrivacyControl) {
   <span class="topbar__spacer"></span>
   <div class="topbar__cta">
     <a class="btn btn--live btn--sm" href="https://app.musterr.dev" target="_blank" rel="noopener" title="demo logins: demo@muster.dev or client@muster.dev, both muster-demo (read-only)">Live demo ↗</a>
-    <a class="btn btn--sm" href="/about.html">Build log</a>
-    <a class="btn btn--sm" href="/paper.html">Whitepaper</a>
+    <a class="btn btn--sm topbar__secondary" href="/about.html">Build log</a>
+    <a class="btn btn--sm topbar__secondary" href="/paper.html">Whitepaper</a>
   </div>
 </header>
 
@@ -148,12 +148,12 @@ if (!navigator.globalPrivacyControl) {
     <h2 class="h2">The update is a side effect of the work.</h2>
     <p class="lead">Every back office you have set up died because keeping it current was a second job. This one is written to by the agents already doing the first job.</p>
 
-    <pre class="code" aria-label="Install the Muster plugin"><span class="c"># in Claude Code</span>
+    <pre class="code" tabindex="0" aria-label="Install the Muster plugin"><span class="c"># in Claude Code</span>
 /plugin marketplace add <span class="e">AnalogElk/muster</span>
 /plugin install <span class="e">muster@muster</span></pre>
     <p>That is two commands, not one. <code>/plugin install muster</code> alone is invalid until the marketplace has been added first. Verified 2026&#8209;07&#8209;15 against <a href="https://github.com/AnalogElk/muster">github.com/AnalogElk/muster</a> on Claude Code 2.1.211, from a clean install: what actually happened, not what a doc claimed.</p>
 
-    <pre class="code" aria-label="Connect to the demo board"><span class="c"># zero arguments works; it resolves to the public demo board by default</span>
+    <pre class="code" tabindex="0" aria-label="Connect to the demo board"><span class="c"># zero arguments works; it resolves to the public demo board by default</span>
 /muster:connect <span class="e">https://cms.musterr.dev</span></pre>
 
     <p>Four slash commands, one skill, one SessionStart hook, and one MCP server connection. <a href="https://github.com/AnalogElk/muster/blob/main/.claude-plugin/plugin.json"><code>.claude-plugin/plugin.json</code></a> names all of it.</p>
@@ -232,7 +232,7 @@ if (!navigator.globalPrivacyControl) {
     <p class="kicker">Self-host</p>
     <h2 class="h2">Your Postgres, your Directus, your rows.</h2>
     <p class="lead">A Docker Compose stack you run yourself, MIT licensed. There is no hosted plan to be moved off, and no export to request.</p>
-    <pre class="code" aria-label="Bring up your own stack"><span class="c"># from inside Claude Code, once the plugin is installed</span>
+    <pre class="code" tabindex="0" aria-label="Bring up your own stack"><span class="c"># from inside Claude Code, once the plugin is installed</span>
 /muster:up
 /muster:doctor</pre>
     <p><code>/muster:up</code> wraps the bring-up and <code>/muster:doctor</code> returns a health report you can read. The stack itself is <a href="https://github.com/AnalogElk/muster/blob/main/compose/compose.yaml">compose/compose.yaml</a> and <a href="https://github.com/AnalogElk/muster/blob/main/bin/elk-os">bin/elk-os</a>, under the <a href="https://github.com/AnalogElk/muster/blob/main/LICENSE">MIT licence</a>.</p>
