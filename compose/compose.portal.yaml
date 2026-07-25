@@ -43,6 +43,15 @@ services:
       # honest "not configured" notice; retrieval stays local and keyless.
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ASSISTANT_MODEL: ${ASSISTANT_MODEL:-}
+      # Client-portal shop panel. Upstream reads orders from a SEPARATE
+      # Directus (a client-specific storefront), so on a self-host box it has
+      # to be pointed somewhere or the panel renders "Failed to load". Point it
+      # at this deploy's own CMS and give it a READ-ONLY service token: this
+      # value reaches a client-facing route, so it must never be the admin
+      # token. Unset = the panel stays dark, which is the correct default for a
+      # deploy with no storefront.
+      STILLFRAMES_CMS_URL: ${STILLFRAMES_CMS_URL:-}
+      STILLFRAMES_DIRECTUS_TOKEN: ${STILLFRAMES_DIRECTUS_TOKEN:-}
       NODE_ENV: production
       PORT: "3000"
       HOSTNAME: 0.0.0.0

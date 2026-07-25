@@ -477,6 +477,100 @@ if [ -f "$SVCPAGE" ] && ! grep -q 'elk-os services-price' "$SVCPAGE"; then
   '
 fi
 
+# f) next.config.js images.remotePatterns: the baked allowlist names only the
+#    analogelk.com asset hosts, so on a self-host domain EVERY next/image
+#    request against the CMS is rejected by the optimizer with HTTP 400
+#    ("url" parameter is not allowed). The raw asset URL still returns 200, so
+#    plain <img> renders fine and only next/image-rendered images (notably the
+#    header avatar) silently break: a broken image, not an error. Sibling of
+#    6d(a) — that one fixes the CSP so the browser will FETCH the origin, this
+#    one fixes the optimizer so it will SERVE it. Both derive the host from
+#    NEXT_PUBLIC_DIRECTUS_URL. dangerouslyAllowSVG is set because the seeded
+#    org logos and avatars are SVGs, which the optimizer otherwise refuses;
+#    it is paired with a sandbox CSP on the image response, per Next's docs.
+if ! grep -q 'elk-os image-remote-pattern' next.config.js; then
+  node -e '
+    const fs=require("fs");
+    const p="next.config.js";
+    let s=fs.readFileSync(p,"utf8");
+    const anchor="    remotePatterns: [";
+    if (!s.includes(anchor)) {
+      console.error("[portal] image-remote-pattern: images.remotePatterns anchor not found in next.config.js; update prepare-context.sh step 6d(f)");
+      process.exit(1);
+    }
+    const block=[
+      "    // [elk-os image-remote-pattern] Self-host: allow the Directus origin",
+      "    // (NEXT_PUBLIC_DIRECTUS_URL) through the image optimizer, otherwise every",
+      "    // next/image against the CMS 400s on a non-analogelk domain.",
+      "    dangerouslyAllowSVG: true,",
+      "    contentDispositionType: \"attachment\",",
+      "    contentSecurityPolicy: \"default-src '\''self'\''; script-src '\''none'\''; sandbox;\",",
+      "    remotePatterns: [",
+      "      ...(() => {",
+      "        try {",
+      "          const raw = process.env.NEXT_PUBLIC_DIRECTUS_URL || \"\";",
+      "          if (!raw) return [];",
+      "          const u = new URL(raw);",
+      "          return [{ protocol: u.protocol.replace(\":\", \"\"), hostname: u.hostname, pathname: \"/assets/**\" }];",
+      "        } catch { return []; }",
+      "      })(),",
+    ].join("\n");
+    s=s.replace(anchor, block);
+    fs.writeFileSync(p,s);
+    console.log("[portal] patch next.config.js: images.remotePatterns allows the NEXT_PUBLIC_DIRECTUS_URL origin");
+  '
+fi
+
+# g) The client-portal shop panel is named for the upstream's own storefront
+#    client: the nav reads "Print Shop", the page description says "your
+#    stillframes.art print store", and the traffic card says "Visits to
+#    stillframes.art". On a Muster deploy that is a third party's brand showing
+#    up inside someone else's portal. The panel itself is generic (orders,
+#    revenue, campaigns), so rename the user-visible strings and let the
+#    storefront URL come from NEXT_PUBLIC_SITE_URL. Same class of patch as the
+#    rebrand in step 6: replace the vendor's name, keep the feature.
+SHOP_PAGE="app/(client-portal)/client-portal/shop/page.tsx"
+SHOP_NAV="lib/portal/nav.ts"
+SHOP_INSIGHTS="components/portals/client/shop/shop-insights.tsx"
+SHOP_SHARED="lib/portal/prints-shop-shared.ts"
+
+if [ -f "$SHOP_NAV" ] && grep -q '"Print Shop"' "$SHOP_NAV"; then
+  perl -0pi -e 's/label: "Print Shop"/label: "Shop"/' "$SHOP_NAV"
+  grep -q 'label: "Shop"' "$SHOP_NAV" || {
+    echo "[portal] shop-rebrand: nav label anchor not found; update prepare-context.sh step 6d(g)" >&2
+    exit 1
+  }
+  echo "[portal] patch ${SHOP_NAV}: nav label Print Shop -> Shop"
+fi
+
+if [ -f "$SHOP_PAGE" ] && grep -q 'stillframes.art print store' "$SHOP_PAGE"; then
+  perl -0pi -e 's/title="Print Shop"/title="Shop"/g' "$SHOP_PAGE"
+  perl -0pi -e 's/description="Orders, revenue, and traffic for your stillframes\.art print store\."/description="Orders, revenue, and traffic for your store."/' "$SHOP_PAGE"
+  grep -q 'stillframes.art print store' "$SHOP_PAGE" && {
+    echo "[portal] shop-rebrand: page description anchor did not replace; update prepare-context.sh step 6d(g)" >&2
+    exit 1
+  }
+  echo "[portal] patch ${SHOP_PAGE}: Print Shop -> Shop, vendor name dropped"
+fi
+
+if [ -f "$SHOP_INSIGHTS" ] && grep -q 'stillframes\.art' "$SHOP_INSIGHTS"; then
+  perl -0pi -e 's/Visits to stillframes\.art that viewed a prints page\./Visits to your store that viewed a product page./' "$SHOP_INSIGHTS"
+  grep -q 'stillframes\.art' "$SHOP_INSIGHTS" && {
+    echo "[portal] shop-rebrand: insights copy anchor did not replace; update prepare-context.sh step 6d(g)" >&2
+    exit 1
+  }
+  echo "[portal] patch ${SHOP_INSIGHTS}: vendor name dropped from traffic copy"
+fi
+
+if [ -f "$SHOP_SHARED" ] && grep -q 'STILLFRAMES_SITE_URL = "https://stillframes.art"' "$SHOP_SHARED"; then
+  perl -0pi -e 's{export const STILLFRAMES_SITE_URL = "https://stillframes\.art";}{export const STILLFRAMES_SITE_URL = process.env.NEXT_PUBLIC_SHOP_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://stillframes.art"; // [elk-os shop-rebrand] campaign links point at THIS deploy}' "$SHOP_SHARED"
+  grep -q 'elk-os shop-rebrand' "$SHOP_SHARED" || {
+    echo "[portal] shop-rebrand: STILLFRAMES_SITE_URL anchor not found; update prepare-context.sh step 6d(g)" >&2
+    exit 1
+  }
+  echo "[portal] patch ${SHOP_SHARED}: campaign-link base is env-driven"
+fi
+
 # ---------------------------------------------------------------------------
 # 7. Drop the build-context .dockerignore in place (docker reads it from the
 #    context root = .build). Committed source of truth lives at ../.dockerignore.
