@@ -571,6 +571,63 @@ if [ -f "$SHOP_SHARED" ] && grep -q 'STILLFRAMES_SITE_URL = "https://stillframes
   echo "[portal] patch ${SHOP_SHARED}: campaign-link base is env-driven"
 fi
 
+# h) Task slide-over opens EMPTY on the first click. The panel shell mounts with
+#    the right size, position and classes, and zero children: verified live, the
+#    <aside> stays childless past 30 seconds. A second open renders correctly.
+#
+#    The body is gated on `activeId`, which is seeded ONLY by a render-phase
+#    state adjustment (`if (taskId !== prevTaskId) setActiveId(taskId)`). That
+#    adjustment is the single point of failure for the entire panel: whenever it
+#    does not land on the first open, `activeId` stays null and the panel renders
+#    nothing, forever, with no error anywhere.
+#
+#    Rather than depend on that timing, derive the gate. `taskId` is the prop
+#    that says which task is open, so fall back to it. `activeId` still exists
+#    and still lags on CLOSE (taskId goes null while activeId lingers ~520ms),
+#    so the exit animation keeps its content exactly as before.
+SLIDEOVER="components/portals/tasks/task-detail-slide-over.tsx"
+if [ -f "$SLIDEOVER" ] && ! grep -q 'elk-os slideover-body-id' "$SLIDEOVER"; then
+  node -e '
+    const fs=require("fs");
+    const p="components/portals/tasks/task-detail-slide-over.tsx";
+    let s=fs.readFileSync(p,"utf8");
+
+    // 1. derive the body id next to the existing state declarations
+    const anchor="  const open = taskId !== null;";
+    if (!s.includes(anchor)) {
+      console.error("[portal] slideover-body-id: `const open = taskId !== null;` anchor not found in "+p+"; update prepare-context.sh step 6d(h)");
+      process.exit(1);
+    }
+    s=s.replace(anchor, anchor+"\n"+
+      "  // [elk-os slideover-body-id] Render the body for whichever task is open.\n"+
+      "  // activeId alone leaves the panel permanently empty when its render-phase\n"+
+      "  // seed does not land; taskId is authoritative while open, and activeId\n"+
+      "  // still covers the close animation after taskId goes null.\n"+
+      "  const bodyId = activeId ?? taskId;");
+
+    // 2. the gate itself
+    const gate="        {activeId ? (";
+    if (!s.includes(gate)) {
+      console.error("[portal] slideover-body-id: body gate `{activeId ? (` not found in "+p+"; update prepare-context.sh step 6d(h)");
+      process.exit(1);
+    }
+    s=s.replace(gate,"        {bodyId ? (");
+
+    // 3. the consumers inside the body that must agree with the gate
+    const before=s;
+    s=s.replace(/\{activeId && \(/g,"{bodyId && (");
+    s=s.replace(/ticketId\(activeId\)/g,"ticketId(bodyId)");
+    s=s.replace(/key=\{activeId\}/g,"key={bodyId}");
+    s=s.replace(/taskId=\{activeId\}/g,"taskId={bodyId}");
+    if (s===before) {
+      console.error("[portal] slideover-body-id: gate flipped but no body consumers were rewritten; the component shape changed, update prepare-context.sh step 6d(h)");
+      process.exit(1);
+    }
+    fs.writeFileSync(p,s);
+    console.log("[portal] patch "+p+": panel body renders for the open task, not only the adopted one");
+  '
+fi
+
 # ---------------------------------------------------------------------------
 # 7. Drop the build-context .dockerignore in place (docker reads it from the
 #    context root = .build). Committed source of truth lives at ../.dockerignore.
