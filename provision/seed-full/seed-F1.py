@@ -11,9 +11,11 @@ Reads DIRECTUS_ADMIN_TOKEN from ~/elk-os/.env inside this script; never prints i
 """
 import json
 import os
+import sys
 import time
-import urllib.error
-import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import load_env, make_req  # noqa: E402
 
 BASE = "https://cms.musterr.dev"
 DEMO_POLICY = "c69b84d1-8957-4687-a6dd-b049b3e890b9"
@@ -21,41 +23,8 @@ DEMO_EMAIL = "demo@muster.dev"       # public demo creds shown on the landing pa
 DEMO_PASSWORD = "muster-demo"        # NOT a secret
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
-
-
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
-
-
-def req(method, path, payload=None, token=TOKEN, raw_url=None):
-    """Return (status, parsed_json_or_None). Never raises on HTTP errors."""
-    url = raw_url or (BASE + path)
-    data = json.dumps(payload).encode() if payload is not None else None
-    headers = {"Content-Type": "application/json"}
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-    r = urllib.request.Request(url, data=data, headers=headers, method=method)
-    try:
-        with urllib.request.urlopen(r, timeout=45) as resp:
-            body = resp.read()
-            return resp.status, (json.loads(body) if body else None)
-    except urllib.error.HTTPError as e:
-        try:
-            body = e.read()
-            parsed = json.loads(body) if body else None
-        except Exception:
-            parsed = None
-        return e.code, parsed
-    except Exception as e:
-        return 0, {"errors": [{"message": f"transport: {e.__class__.__name__}: {e}"}]}
+req = make_req(BASE, TOKEN, timeout=45)
 
 
 report = {"fields": [], "relations": [], "permission_patches": [],
