@@ -152,20 +152,22 @@ def test_request_retries_5xx_then_returns_raw():
 
 
 # ---------------------------------------------------------------- call (core transport)
-def test_call_returns_status_and_body_bytes():
+def test_call_success_returns_status_body_and_no_error():
     raw, result = capture(
         lambda: dc.call("GET", BASE + "/items/x?limit=1", headers={"Authorization": "Bearer T"})
     )
-    status, body = result
+    status, body, err = result
     assert status == 200
     assert body == b'{"data": []}'
+    assert err is None
     assert raw[0]["headers"]["Authorization"] == "Bearer T"
 
 
-def test_call_httperror_returns_code_and_error_body():
-    status, body = capture(lambda: dc.call("GET", BASE + "/fields/os_tasks/workspace"))[1]
+def test_call_httperror_returns_code_body_and_error():
+    status, body, err = capture(lambda: dc.call("GET", BASE + "/fields/os_tasks/workspace"))[1]
     assert status == 404
     assert b"not found" in body
+    assert isinstance(err, urllib.error.HTTPError) and err.code == 404
 
 
 def test_call_retries_5xx_then_returns():
@@ -176,7 +178,7 @@ def test_call_retries_5xx_then_returns():
             overrides=always_500,
         )
     assert len(raw) == 3
-    assert result[0] == 503
+    assert result[0] == 503 and result[2] is not None
 
 
 # ---------------------------------------------------------------- make_upsert

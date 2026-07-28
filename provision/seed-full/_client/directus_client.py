@@ -28,15 +28,17 @@ def call(method, url, data=None, headers=None, timeout=45, retries=1,
     """Low-level urllib transport shared by every seed script's request helper.
 
     Does ONLY the mechanical part: build the Request, urlopen with a timeout,
-    optional retry, read the body. Returns ``(status, body_bytes)`` on success
-    and ``(code, error_body_bytes)`` on an HTTPError (so the caller can shape the
-    return exactly as its original helper did). Raises URLError after the final
-    attempt (retried in between only when ``retry_urlerror``). ``backoff(attempt)``
-    -> seconds to sleep (default ``2*(attempt+1)``).
+    optional retry, read the body. Returns ``(status, body_bytes, error)``:
+      * success -> (status, body_bytes, None)
+      * HTTP >=400 -> (code, error_body_bytes, HTTPError)  # body already read
+    The caller decides whether to RAISE ``error`` (raise-style helpers), SWALLOW
+    it and shape a return (swallow-style helpers), or ignore it. URLError is
+    retried only when ``retry_urlerror`` and re-raised after the final attempt.
+    ``backoff(attempt)`` -> seconds to sleep (default ``2*(attempt+1)``).
 
     The caller assembles the final url (query string included), body bytes, and
-    headers, so params/ctype/multipart/raw_url variations all stay in the thin
-    adapter -- this core stays universal.
+    headers, so params/ctype/multipart/raw_url/timeout variations all stay in the
+    thin adapter -- this core stays universal.
     """
     if backoff is None:
         def backoff(attempt):
@@ -46,19 +48,19 @@ def call(method, url, data=None, headers=None, timeout=45, retries=1,
         req = urllib.request.Request(url, data=data, method=method, headers=headers or {})
         try:
             with urllib.request.urlopen(req, timeout=timeout) as r:
-                return r.status, r.read()
+                return r.status, r.read(), None
         except urllib.error.HTTPError as e:
             body = e.read()
             if retry_5xx and e.code >= 500 and attempt < attempts - 1:
                 time.sleep(backoff(attempt))
                 continue
-            return e.code, body
+            return e.code, body, e
         except urllib.error.URLError:
             if retry_urlerror and attempt < attempts - 1:
                 time.sleep(backoff(attempt))
                 continue
             raise
-    return 0, b""
+    return 0, b"", None
 
 
 def load_env(path="~/elk-os/.env"):
