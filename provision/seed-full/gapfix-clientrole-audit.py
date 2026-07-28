@@ -5,21 +5,13 @@ Prints only ids, names, counts. Never prints the token.
 """
 import json
 import os
-import urllib.request
+import sys
 import urllib.parse
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
+
 BASE = "https://cms.musterr.dev"
-
-
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -28,15 +20,11 @@ TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
 def req(path, method="GET", body=None):
     url = BASE + path
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(url, data=data, method=method, headers={
-        "Authorization": "Bearer " + TOKEN,
-        "Content-Type": "application/json",
-    })
-    try:
-        with urllib.request.urlopen(r) as resp:
-            return json.load(resp)
-    except urllib.error.HTTPError as e:
-        return {"_error": e.code, "_body": e.read().decode()[:500]}
+    headers = {"Authorization": "Bearer " + TOKEN, "Content-Type": "application/json"}
+    st, raw, err = call(method, url, data=data, headers=headers, timeout=None)
+    if err is not None:
+        return {"_error": st, "_body": raw.decode()[:500]}
+    return json.loads(raw)
 
 
 roles = req("/roles?fields=id,name&limit=50").get("data", [])
