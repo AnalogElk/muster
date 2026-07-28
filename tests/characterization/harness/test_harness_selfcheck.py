@@ -10,11 +10,14 @@ CCHAR_DIR = HARNESS_DIR.parent  # tests/characterization
 
 
 def _run():
+    import os
+
     proc = subprocess.run(
         [sys.executable, "-m", "harness.run_script", str(HARNESS_DIR / "_fake_script.py")],
         cwd=str(CCHAR_DIR),
         capture_output=True,
         text=True,
+        env=dict(os.environ, PYTHONHASHSEED="0"),
     )
     assert proc.returncode == 0, proc.stderr
     return proc.stdout

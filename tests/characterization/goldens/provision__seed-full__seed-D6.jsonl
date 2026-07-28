@@ -1,0 +1,1 @@
+{"body_b64":"","body_sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","headers":[["authorization","Bearer <token>"],["content-type","application/json"]],"method":"GET","seq":0,"url":"https://cms.musterr.dev/items/kb_pages?filter=%7B%22space%22%3A+%7B%22_eq%22%3A+%221845cdcb-1e6b-4802-9009-4ed40e14d156%22%7D%7D&aggregate%5Bcount%5D=id"}

@@ -1,0 +1,57 @@
+# In-scope Muster seed scripts for golden request-sequence tests.
+# provision/**.py that perform HTTP (urllib / requests / http.client).
+# Excluded (no HTTP): env-wire-run2.py, set-portal-image.py, set-portal-image-csp2.py
+# Regenerate list: see gen_goldens.py / SCOPE drift-guard test.
+provision/demo-readonly-role.py
+provision/demo-refresh/infra-snapshots-refresh.py
+provision/re-add-kb.py
+provision/seed-demo.py
+provision/seed-full/audit-drift-perms.py
+provision/seed-full/fetch-dam-objects.py
+provision/seed-full/gapfix-client-messages.py
+provision/seed-full/gapfix-client-probe.py
+provision/seed-full/gapfix-client-sections.py
+provision/seed-full/gapfix-clientdash-topup.py
+provision/seed-full/gapfix-clientrole-audit.py
+provision/seed-full/gapfix-clientrole-audit2.py
+provision/seed-full/gapfix-dashboard-seed.py
+provision/seed-full/gapfix-diag.py
+provision/seed-full/gapfix-probe.py
+provision/seed-full/gapfix-seed.py
+provision/seed-full/gapfix-tools-help-client.py
+provision/seed-full/gapfix2-gql-probe.py
+provision/seed-full/gapfix2-nullfill-billing-interval.py
+provision/seed-full/gapfix2-probe-tasks-invoices.py
+provision/seed-full/gapfix2-seed-blocked-tasks.py
+provision/seed-full/gapfix4-probe-post.py
+provision/seed-full/gapfix4-probe-pre.py
+provision/seed-full/gapfix4-probe-pre2.py
+provision/seed-full/gapfix4-seed.py
+provision/seed-full/gapfix5-projects.py
+provision/seed-full/gapfix6-brand-kb.py
+provision/seed-full/gapfix6-gql-probe.py
+provision/seed-full/insights-seed.py
+provision/seed-full/nullfill-retainer-due.py
+provision/seed-full/patch-dam-logo-keys.py
+provision/seed-full/probe-broken.py
+provision/seed-full/probe-gapfix-client4-evidence.py
+provision/seed-full/probe-gapfix-client4.py
+provision/seed-full/probe-infra-shape.py
+provision/seed-full/probe-rowan-avatar.py
+provision/seed-full/probe-run2-rebuild.py
+provision/seed-full/run2-P1-data.py
+provision/seed-full/run2-P1-probe.py
+provision/seed-full/run2-P2-ledgers.py
+provision/seed-full/run2-P2-postprobe.py
+provision/seed-full/run2-P2-preprobe.py
+provision/seed-full/run2-P3-dam.py
+provision/seed-full/seed-D1.py
+provision/seed-full/seed-D2.py
+provision/seed-full/seed-D3.py
+provision/seed-full/seed-D4.py
+provision/seed-full/seed-D5.py
+provision/seed-full/seed-D6.py
+provision/seed-full/seed-F1.py
+provision/seed-full/seed-F2.py
+provision/seed-full/seed-F3.py
+provision/seed-full/seed-F4.py
