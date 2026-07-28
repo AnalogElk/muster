@@ -151,6 +151,34 @@ def test_request_retries_5xx_then_returns_raw():
     assert result == (503, {"_raw": '{"boom": 1}'})
 
 
+# ---------------------------------------------------------------- call (core transport)
+def test_call_returns_status_and_body_bytes():
+    raw, result = capture(
+        lambda: dc.call("GET", BASE + "/items/x?limit=1", headers={"Authorization": "Bearer T"})
+    )
+    status, body = result
+    assert status == 200
+    assert body == b'{"data": []}'
+    assert raw[0]["headers"]["Authorization"] == "Bearer T"
+
+
+def test_call_httperror_returns_code_and_error_body():
+    status, body = capture(lambda: dc.call("GET", BASE + "/fields/os_tasks/workspace"))[1]
+    assert status == 404
+    assert b"not found" in body
+
+
+def test_call_retries_5xx_then_returns():
+    always_500 = [(lambda m, p, b: True, (503, {"boom": 1}))]
+    with freeze():
+        raw, result = capture(
+            lambda: dc.call("POST", BASE + "/items/x", data=b"{}", retries=3, retry_5xx=True),
+            overrides=always_500,
+        )
+    assert len(raw) == 3
+    assert result[0] == 503
+
+
 # ---------------------------------------------------------------- make_upsert
 def test_upsert_create_path():
     request = dc.make_request(BASE, "DEF")

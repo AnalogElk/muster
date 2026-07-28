@@ -23,6 +23,44 @@ import urllib.request
 _SENTINEL = object()
 
 
+def call(method, url, data=None, headers=None, timeout=45, retries=1,
+         retry_5xx=False, retry_urlerror=False, backoff=None):
+    """Low-level urllib transport shared by every seed script's request helper.
+
+    Does ONLY the mechanical part: build the Request, urlopen with a timeout,
+    optional retry, read the body. Returns ``(status, body_bytes)`` on success
+    and ``(code, error_body_bytes)`` on an HTTPError (so the caller can shape the
+    return exactly as its original helper did). Raises URLError after the final
+    attempt (retried in between only when ``retry_urlerror``). ``backoff(attempt)``
+    -> seconds to sleep (default ``2*(attempt+1)``).
+
+    The caller assembles the final url (query string included), body bytes, and
+    headers, so params/ctype/multipart/raw_url variations all stay in the thin
+    adapter -- this core stays universal.
+    """
+    if backoff is None:
+        def backoff(attempt):
+            return 2 * (attempt + 1)
+    attempts = max(1, retries)
+    for attempt in range(attempts):
+        req = urllib.request.Request(url, data=data, method=method, headers=headers or {})
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return r.status, r.read()
+        except urllib.error.HTTPError as e:
+            body = e.read()
+            if retry_5xx and e.code >= 500 and attempt < attempts - 1:
+                time.sleep(backoff(attempt))
+                continue
+            return e.code, body
+        except urllib.error.URLError:
+            if retry_urlerror and attempt < attempts - 1:
+                time.sleep(backoff(attempt))
+                continue
+            raise
+    return 0, b""
+
+
 def load_env(path="~/elk-os/.env"):
     """Parse a dotenv file into a dict (strip, skip blank/#, split on first =)."""
     env = {}
