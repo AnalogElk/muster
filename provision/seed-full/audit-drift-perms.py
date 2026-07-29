@@ -18,21 +18,15 @@ Never prints the admin token or any env value.
 """
 import json
 import os
-import urllib.request
-import urllib.error
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 BASE = "https://cms.musterr.dev"
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+# load_env imported from _client.directus_client
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -44,18 +38,17 @@ def req(path, token=None, method="GET", body=None):
     if token:
         headers["Authorization"] = "Bearer " + token
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(url, data=data, headers=headers, method=method)
     try:
-        with urllib.request.urlopen(r, timeout=30) as resp:
-            return resp.status, json.loads(resp.read().decode())
-    except urllib.error.HTTPError as e:
-        try:
-            payload = json.loads(e.read().decode())
-        except Exception:
-            payload = None
-        return e.code, payload
+        st, raw, err = call(method, url, data=data, headers=headers, timeout=30)
     except Exception as e:  # noqa: BLE001
         return -1, {"error": str(e)}
+    if err is None:
+        return st, json.loads(raw.decode())
+    try:
+        payload = json.loads(raw.decode())
+    except Exception:
+        payload = None
+    return st, payload
 
 
 SP = os.path.dirname(os.path.abspath(__file__))

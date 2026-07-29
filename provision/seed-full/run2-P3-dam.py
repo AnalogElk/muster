@@ -30,23 +30,17 @@ dam_share_links and dam_render_jobs are created but left empty per spec
 import hashlib
 import json
 import os
-import urllib.error
+import sys
 import urllib.parse
-import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 BASE = "https://cms.musterr.dev"
 POLICY_DEMO = "c69b84d1-8957-4687-a6dd-b049b3e890b9"  # Demo Read-Only (Employee + Client roles)
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+# load_env imported from _client.directus_client
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -55,23 +49,19 @@ TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
 def req(path, method="GET", body=None, token=None):
     url = BASE + path
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(
-        url, data=data, method=method,
-        headers={
-            "Authorization": "Bearer " + (token or TOKEN),
-            "Content-Type": "application/json",
-        },
-    )
+    headers = {
+        "Authorization": "Bearer " + (token or TOKEN),
+        "Content-Type": "application/json",
+    }
+    st, raw, err = call(method, url, data=data, headers=headers, timeout=None)
+    if err is None:
+        text = raw.decode()
+        return st, (json.loads(text) if text else {})
     try:
-        with urllib.request.urlopen(r) as resp:
-            raw = resp.read().decode()
-            return resp.status, (json.loads(raw) if raw else {})
-    except urllib.error.HTTPError as e:
-        try:
-            payload = json.loads(e.read().decode())
-        except Exception:
-            payload = {}
-        return e.code, payload
+        payload = json.loads(raw.decode())
+    except Exception:
+        payload = {}
+    return st, payload
 
 
 def die(msg, payload=None):

@@ -28,23 +28,17 @@ import json
 import math
 import os
 import random
-import urllib.error
-import urllib.request
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 from datetime import datetime, timedelta, timezone
 
 BASE = "https://cms.musterr.dev"
 DEMO_POLICY = "c69b84d1-8957-4687-a6dd-b049b3e890b9"
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+# load_env imported from _client.directus_client
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -57,15 +51,13 @@ def req(path, method="GET", body=None):
         "Authorization": "Bearer " + TOKEN,
         "Content-Type": "application/json",
     }
-    r = urllib.request.Request(url, data=data, method=method, headers=headers)
+    st, raw, err = call(method, url, data=data, headers=headers, timeout=60)
+    if err is None:
+        return st, json.loads(raw.decode() or "{}")
     try:
-        with urllib.request.urlopen(r, timeout=60) as resp:
-            return resp.status, json.loads(resp.read().decode() or "{}")
-    except urllib.error.HTTPError as e:
-        try:
-            return e.code, json.loads(e.read().decode() or "{}")
-        except Exception:
-            return e.code, {}
+        return st, json.loads(raw.decode() or "{}")
+    except Exception:
+        return st, {}
 
 
 def die_on(st, data, what):
