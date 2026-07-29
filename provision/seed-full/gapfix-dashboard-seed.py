@@ -25,7 +25,10 @@ Fixes (diagnosed against frozen portal-src):
 Idempotent. No deletes. No non-null value is ever overwritten. Admin token is
 read from ~/elk-os/.env inside this script and never printed.
 """
-import json, os, urllib.request, urllib.error
+import json, os, sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 from datetime import datetime, timedelta, timezone
 
 BASE = "https://cms.musterr.dev"
@@ -34,15 +37,7 @@ PUBLIC_POLICY = "abf8a154-5b1c-4a46-ac9c-7300570f4f17"
 WON_STAGE = "01668fb5-ecbb-4ad6-8518-bfc06fd25887"
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+# load_env imported from _client.directus_client
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -50,16 +45,12 @@ TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
 
 def req(method, path, body=None):
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(
-        BASE + path, data=data, method=method,
-        headers={"Authorization": "Bearer " + TOKEN, "Content-Type": "application/json"},
-    )
-    try:
-        resp = urllib.request.urlopen(r, timeout=60)
-        raw = resp.read().decode()
-        return json.loads(raw) if raw else {}
-    except urllib.error.HTTPError as e:
-        return {"_http": e.code, "_body": e.read().decode()[:400]}
+    headers = {"Authorization": "Bearer " + TOKEN, "Content-Type": "application/json"}
+    st, raw, err = call(method, BASE + path, data=data, headers=headers, timeout=60)
+    if err is None:
+        text = raw.decode()
+        return json.loads(text) if text else {}
+    return {"_http": st, "_body": raw.decode()[:400]}
 
 
 report = {}

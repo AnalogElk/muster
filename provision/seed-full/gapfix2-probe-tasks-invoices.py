@@ -5,21 +5,16 @@ Prints ONLY demo-content ids/names/counts. Never prints the token.
 """
 import json
 import os
-import urllib.request
+import sys
 import urllib.parse
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 BASE = "https://cms.musterr.dev"
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+# load_env imported from _client.directus_client
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -29,9 +24,10 @@ def req(path, params=None):
     url = BASE + path
     if params:
         url += "?" + urllib.parse.urlencode(params)
-    r = urllib.request.Request(url, headers={"Authorization": "Bearer " + TOKEN})
-    with urllib.request.urlopen(r) as resp:
-        return json.load(resp)
+    st, raw, err = call("GET", url, headers={"Authorization": "Bearer " + TOKEN}, timeout=None)
+    if err is not None:
+        raise err
+    return json.loads(raw)
 
 
 # 1. Demo users and their avatars
