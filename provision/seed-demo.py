@@ -21,7 +21,10 @@ Usage:
     DIRECTUS_ADMIN_TOKEN=... DIRECTUS_URL=https://cms.musterr.dev \\
         python3 provision/seed-demo.py
 """
-import os, sys, json, urllib.request, urllib.error
+import os, sys, json
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "seed-full"))
+from _client.directus_client import call  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 B = os.environ.get("DIRECTUS_URL", "https://cms.musterr.dev").rstrip("/")
@@ -35,15 +38,12 @@ DEMO_USER = "257a4b75-deff-476d-953d-1898c57f6684"
 def req(method, path, body=None):
     url = B + path
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(url, data=data, method=method)
-    r.add_header("Authorization", "Bearer " + TOKEN)
-    r.add_header("Content-Type", "application/json")
-    try:
-        with urllib.request.urlopen(r) as resp:
-            txt = resp.read().decode()
-            return resp.status, (json.loads(txt) if txt else {})
-    except urllib.error.HTTPError as e:
-        return e.code, json.loads(e.read().decode() or "{}")
+    headers = {"Authorization": "Bearer " + TOKEN, "Content-Type": "application/json"}
+    st, raw, err = call(method, url, data=data, headers=headers, timeout=None)
+    if err is None:
+        txt = raw.decode()
+        return st, (json.loads(txt) if txt else {})
+    return st, json.loads(raw.decode() or "{}")
 
 
 def get_all(coll, fields="*"):
