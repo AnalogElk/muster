@@ -2,7 +2,10 @@
 """Post-fix probe run AS THE CLIENT DEMO USER (client@muster.dev, public demo
 creds) replicating the exact query shapes the four portal sections fire.
 Prints counts/names only."""
-import json, os, urllib.request, urllib.parse
+import json, os, sys, urllib.parse
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call as _call  # noqa: E402
 
 BASE = "https://cms.musterr.dev"
 
@@ -11,15 +14,13 @@ def call(path, token=None, method="GET", body=None, raw_body=None):
     if token:
         headers["Authorization"] = f"Bearer {token}"
     data = raw_body or (json.dumps(body).encode() if body is not None else None)
-    r = urllib.request.Request(BASE + path, method=method, headers=headers, data=data)
+    st, raw, err = _call(method, BASE + path, data=data, headers=headers, timeout=30)
+    if err is None:
+        return st, json.loads(raw)
     try:
-        with urllib.request.urlopen(r, timeout=30) as resp:
-            return resp.status, json.load(resp)
-    except urllib.error.HTTPError as e:
-        try:
-            return e.code, json.loads(e.read().decode())
-        except Exception:
-            return e.code, {}
+        return st, json.loads(raw.decode())
+    except Exception:
+        return st, {}
 
 out = {}
 
