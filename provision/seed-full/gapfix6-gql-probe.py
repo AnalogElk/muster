@@ -5,15 +5,9 @@ import os
 import urllib.request
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+import sys  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import load_env  # noqa: E402
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]

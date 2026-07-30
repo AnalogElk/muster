@@ -27,8 +27,11 @@ is set false on every collection row that carries the flag.
 import io
 import json
 import os
-import urllib.request
+import sys
 import urllib.parse
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 import uuid
 
 BASE = "https://cms.musterr.dev"
@@ -38,15 +41,7 @@ PROJ_REDESIGN = "430df3e9"  # prefix only, resolved below
 PROJ_WHOLESALE = "a42f4921"
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+# load_env imported from _client.directus_client
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -54,16 +49,11 @@ TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
 
 def req(path, method="GET", body=None, raw_data=None, content_type="application/json"):
     data = raw_data if raw_data is not None else (json.dumps(body).encode() if body is not None else None)
-    r = urllib.request.Request(BASE + path, data=data, method=method, headers={
-        "Authorization": "Bearer " + TOKEN,
-        "Content-Type": content_type,
-    })
-    try:
-        with urllib.request.urlopen(r) as resp:
-            payload = resp.read()
-            return json.loads(payload) if payload else {}
-    except urllib.error.HTTPError as e:
-        return {"_error": e.code, "_body": e.read().decode()[:400]}
+    headers = {"Authorization": "Bearer " + TOKEN, "Content-Type": content_type}
+    st, raw, err = call(method, BASE + path, data=data, headers=headers, timeout=None)
+    if err is None:
+        return json.loads(raw) if raw else {}
+    return {"_error": st, "_body": raw.decode()[:400]}
 
 
 # ---------------------------------------------------------------- 1. field add

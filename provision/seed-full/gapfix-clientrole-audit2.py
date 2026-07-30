@@ -10,15 +10,9 @@ CLIENT_USER = "91fb50ea-5ead-4713-9c48-a32bb945932f"
 EMP_USER = "257a4b75-deff-476d-953d-1898c57f6684"
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+import sys  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -26,15 +20,11 @@ TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
 
 def req(path, method="GET", body=None, token=None):
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(BASE + path, data=data, method=method, headers={
-        "Authorization": "Bearer " + (token or TOKEN),
-        "Content-Type": "application/json",
-    })
-    try:
-        with urllib.request.urlopen(r) as resp:
-            return json.load(resp)
-    except urllib.error.HTTPError as e:
-        return {"_error": e.code, "_body": e.read().decode()[:300]}
+    headers = {"Authorization": "Bearer " + (token or TOKEN), "Content-Type": "application/json"}
+    st, raw, err = call(method, BASE + path, data=data, headers=headers, timeout=None)
+    if err is None:
+        return json.loads(raw)
+    return {"_error": st, "_body": raw.decode()[:300]}
 
 
 # 1. notifications by recipient

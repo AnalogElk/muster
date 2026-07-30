@@ -11,15 +11,9 @@ BASE = "https://cms.musterr.dev"
 APP = "https://app.musterr.dev"
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+import sys  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -33,17 +27,16 @@ def req(path, method="GET", body=None, base=BASE, headers=None):
         h["Authorization"] = "Bearer " + TOKEN
     if headers:
         h.update(headers)
-    r = urllib.request.Request(url, data=data, method=method, headers=h)
     try:
-        with urllib.request.urlopen(r, timeout=30) as resp:
-            return resp.status, json.loads(resp.read().decode() or "{}")
-    except urllib.error.HTTPError as e:
-        try:
-            return e.code, json.loads(e.read().decode() or "{}")
-        except Exception:
-            return e.code, {}
+        st, raw, err = call(method, url, data=data, headers=h, timeout=30)
     except Exception as e:
         return 0, {"error": str(e)}
+    if err is None:
+        return st, json.loads(raw.decode() or "{}")
+    try:
+        return st, json.loads(raw.decode() or "{}")
+    except Exception:
+        return st, {}
 
 
 print("== 1. target collections exist? ==")

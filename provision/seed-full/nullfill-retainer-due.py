@@ -5,36 +5,28 @@ Only writes when the field is null (never overwrites non-null). Idempotent.
 Prints demo content only; the token never renders."""
 import json
 import os
+import sys
 import urllib.parse
-import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 BASE = "https://cms.musterr.dev"
-
-
-def load_env():
-    env = {}
-    path = os.path.join(os.path.expanduser("~"), "elk-os", ".env")
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
 
 
 def req(path, method="GET", body=None):
-    r = urllib.request.Request(BASE + path, method=method)
-    r.add_header("Authorization", "Bearer " + TOKEN)
+    headers = {"Authorization": "Bearer " + TOKEN}
     data = None
     if body is not None:
-        r.add_header("Content-Type", "application/json")
+        headers["Content-Type"] = "application/json"
         data = json.dumps(body).encode()
-    with urllib.request.urlopen(r, data=data, timeout=30) as resp:
-        return json.load(resp)
+    st, raw, err = call(method, BASE + path, data=data, headers=headers, timeout=30)
+    if err is not None:
+        raise err
+    return json.loads(raw)
 
 
 rows = req("/items/os_projects?filter[name][_icontains]=" + urllib.parse.quote("Care Plan Retainer") + "&fields=id,name,due_date,start_date,organization")["data"]

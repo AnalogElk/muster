@@ -1,35 +1,25 @@
 #!/usr/bin/env python3
 """Second pre-probe: products route shape, retainer projects, enum choices,
 invoice amount consistency, org-2 contacts/projects, files for attachments."""
-import json, os, urllib.request, urllib.parse
+import json, os, sys, urllib.parse
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 ENV = load_env()
 BASE = "https://cms.musterr.dev"
 TOKEN = ENV["DIRECTUS_ADMIN_TOKEN"]
 
 def req(path, method="GET", body=None):
-    r = urllib.request.Request(
-        BASE + path, method=method,
-        headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"},
-        data=json.dumps(body).encode() if body is not None else None)
+    data = json.dumps(body).encode() if body is not None else None
+    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+    st, raw, err = call(method, BASE + path, data=data, headers=headers, timeout=30)
+    if err is None:
+        return st, json.loads(raw)
     try:
-        with urllib.request.urlopen(r, timeout=30) as resp:
-            return resp.status, json.load(resp)
-    except urllib.error.HTTPError as e:
-        try:
-            return e.code, json.loads(e.read().decode())
-        except Exception:
-            return e.code, {}
+        return st, json.loads(raw.decode())
+    except Exception:
+        return st, {}
 
 out = {}
 

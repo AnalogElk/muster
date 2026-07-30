@@ -15,21 +15,16 @@ Then, with the CLIENT USER'S OWN session token (public demo creds):
 """
 import json
 import os
+import sys
 import urllib.parse
-import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 BASE = "https://cms.musterr.dev"
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+# load_env imported from _client.directus_client
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -41,18 +36,16 @@ CLIENT_PASS = "muster-demo"  # public demo cred (landing-page tier), not a secre
 def req(path, method="GET", body=None, token=TOKEN):
     url = BASE + path
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(url, data=data, method=method)
-    r.add_header("Authorization", "Bearer " + token)
+    headers = {"Authorization": "Bearer " + token}
     if data:
-        r.add_header("Content-Type", "application/json")
+        headers["Content-Type"] = "application/json"
+    st, raw, err = call(method, url, data=data, headers=headers, timeout=30)
+    if err is None:
+        return st, json.loads(raw.decode())
     try:
-        with urllib.request.urlopen(r, timeout=30) as resp:
-            return resp.status, json.loads(resp.read().decode())
-    except urllib.error.HTTPError as e:
-        try:
-            return e.code, json.loads(e.read().decode())
-        except Exception:
-            return e.code, {"errors": [{"message": "unreadable"}]}
+        return st, json.loads(raw.decode())
+    except Exception:
+        return st, {"errors": [{"message": "unreadable"}]}
 
 
 print("== 1. role / user / access ==")

@@ -23,39 +23,26 @@ Usage: python3 run2-P1-data.py
 """
 import json
 import os
-import urllib.error
+import sys
 import urllib.parse
-import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 BASE = "https://cms.musterr.dev"
-
-
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
 
 
 def req(method, path, body=None):
-    url = BASE + path
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(url, data=data, method=method)
-    r.add_header("Authorization", "Bearer " + TOKEN)
-    r.add_header("Content-Type", "application/json")
-    try:
-        with urllib.request.urlopen(r) as resp:
-            raw = resp.read().decode()
-            return resp.status, (json.loads(raw) if raw else {})
-    except urllib.error.HTTPError as e:
-        return e.code, e.read().decode()[:400]
+    headers = {"Authorization": "Bearer " + TOKEN, "Content-Type": "application/json"}
+    st, raw, err = call(method, BASE + path, data=data, headers=headers, timeout=None)
+    if err is None:
+        text = raw.decode()
+        return st, (json.loads(text) if text else {})
+    return st, raw.decode()[:400]
 
 
 def get(col, params):

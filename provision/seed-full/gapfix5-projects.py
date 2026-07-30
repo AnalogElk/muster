@@ -14,21 +14,14 @@ Idempotent; safe to re-run. Prints counts and ids only.
 """
 import json
 import os
+import sys
 import urllib.request
 import urllib.parse
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
+
 BASE = "https://cms.musterr.dev"
-
-
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -39,12 +32,11 @@ def req(method, path, params=None, body=None):
     if params:
         url += "?" + urllib.parse.urlencode(params)
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(url, data=data, method=method, headers={
-        "Authorization": "Bearer " + TOKEN,
-        "Content-Type": "application/json",
-    })
-    with urllib.request.urlopen(r, timeout=30) as resp:
-        return json.load(resp)
+    headers = {"Authorization": "Bearer " + TOKEN, "Content-Type": "application/json"}
+    st, raw, err = call(method, url, data=data, headers=headers, timeout=30)
+    if err is not None:
+        raise err
+    return json.loads(raw)
 
 
 STUDIO_PROJECT_NAMES = [

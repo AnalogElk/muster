@@ -11,41 +11,39 @@ Replicates the portal's exact query shapes:
 Prints counts, names, and bucket splits only.
 """
 import json
-import urllib.error
+import os
+import sys
 import urllib.parse
-import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call  # noqa: E402
 
 BASE = "https://cms.musterr.dev"
 
 # Public demo creds (shown on the landing page; not a secret)
 body = json.dumps({"email": "demo@muster.dev", "password": "muster-demo"}).encode()
-r = urllib.request.Request(BASE + "/auth/login", data=body, method="POST",
-                           headers={"Content-Type": "application/json"})
-with urllib.request.urlopen(r, timeout=30) as resp:
-    TOKEN = json.load(resp)["data"]["access_token"]
+_st, _raw, _err = call("POST", BASE + "/auth/login", data=body,
+                       headers={"Content-Type": "application/json"}, timeout=30)
+if _err is not None:
+    raise _err
+TOKEN = json.loads(_raw)["data"]["access_token"]
 print("demo login: OK")
 
 def gql(query):
     data = json.dumps({"query": query}).encode()
-    r = urllib.request.Request(BASE + "/graphql", data=data, method="POST",
-        headers={"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(r, timeout=30) as resp:
-            return json.load(resp)
-    except urllib.error.HTTPError as e:
-        return json.load(e)
+    headers = {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+    st, raw, err = call("POST", BASE + "/graphql", data=data, headers=headers, timeout=30)
+    return json.loads(raw)
 
 def rest(path):
-    r = urllib.request.Request(BASE + path,
-        headers={"Authorization": f"Bearer {TOKEN}"})
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+    st, raw, err = call("GET", BASE + path, headers=headers, timeout=30)
+    if err is None:
+        return st, json.loads(raw)
     try:
-        with urllib.request.urlopen(r, timeout=30) as resp:
-            return resp.status, json.load(resp)
-    except urllib.error.HTTPError as e:
-        try:
-            return e.code, json.load(e)
-        except Exception:
-            return e.code, None
+        return st, json.loads(raw)
+    except Exception:
+        return st, None
 
 # 1. invoices KPI
 INVOICE_FIELDS = """

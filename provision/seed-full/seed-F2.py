@@ -19,9 +19,10 @@ import json
 import os
 import sys
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 import uuid
 
 BASE = "https://cms.musterr.dev"
@@ -29,16 +30,7 @@ SEED_DIR = os.path.expanduser("~/elk-os/provision/seed-full")
 MANIFEST_PATH = os.path.join(SEED_DIR, "assets-manifest.json")
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            k, _, v = line.partition("=")
-            env[k.strip()] = v.strip()
-    return env
+# load_env imported from _client.directus_client
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -52,9 +44,10 @@ def req(method, path, body=None, ctype="application/json", timeout=120):
     headers = {"Authorization": "Bearer " + TOKEN}
     if data is not None:
         headers["Content-Type"] = ctype
-    r = urllib.request.Request(BASE + path, data=data, method=method, headers=headers)
-    with urllib.request.urlopen(r, timeout=timeout) as resp:
-        return json.load(resp)
+    st, raw, err = call(method, BASE + path, data=data, headers=headers, timeout=timeout)
+    if err is not None:
+        raise err
+    return json.loads(raw)
 
 
 def get(path):

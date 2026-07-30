@@ -7,35 +7,26 @@ Prints counts and small samples only; never prints tokens.
 """
 import json
 import os
-import urllib.request
+import sys
 import urllib.parse
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 BASE = "https://cms.musterr.dev"
 CLIENT_USER = "91fb50ea-5ead-4713-9c48-a32bb945932f"
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+# load_env imported from _client.directus_client
 
 
 def req(path, method="GET", body=None, token=None):
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(BASE + path, data=data, method=method, headers={
-        "Authorization": "Bearer " + token,
-        "Content-Type": "application/json",
-    })
-    try:
-        with urllib.request.urlopen(r) as resp:
-            return json.load(resp)
-    except urllib.error.HTTPError as e:
-        return {"_error": e.code, "_body": e.read().decode()[:300]}
+    headers = {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
+    st, raw, err = call(method, BASE + path, data=data, headers=headers, timeout=None)
+    if err is None:
+        return json.loads(raw)
+    return {"_error": st, "_body": raw.decode()[:300]}
 
 
 ADMIN = load_env()["DIRECTUS_ADMIN_TOKEN"]

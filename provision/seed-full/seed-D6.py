@@ -28,21 +28,12 @@ import json
 import os
 import sys
 import urllib.parse
-import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 BASE = "https://cms.musterr.dev"
 ENGINEERING_SPACE_ID = "1845cdcb-1e6b-4802-9009-4ed40e14d156"
-
-
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -53,15 +44,12 @@ def req(method, path, params=None, body=None):
     if params:
         url += "?" + urllib.parse.urlencode(params)
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(url, data=data, method=method)
-    r.add_header("Authorization", "Bearer " + TOKEN)
-    r.add_header("Content-Type", "application/json")
-    try:
-        with urllib.request.urlopen(r) as resp:
-            return json.loads(resp.read().decode() or "{}")
-    except urllib.error.HTTPError as e:
-        detail = e.read().decode()[:400]
-        raise RuntimeError(f"{method} {path} -> HTTP {e.code}: {detail}") from e
+    headers = {"Authorization": "Bearer " + TOKEN, "Content-Type": "application/json"}
+    st, raw, err = call(method, url, data=data, headers=headers, timeout=None)
+    if err is not None:
+        detail = raw.decode()[:400]
+        raise RuntimeError(f"{method} {path} -> HTTP {st}: {detail}") from err
+    return json.loads(raw.decode() or "{}")
 
 
 def find_one(collection, filt, fields="id"):

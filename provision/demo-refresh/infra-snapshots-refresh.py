@@ -29,8 +29,7 @@ Output: row counts and dates only.
 import copy
 import json
 import os
-import urllib.error
-import urllib.request
+import sys
 from calendar import monthrange
 from datetime import datetime, timedelta, timezone
 
@@ -38,16 +37,8 @@ BASE = "https://cms.musterr.dev"
 MAX_CATCHUP_DAYS = 14
 
 
-def load_env():
-    env = {}
-    path = os.path.join(os.path.expanduser("~"), "elk-os", ".env")
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "seed-full"))
+from _client.directus_client import call, load_env  # noqa: E402
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -56,14 +47,11 @@ TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
 def req(path, method="GET", body=None):
     url = BASE + path
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(url, data=data, method=method)
-    r.add_header("Authorization", "Bearer " + TOKEN)
-    r.add_header("Content-Type", "application/json")
-    try:
-        with urllib.request.urlopen(r, timeout=30) as resp:
-            return resp.status, json.load(resp)
-    except urllib.error.HTTPError as e:
-        return e.code, json.loads(e.read().decode() or "{}")
+    headers = {"Authorization": "Bearer " + TOKEN, "Content-Type": "application/json"}
+    st, raw, err = call(method, url, data=data, headers=headers, timeout=30)
+    if err is None:
+        return st, json.loads(raw)
+    return st, json.loads(raw.decode() or "{}")
 
 
 def iso_day(dt):

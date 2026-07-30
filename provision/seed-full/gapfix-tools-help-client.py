@@ -33,21 +33,15 @@ Run: python3 ~/elk-os/provision/seed-full/gapfix-tools-help-client.py
 """
 import json
 import os
-import urllib.error
+import sys
 import urllib.parse
-import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 # ---------------------------------------------------------------- access
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+# load_env imported from _client.directus_client
 
 ENV = load_env()
 BASE = "https://cms.musterr.dev"
@@ -77,16 +71,13 @@ def req(path, method="GET", body=None, token=TOKEN):
     headers = {"Content-Type": "application/json"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
-    r = urllib.request.Request(BASE + path, data=data, method=method, headers=headers)
+    st, raw, err = call(method, BASE + path, data=data, headers=headers, timeout=60)
+    if err is None:
+        return st, (json.loads(raw) if raw else None)
     try:
-        with urllib.request.urlopen(r, timeout=60) as resp:
-            raw = resp.read()
-            return resp.status, (json.loads(raw) if raw else None)
-    except urllib.error.HTTPError as e:
-        try:
-            return e.code, json.load(e)
-        except Exception:
-            return e.code, None
+        return st, json.loads(raw)
+    except Exception:
+        return st, None
 
 
 def die_on(status, data, ctx):

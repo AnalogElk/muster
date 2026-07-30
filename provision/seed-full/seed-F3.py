@@ -24,15 +24,8 @@ import urllib.parse
 import urllib.request
 import uuid
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 
 ENV = load_env()
 BASE = os.environ.get("DIRECTUS_URL", "https://cms.musterr.dev").rstrip("/")
@@ -44,16 +37,12 @@ PROTECTED_USERS = {"257a4b75-deff-476d-953d-1898c57f6684",
 
 def req(method, path, body=None):
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(BASE + path, data=data, method=method,
-                               headers={"Authorization": "Bearer " + TOKEN,
-                                        "Content-Type": "application/json"})
-    try:
-        with urllib.request.urlopen(r, timeout=60) as resp:
-            raw = resp.read()
-            return json.loads(raw) if raw else {}
-    except urllib.error.HTTPError as e:
-        detail = e.read().decode()[:500]
-        raise RuntimeError("%s %s -> HTTP %s: %s" % (method, path, e.code, detail))
+    headers = {"Authorization": "Bearer " + TOKEN, "Content-Type": "application/json"}
+    st, raw, err = call(method, BASE + path, data=data, headers=headers, timeout=60)
+    if err is not None:
+        detail = raw.decode()[:500]
+        raise RuntimeError("%s %s -> HTTP %s: %s" % (method, path, st, detail))
+    return json.loads(raw) if raw else {}
 
 def get(path):
     return req("GET", path)

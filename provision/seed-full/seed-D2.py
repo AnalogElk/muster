@@ -27,23 +27,17 @@ idempotent (upsert by natural key), deterministic (fixed dates), add-only.
 import json
 import os
 import sys
-import urllib.error
+import sys
 import urllib.parse
-import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import call, load_env  # noqa: E402
 from decimal import Decimal
 
 BASE = "https://cms.musterr.dev"
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
+# load_env imported from _client.directus_client
 
 
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
@@ -54,17 +48,13 @@ def req(method, path, body=None, token=TOKEN, params=None):
     if params:
         url += ("&" if "?" in url else "?") + urllib.parse.urlencode(params)
     data = json.dumps(body).encode() if body is not None else None
-    r = urllib.request.Request(url, data=data, method=method)
+    headers = {"Content-Type": "application/json"}
     if token:
-        r.add_header("Authorization", "Bearer " + token)
-    r.add_header("Content-Type", "application/json")
-    try:
-        with urllib.request.urlopen(r, timeout=60) as resp:
-            raw = resp.read()
-            return resp.status, (json.loads(raw) if raw else None)
-    except urllib.error.HTTPError as e:
-        raw = e.read().decode()[:500]
-        return e.code, {"error": raw}
+        headers["Authorization"] = "Bearer " + token
+    st, raw, err = call(method, url, data=data, headers=headers, timeout=60)
+    if err is None:
+        return st, (json.loads(raw) if raw else None)
+    return st, {"error": raw.decode()[:500]}
 
 
 def get_items(collection, filt=None, limit=200, fields=None):

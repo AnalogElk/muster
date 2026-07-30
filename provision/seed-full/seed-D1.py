@@ -18,10 +18,14 @@ close_date, next_contact_date, expiration_date plain fields).
 import json
 import os
 import sys
-import time
-import urllib.error
-import urllib.parse
-import urllib.request
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _client.directus_client import (  # noqa: E402
+    load_env,
+    make_request,
+    make_upsert,
+    quote as q,
+)
 
 BASE = os.environ.get("DIRECTUS_URL", "https://cms.musterr.dev").rstrip("/")
 TODAY = "2026-07-16"
@@ -53,47 +57,12 @@ ORG_NAMES = {
 DEMO_POLICY = "c69b84d1-8957-4687-a6dd-b049b3e890b9"
 
 
-def load_env(path=os.path.expanduser("~/elk-os/.env")):
-    env = {}
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, _, v = line.partition("=")
-                env[k.strip()] = v.strip()
-    return env
-
-
 TOKEN = load_env()["DIRECTUS_ADMIN_TOKEN"]
 
 
 NO_AUTH = "__no_auth__"
 
-
-def request(method, path, payload=None, token=None, retries=3):
-    url = BASE + path
-    data = json.dumps(payload).encode() if payload is not None else None
-    for attempt in range(retries):
-        headers = {"Content-Type": "application/json"}
-        if token != NO_AUTH:
-            headers["Authorization"] = "Bearer " + (token or TOKEN)
-        req = urllib.request.Request(url, data=data, method=method, headers=headers)
-        try:
-            with urllib.request.urlopen(req, timeout=60) as r:
-                body = r.read()
-                return r.status, json.loads(body) if body else {}
-        except urllib.error.HTTPError as e:
-            body = e.read().decode(errors="replace")
-            if e.code >= 500 and attempt < retries - 1:
-                time.sleep(2 * (attempt + 1))
-                continue
-            return e.code, {"_raw": body}
-        except urllib.error.URLError:
-            if attempt < retries - 1:
-                time.sleep(2 * (attempt + 1))
-                continue
-            raise
-    return 0, {}
+request = make_request(BASE, TOKEN, timeout=60, retries=3, no_auth_sentinel=NO_AUTH)
 
 
 COUNTS = {}
@@ -104,30 +73,7 @@ def bump(coll, key):
     COUNTS[coll][key] += 1
 
 
-def q(v):
-    return urllib.parse.quote(str(v), safe="")
-
-
-def find_one(coll, filters):
-    parts = ["filter[%s][_eq]=%s" % (f, q(v)) for f, v in filters.items()]
-    st, r = request("GET", "/items/%s?%s&fields=id&limit=1" % (coll, "&".join(parts)))
-    if st == 200 and r.get("data"):
-        return r["data"][0]["id"]
-    return None
-
-
-def upsert(coll, filters, payload):
-    existing = find_one(coll, filters)
-    if existing is not None:
-        bump(coll, "skipped")
-        return existing, False
-    st, r = request("POST", "/items/" + coll, payload)
-    if st in (200, 201):
-        bump(coll, "created")
-        return r["data"]["id"], True
-    bump(coll, "failed")
-    print("  FAIL %s %s -> %s %s" % (coll, filters, st, str(r)[:200]))
-    return None, False
+upsert = make_upsert(request, bump=bump, quote_fn=q)
 
 
 # ---------------------------------------------------------------- resolve refs
