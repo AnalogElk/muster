@@ -21,6 +21,10 @@ cat > "$OUT/app/_redirects" <<'R'
 /*	/employee-portal/dashboard/	302
 R
 
+# 2. Scrub the Analog Elk SEO head (canonical, og/twitter, JSON-LD, preconnect)
+#    the AE-derived portal image still renders. Rewrites HTML and RSC layers.
+python3 -I "$HERE/strip-origin-metadata.py" "$OUT/app"
+
 # 3. CMS assets: files are saved at their exact request path (assets/<uuid>,
 #    no extension), so Netlify would serve them as application/octet-stream
 #    (_headers cannot set Content-Type). Give each a MIME-detected extension and
