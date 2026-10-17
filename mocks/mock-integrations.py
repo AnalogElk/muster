@@ -23,6 +23,22 @@ Serves two external integrations the frozen demo portal is wired to:
      what lib/portal/email/migadu.ts parses:
        {"mailboxes": [{"address", "local_part", "name", "is_active"}]}
 
+  3. S3 GetObject (DAM media)  ->  GET/HEAD on the DAM bucket
+     The portal presigns GET urls for bucket `agency-directus-assets`
+     (lib/s3-explorer/s3.ts) and then fetches them server-side to build
+     thumbnail tiles (lib/dam/thumbnail.ts). With the compose overlay's
+     AWS_ENDPOINT_URL_S3=http://elk-os-mocks:8080 the AWS SDK emits
+     VIRTUAL-HOSTED-style urls (verified on @aws-sdk/client-s3 3.1053.0):
+       http://agency-directus-assets.elk-os-mocks:8080/<key>?X-Amz-...
+     so compose gives this container the extra network alias
+     `agency-directus-assets.elk-os-mocks`. Path-style
+     (/agency-directus-assets/<key>) is accepted too, defensively.
+     Objects are plain files under MOCK_S3_DATA/<bucket>/<key>, produced by
+     provision/seed-full/fetch-dam-objects.py. The SigV4 signature is NOT
+     verified (demo mock), but when an X-Amz-Credential query param is
+     present its access-key part must match MOCK_S3_ACCESS_KEY so wiring
+     typos surface as S3-style 403s instead of silently serving.
+
 Determinism: every number is pseudo-random but seeded by (site_id, date),
 so identical queries always return identical payloads and day-to-day series
 look organic. Per-site base levels are calibrated to the analytics_snapshots
@@ -33,6 +49,7 @@ Stdlib only. No external dependencies. Demo data only, no real analytics.
 """
 
 import datetime as dt
+import hashlib
 import json
 import math
 import os
@@ -46,6 +63,18 @@ PORT = int(os.environ.get("PORT", "8080"))
 # token is accepted. The compose overlay pins it to the fake demo token so
 # wiring mistakes surface as Matomo-style errors instead of silent wrong data.
 EXPECTED_TOKEN = os.environ.get("MOCK_MATOMO_TOKEN", "")
+
+# --- S3 mock (DAM media) ---------------------------------------------------
+# All values are FAKE demo placeholders, never real AWS material.
+S3_BUCKET = os.environ.get("MOCK_S3_BUCKET", "agency-directus-assets")
+S3_DATA_DIR = os.environ.get("MOCK_S3_DATA", "/data")
+S3_ACCESS_KEY = os.environ.get("MOCK_S3_ACCESS_KEY", "demo-dam-access-key")
+
+S3_CONTENT_TYPES = {
+    ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
+    ".webp": "image/webp", ".gif": "image/gif", ".svg": "image/svg+xml",
+    ".avif": "image/avif", ".pdf": "application/pdf", ".mp4": "video/mp4",
+}
 
 SEED_NS = "muster-mock"
 
@@ -811,6 +840,66 @@ class Handler(BaseHTTPRequestHandler):
     def _flatten(self, qs):
         return {k: v[0] for k, v in qs.items() if v}
 
+    # --- S3 mock -----------------------------------------------------------
+
+    def _s3_error(self, code, s3_code, message):
+        body = (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            f"<Error><Code>{s3_code}</Code><Message>{message}</Message></Error>"
+        ).encode("utf-8")
+        self.send_response(code)
+        self.send_header("Content-Type", "application/xml")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        if self.command != "HEAD":
+            self.wfile.write(body)
+
+    def _s3_key(self, parsed):
+        """Return the object key when this request addresses the DAM bucket
+        (virtual-hosted or path-style), else None."""
+        host = (self.headers.get("Host") or "").split(":")[0].lower()
+        path = unquote(parsed.path)
+        if host.startswith(S3_BUCKET + "."):
+            return path.lstrip("/")
+        if path.startswith(f"/{S3_BUCKET}/"):
+            return path[len(S3_BUCKET) + 2:]
+        return None
+
+    def _s3(self, parsed, key):
+        params = self._flatten(parse_qs(parsed.query))
+        cred = params.get("X-Amz-Credential", "")
+        if cred and not cred.startswith(S3_ACCESS_KEY + "/"):
+            self._s3_error(403, "InvalidAccessKeyId",
+                           "The AWS access key Id you provided does not exist "
+                           "in our records (mock expects the demo key).")
+            return
+        base = os.path.realpath(os.path.join(S3_DATA_DIR, S3_BUCKET))
+        target = os.path.realpath(os.path.join(base, key))
+        if not key or not target.startswith(base + os.sep) or not os.path.isfile(target):
+            self._s3_error(404, "NoSuchKey", "The specified key does not exist.")
+            return
+        with open(target, "rb") as f:
+            data = f.read()
+        ext = os.path.splitext(target)[1].lower()
+        self.send_response(200)
+        self.send_header("Content-Type",
+                         S3_CONTENT_TYPES.get(ext, "application/octet-stream"))
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("ETag", '"%s"' % hashlib.md5(data).hexdigest())
+        self.send_header("Last-Modified", "Wed, 01 Jul 2026 12:00:00 GMT")
+        self.send_header("Accept-Ranges", "none")
+        self.end_headers()
+        if self.command != "HEAD":
+            self.wfile.write(data)
+
+    def do_HEAD(self):
+        parsed = urlparse(self.path)
+        key = self._s3_key(parsed)
+        if key is not None:
+            self._s3(parsed, key)
+            return
+        self._send(404, {"error": "not found"})
+
     def do_POST(self):
         parsed = urlparse(self.path)
         if parsed.path == "/index.php":
@@ -825,6 +914,10 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urlparse(self.path)
+        s3_key = self._s3_key(parsed)
+        if s3_key is not None:
+            self._s3(parsed, s3_key)
+            return
         if parsed.path == "/healthz":
             self._send(200, {"ok": True, "service": "elk-os-mocks"})
             return
@@ -849,7 +942,8 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     print(f"[mocks] elk-os-mocks listening on :{PORT} "
-          f"(Matomo POST /index.php, Migadu GET /v1/domains/<domain>/mailboxes)",
+          f"(Matomo POST /index.php, Migadu GET /v1/domains/<domain>/mailboxes, "
+          f"S3 GET/HEAD {S3_BUCKET} from {S3_DATA_DIR})",
           flush=True)
     server.serve_forever()
 
