@@ -100,7 +100,7 @@ if (!navigator.globalPrivacyControl) {
 <!-- ===================== LEDGER RAIL (desktop telemetry margin) ===================== -->
 <aside class="rail" aria-hidden="true">
   <div class="rail__inner">
-    <div class="rail__title">what is checkable</div>
+    <div class="rail__title">at a glance</div>
     <div class="rail__item" data-rail="install"><span>install</span><span class="v">2 commands</span></div>
     <div class="rail__item" data-rail="approve"><span>approval</span><span class="v">1 time</span></div>
     <div class="rail__item" data-rail="connect"><span>connect args</span><span class="v">0</span></div>
@@ -111,7 +111,7 @@ if (!navigator.globalPrivacyControl) {
     <div class="rail__item" data-rail="licence"><span>licence</span><span class="v">MIT</span></div>
     <div class="rail__phase" id="railPhase">
       <span class="lbl">now reading</span>
-      <span id="railPhaseText">the pitch</span>
+      <span id="railPhaseText">overview</span>
     </div>
   </div>
 </aside>
@@ -126,12 +126,12 @@ if (!navigator.globalPrivacyControl) {
       <circle cx="40" cy="22" r="3.4" fill="var(--ember)"/>
     </svg>
 
-    <p class="kicker">The agent-connected back office</p>
+    <p class="kicker">Self-hosted back office for Claude Code</p>
     <h1 class="hero__wordmark">Your back office, wired into Claude Code.</h1>
 
     <p class="hero__pitch">Projects, clients, invoices, knowledge, assets, and delivery records in one self-hosted system your agents can update while they work.</p>
 
-    <p class="hero__lede">Claude Code is stateless; your business is not. The records above are the ones that outlive a session, and they live in a Directus you host. The plugin wires your agents into them over MCP: four commands, one approval, and the row you check is the row an agent can update while it works. Start with the demo.</p>
+    <p class="hero__lede">Claude Code forgets everything when a session ends. Muster keeps the records that need to last in a Directus instance you host, and its plugin gives your agents access to them over MCP. When an agent finishes a task, it updates the same row you look at. Start with the read&#8209;only demo.</p>
 
     <div class="hero__cta">
       <a class="btn btn--solid btn--live" href="https://app.musterr.dev" target="_blank" rel="noopener">Explore the live demo ↗</a>
@@ -145,30 +145,30 @@ if (!navigator.globalPrivacyControl) {
 <!-- ===================== THE CONNECTION ===================== -->
 <section class="band band-paper band-paper--alt" id="connect">
   <div class="doc">
-    <p class="kicker">The Claude Code connection</p>
-    <h2 class="h2">The update is a side effect of the work.</h2>
-    <p class="lead">Every back office you have set up died because keeping it current was a second job. This one is written to by the agents already doing the first job.</p>
+    <p class="kicker">Install</p>
+    <h2 class="h2">Agents update the records as they work.</h2>
+    <p class="lead">Most back offices go stale because someone has to update them by hand. In Muster, the agents doing the work write the updates.</p>
 
     <pre class="code" tabindex="0" aria-label="Install the Muster plugin"><span class="c"># in Claude Code</span>
 /plugin marketplace add <span class="e">AnalogElk/muster</span>
 /plugin install <span class="e">muster@muster</span></pre>
-    <p>That is two commands, not one. <code>/plugin install muster</code> alone is invalid until the marketplace has been added first. Verified 2026&#8209;07&#8209;15 against <a href="https://github.com/AnalogElk/muster">github.com/AnalogElk/muster</a> on Claude Code 2.1.211, from a clean install: what actually happened, not what a doc claimed.</p>
+    <p>Add the marketplace first. <code>/plugin install muster</code> on its own fails until you do. Tested from a clean install of <a href="https://github.com/AnalogElk/muster">github.com/AnalogElk/muster</a> on Claude Code 2.1.211, 2026&#8209;07&#8209;15.</p>
 
     <pre class="code" tabindex="0" aria-label="Connect to the demo board"><span class="c"># zero arguments works; it resolves to the public demo board by default</span>
 /muster:connect <span class="e">https://cms.musterr.dev</span></pre>
 
-    <p>Four slash commands, one skill, one SessionStart hook, and one MCP server connection. <a href="https://github.com/AnalogElk/muster/blob/main/.claude-plugin/plugin.json"><code>.claude-plugin/plugin.json</code></a> names all of it.</p>
+    <p>The plugin adds four slash commands, one skill, one SessionStart hook, and one MCP server. <a href="https://github.com/AnalogElk/muster/blob/main/.claude-plugin/plugin.json"><code>.claude-plugin/plugin.json</code></a> lists each one.</p>
 
-    <p class="fineprint">The first time an agent calls an MCP tool from the plugin, Claude Code stops and asks you to approve it. That approval is one time, but it is real: there is no zero&#8209;click connection. The honest flow is <strong>install, approve, connect.</strong> Writes need your own deployment and writable credentials. The public demo is read&#8209;only.</p>
+    <p class="fineprint">The first time an agent calls a Muster tool, Claude Code asks you to approve it. You approve once. Writing records needs your own deployment and credentials; the public demo is read&#8209;only.</p>
   </div>
 </section>
 
 <!-- ===================== PROOF ===================== -->
 <section class="band band-paper" id="proof">
   <div class="doc">
-    <p class="kicker">Proof</p>
-    <h2 class="h2">This is the actual system, not a mockup.</h2>
-    <p class="lead">Two doors, both public, no sign-in. Open either one and count the rows yourself.</p>
+    <p class="kicker">Demo</p>
+    <h2 class="h2">Open the real system.</h2>
+    <p class="lead">Both views are public and need no sign-in.</p>
 
     <figure style="margin:1.5rem 0">
       <a href="https://app.musterr.dev" target="_blank" rel="noopener"><img src="assets/muster-board.png" alt="The Muster task board: rows grouped by status, in the team portal" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(0,0,0,.18)"></a>
@@ -181,46 +181,46 @@ if (!navigator.globalPrivacyControl) {
     </div>
 
     <p>Once you are connected, <code>/muster:board</code> shows the same task rows from inside Claude Code, without opening the portal.</p>
-    <p class="fineprint">The demo is a static snapshot of a real deploy, captured on 2026&#8209;08&#8209;02. The data is synthetic, there is no sign-in, and nothing you click is saved. It shows the shape of the records. It does not prove agent writes, and it is not a clean-install replica.</p>
+    <p class="fineprint">The demo is a static snapshot of a real deployment, captured on 2026&#8209;08&#8209;02, with synthetic data. Nothing you click is saved. It shows what the records look like; it does not show agent writes, and a clean install will not match it exactly.</p>
   </div>
 </section>
 
 <!-- ===================== THE DESKS ===================== -->
 <section class="band band-paper band-paper--alt" id="desks">
   <div class="doc">
-    <p class="kicker">What is in it</p>
-    <h2 class="h2">Five desks and a second front door.</h2>
-    <p class="lead">The schema ships 50 snapshot entries: 38 <code>os_*</code> collections, 6 support tables, and 6 groups that only organize the sidebar. This is what they add up to.</p>
+    <p class="kicker">What it stores</p>
+    <h2 class="h2">Six areas, one database.</h2>
+    <p class="lead">38 <code>os_*</code> collections, grouped by job. The schema snapshot has 50 entries in total, counting 6 support tables and 6 sidebar groups.</p>
 
     <div class="planes" role="list" aria-label="What Muster holds">
       <div class="plane" role="listitem">
         <p class="plane__h">Delivery desk</p>
-        <p class="plane__d">Projects, tasks, sprints, releases, and repositories: what's claimed, what's blocked, and what actually shipped, on rows that outlive the session that wrote them.</p>
+        <p class="plane__d">Projects, tasks, sprints, releases, and repositories. Each task row shows who claimed it, what blocks it, and whether it shipped, and it stays after the session that wrote it ends.</p>
         <p class="fineprint">Demo: open Tasks and switch views, backlog to sprint to plan. <code>/muster:board</code> shows the same rows from inside Claude Code.</p>
       </div>
       <div class="plane" role="listitem">
         <p class="plane__h">Money desk</p>
-        <p class="plane__d">Deals, proposals, invoices, payments, expenses, and the services and packages you sell: a ledger, not accounting software; no double entry, no bank feed, no tax workflow.</p>
+        <p class="plane__d">Deals, proposals, invoices, payments, expenses, and the services and packages you sell. It is a ledger, without double entry, bank feeds, or tax workflow.</p>
         <p class="fineprint">Demo: Invoices and the revenue view. Synthetic data, read-only.</p>
       </div>
       <div class="plane" role="listitem">
         <p class="plane__h">Studio operations</p>
-        <p class="plane__d">Organizations, contacts, activities, support, messages, and your own inbox: the studio's records, not its employment paperwork; no payroll, no hiring, no time tracking.</p>
+        <p class="plane__d">Organizations, contacts, activities, support, messages, and your own inbox. No payroll, hiring, or time tracking.</p>
         <p class="fineprint">Demo: follow one organization through to its contacts and its activity trail.</p>
       </div>
       <div class="plane" role="listitem">
         <p class="plane__h">Knowledge and assets</p>
-        <p class="plane__d">The knowledge base holds what you've learned; the asset library holds what you've made, review states and brand guidelines attached.</p>
+        <p class="plane__d">A knowledge base for what you have learned, and an asset library for what you have made, with review states and brand guidelines.</p>
         <p class="fineprint">Demo: the knowledge base and the asset library. Retrieval runs locally; answer generation uses the model provider you configure.</p>
       </div>
       <div class="plane" role="listitem">
         <p class="plane__h">Operations view</p>
-        <p class="plane__d">One dashboard over the rest of the desk: site, portfolio, delivery, and infrastructure analytics, plus a cost ledger for what the agents spent.</p>
+        <p class="plane__d">One dashboard for site, portfolio, delivery, and infrastructure analytics, plus a ledger of what the agents spent.</p>
         <p class="fineprint">Demo: the dashboard and the AI ledger, synthetic data. Connected-service views need your own credentials; without them a view can be empty or explicitly mocked.</p>
       </div>
       <div class="plane" role="listitem">
         <p class="plane__h">Client portal</p>
-        <p class="plane__d">The second front door: clients sign in to the same records you work, scoped to what they may see: projects, invoices, brand assets, messages.</p>
+        <p class="plane__d">Clients sign in to the same records you work in, limited to their own projects, invoices, brand assets, and messages.</p>
         <p class="fineprint">Demo: open <a href="https://app.musterr.dev/client-portal/" target="_blank" rel="noopener">the client view</a>, then compare it with the team view.</p>
       </div>
     </div>
@@ -231,22 +231,22 @@ if (!navigator.globalPrivacyControl) {
 <section class="band band-paper" id="own">
   <div class="doc">
     <p class="kicker">Self-host</p>
-    <h2 class="h2">Your Postgres, your Directus, your rows.</h2>
-    <p class="lead">A Docker Compose stack you run yourself, MIT licensed. There is no hosted plan to be moved off, and no export to request.</p>
+    <h2 class="h2">Run it on your own server.</h2>
+    <p class="lead">Muster is a Docker Compose stack under the MIT licence. Your data stays in your own Postgres and Directus. There is no hosted plan.</p>
     <pre class="code" tabindex="0" aria-label="Bring up your own stack"><span class="c"># from inside Claude Code, once the plugin is installed</span>
 /muster:up
 /muster:doctor</pre>
-    <p><code>/muster:up</code> wraps the bring-up and <code>/muster:doctor</code> returns a health report you can read. The stack itself is <a href="https://github.com/AnalogElk/muster/blob/main/compose/compose.yaml">compose/compose.yaml</a> and <a href="https://github.com/AnalogElk/muster/blob/main/bin/elk-os">bin/elk-os</a>, under the <a href="https://github.com/AnalogElk/muster/blob/main/LICENSE">MIT licence</a>.</p>
+    <p><code>/muster:up</code> starts the stack and <code>/muster:doctor</code> reports whether each part is healthy. The stack is defined in <a href="https://github.com/AnalogElk/muster/blob/main/compose/compose.yaml">compose/compose.yaml</a> and <a href="https://github.com/AnalogElk/muster/blob/main/bin/elk-os">bin/elk-os</a>, under the <a href="https://github.com/AnalogElk/muster/blob/main/LICENSE">MIT licence</a>.</p>
     <p class="fineprint">Docker is the hard dependency. The portal runs from a published image or a source checkout you supply; without one, the stack comes up Directus&#8209;only. A clean self&#8209;host does not reproduce every section of the demo, because the base snapshot omits the demo's enrichment.</p>
   </div>
 </section>
 
-<!-- ===================== THE HONEST CATCH ===================== -->
+<!-- ===================== LIMITS ===================== -->
 <section class="band band-paper band-paper--alt" id="limits">
   <div class="doc">
-    <p class="kicker">The honest catch</p>
-    <h2 class="h2">What this does not do.</h2>
-    <p class="lead">Four that change whether you should install it. The other six follow.</p>
+    <p class="kicker">Limits</p>
+    <h2 class="h2">What Muster does not do.</h2>
+    <p class="lead">The first four affect whether you should install it.</p>
     <ul class="tight">
       <li><strong>Muster does not make Claude smarter or run agents in the background.</strong> It gives instructed agents shared records and a protocol. Reach for it when the work outlives a session, or when more than one agent is running at once.</li>
       <li><strong>The first MCP tool call requires approval in Claude Code.</strong> There is no zero-click connection. Approve it once, then <code>/muster:connect</code> takes no arguments.</li>
@@ -254,7 +254,7 @@ if (!navigator.globalPrivacyControl) {
       <li><strong>A clean self-host does not reproduce every demo section.</strong> The base snapshot omits demo enrichment and some portal dependencies, and the portal requires a published image or a separate source checkout.</li>
     </ul>
 
-    <h3 class="h3" style="margin-top:2rem">The other six</h3>
+    <h3 class="h3" style="margin-top:2rem">Also worth knowing</h3>
     <ul class="tight">
       <li><strong>The Money desk is not accounting software.</strong> There is no double-entry ledger, bank feed, reconciliation, tax workflow, or bookkeeping automation.</li>
       <li><strong>Studio operations is not HR software.</strong> There is no payroll, hiring, benefits, leave management, or time tracking.</li>
@@ -263,16 +263,16 @@ if (!navigator.globalPrivacyControl) {
       <li><strong>Retrieval and embeddings can run locally.</strong> Answer generation uses the configured model provider, so nothing here claims that all assistant data stays on your box.</li>
       <li><strong>Muster is unnecessary for work that fits in one context</strong> and has no back-office records to maintain. A single agent on a single small task does not need any of this.</li>
     </ul>
-    <p class="fineprint">The plugin added about 220 tokens per session when measured from a clean install on Claude Code 2.1.211 on 2026&#8209;07&#8209;15. That is a dated measurement, not a standing guarantee. Whatever your verifiers spend sits on top of it, and it is paid whether or not they find anything.</p>
+    <p class="fineprint">The plugin added about 220 tokens per session when measured from a clean install on Claude Code 2.1.211 on 2026&#8209;07&#8209;15. Your numbers may differ. Any verification agents you run cost tokens on top of that, whether or not they find a problem.</p>
   </div>
 </section>
 
 <!-- ===================== DEPTH ===================== -->
 <section class="band band-console" id="depth">
   <div class="doc">
-    <p class="kicker">Go deeper</p>
-    <h2 class="h2">Two more documents, if you want them.</h2>
-    <p class="lead">This page is the pitch. Neither of these is required reading to install the plugin above.</p>
+    <p class="kicker">More reading</p>
+    <h2 class="h2">How Muster was built.</h2>
+    <p class="lead">Background, if you want it. You do not need either to install the plugin.</p>
     <p>
       <a class="btn" href="/about.html">How Muster was built →</a>
       &nbsp;
@@ -280,7 +280,7 @@ if (!navigator.globalPrivacyControl) {
       &nbsp;
       <a class="btn" href="https://github.com/AnalogElk/muster" target="_blank" rel="noopener">GitHub ↗</a>
     </p>
-    <p class="note">Both are dated records of an earlier build, kept as they were written. The build log is a field report on the original build: the agents, the bugs it caught, the honesty ledger. The whitepaper is the same material in long form, with citations. Each carries a dated note where the current product has moved past it.</p>
+    <p class="note">Both describe the original 2026&#8209;06&#8209;29 build and are kept as written, with dated notes where the product has since changed. The build log covers the agents and the bugs they caught. The whitepaper covers the same build in long form, with citations.</p>
   </div>
 </section>
 </main>
@@ -288,7 +288,7 @@ if (!navigator.globalPrivacyControl) {
 <!-- ===================== FOOTER ===================== -->
 <footer class="footer">
   <div class="doc">
-    <div><a href="https://analogelk.com" target="_blank" rel="noopener">Muster by Analog Elk</a> · the agent-connected back office</div>
+    <div><a href="https://analogelk.com" target="_blank" rel="noopener">Muster by Analog Elk</a> · a self-hosted back office for Claude Code</div>
     <div>Built by <a href="https://walliser.me" target="_blank" rel="noopener">Michael Walliser</a> · design and system architecture</div>
     <div class="footer__links">
       <a href="/about.html">Build log</a>
@@ -299,7 +299,7 @@ if (!navigator.globalPrivacyControl) {
       <a href="privacy.html">Privacy</a>
       <button type="button" onclick="window.print()" style="background:none;border:0;padding:0;font:inherit;color:var(--ember);cursor:pointer;text-decoration:underline">Download PDF / Print</button>
     </div>
-    <div class="fineprint" style="margin-top:1rem;">Muster the agents. Keep the receipts. The model is stateless; the organization around it does not have to be. © 2026 <a href="https://walliser.me" target="_blank" rel="noopener">Michael Walliser</a> · MIT-licensed · schema lineage from directus-labs/agency-os, attributed in <a href="https://github.com/AnalogElk/muster/blob/main/NOTICE" target="_blank" rel="noopener">NOTICE</a> · musterr.dev, two Rs · <a href="https://wlsr.me" target="_blank" rel="noopener">photography</a></div>
+    <div class="fineprint" style="margin-top:1rem;">Muster the agents. Keep the receipts. © 2026 <a href="https://walliser.me" target="_blank" rel="noopener">Michael Walliser</a> · MIT-licensed · schema lineage from directus-labs/agency-os, attributed in <a href="https://github.com/AnalogElk/muster/blob/main/NOTICE" target="_blank" rel="noopener">NOTICE</a> · musterr.dev, two Rs · <a href="https://wlsr.me" target="_blank" rel="noopener">photography</a></div>
   </div>
 </footer>
 <div class="ae-credit">
@@ -333,15 +333,15 @@ if (!navigator.globalPrivacyControl) {
   /* ---- Ledger Rail: highlight the telemetry line the active section proves ---- */
   var phaseText = document.getElementById("railPhaseText");
   var sectionLabels = {
-    top: "the pitch", connect: "the connection", proof: "the proof",
-    desks: "what is in it", own: "self-host", limits: "the honest catch",
-    depth: "go deeper"
+    top: "overview", connect: "install", proof: "demo",
+    desks: "what it stores", own: "self-host", limits: "limits",
+    depth: "more reading"
   };
   var railMap = {
     connect: "install", proof: "demo", desks: "schema", own: "stack", limits: "approve"
   };
   function setRail(id) {
-    if (phaseText) phaseText.textContent = sectionLabels[id] || "the pitch";
+    if (phaseText) phaseText.textContent = sectionLabels[id] || "overview";
     document.querySelectorAll(".rail__item").forEach(function (it) { it.classList.remove("is-active"); });
     var key = railMap[id];
     if (key) {
