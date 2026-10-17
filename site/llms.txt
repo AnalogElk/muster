@@ -1,0 +1,18 @@
+# Muster
+
+> Muster is a self-hosted back office for projects, clients, invoices, knowledge, assets, and delivery records, wired into Claude Code. Agents read and update the same records people use, over MCP. Muster is built and published by Analog Elk.
+
+- Source: [github.com/AnalogElk/muster](https://github.com/AnalogElk/muster)
+- Live demo (read-only): [app.musterr.dev](https://app.musterr.dev)
+- Maker: [Analog Elk](https://analogelk.com), by [Michael Walliser](https://walliser.me)
+
+## Pages
+
+- [Home](https://musterr.dev/): What Muster is and how it works with Claude Code
+- [Whitepaper](https://musterr.dev/paper.html): "The Task Record Is the Coordination Substrate", a field report on how a governed fleet of AI agents built and shipped Muster
+- [How it was built](https://musterr.dev/about.html): A dated field report on the 2026-06-29 build, the bugs the agents caught, and what the approach did and did not buy
+- [Privacy](https://musterr.dev/privacy.html)
+
+## Credits
+
+- Site designed and built by [Analog Elk](https://analogelk.com).
