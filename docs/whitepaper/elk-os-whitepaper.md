@@ -6,7 +6,7 @@
 
 *Working name: "Elk OS" survives in the CLI (`bin/elk-os`) and env vars. Muster began as the internal tool of my agency, Analog Elk; the agency is now the case study, not the headline. This is an operating system for agentic software teams.*
 
-*Live now: [the portal, with the build's own task board inside](https://app.musterr.dev), read-only demo login `demo@muster.dev` / `muster-demo`. The Directus Studio (the admin surface) is deliberately not publicly exposed; the portal is the read window, and everything the demo login can reach on it is the same read-only scope at the API. Landing and this paper: [musterr.dev](https://musterr.dev) (the double R is deliberate). Source: [github.com/AnalogElk/muster](https://github.com/AnalogElk/muster).*
+*Live now: [the portal, with the build's own task board inside](https://app.musterr.dev), now a static snapshot with no sign-in (the read-only demo login described below was retired when the demo became a static export). The Directus Studio (the admin surface) is deliberately not publicly exposed. Landing and this paper: [musterr.dev](https://musterr.dev) (the double R is deliberate). Source: [github.com/AnalogElk/muster](https://github.com/AnalogElk/muster).*
 
 ---
 
