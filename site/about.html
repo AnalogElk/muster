@@ -30,12 +30,13 @@
 
 <link rel="stylesheet" href="styles.css">
 
-<!-- Matomo: self-hosted, first-party cookie, IP-anonymized server-side; skipped entirely
+<!-- Matomo: self-hosted, cookieless (disableCookies), IP-anonymized server-side; skipped entirely
      when the browser sends Global Privacy Control (DNT is honored server-side by Matomo).
      Disclosed in privacy.html -->
 <script>
 if (!navigator.globalPrivacyControl) {
   var _paq = window._paq = window._paq || [];
+  _paq.push(['disableCookies']);
   _paq.push(['setTrackerUrl', 'https://analytics.analogelk.com/matomo.php']);
   _paq.push(['setSiteId', '10']);
   _paq.push(['trackPageView']);
