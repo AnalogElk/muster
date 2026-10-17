@@ -43,8 +43,21 @@ services:
       # The Matomo mock rejects any other token_auth, so a wiring typo
       # surfaces as a Matomo-style error instead of silent wrong data.
       MOCK_MATOMO_TOKEN: demo-matomo-token
+      # S3 mock (DAM media). Objects live on the host under mocks/data/
+      # (bind-mounted below, read-only) and are produced by
+      # provision/seed-full/fetch-dam-objects.py. Fake demo key, not a secret.
+      MOCK_S3_BUCKET: agency-directus-assets
+      MOCK_S3_DATA: /data
+      MOCK_S3_ACCESS_KEY: demo-dam-access-key
+    volumes:
+      - ./mocks/data:/data:ro
     networks:
-      - elk-os
+      elk-os:
+        aliases:
+          # The AWS SDK presigns VIRTUAL-HOSTED-style urls for custom
+          # endpoints (bucket name prepended to the endpoint host), so the
+          # DAM bucket hostname must resolve to this container.
+          - agency-directus-assets.elk-os-mocks
     healthcheck:
       test:
         - CMD
@@ -67,3 +80,13 @@ services:
       MIGADU_API_BASE: http://elk-os-mocks:8080/v1
       MIGADU_ADMIN_EMAIL: demo@musterr.dev
       MIGADU_KEY: demo-migadu-key
+      # DAM thumbnails: lib/s3-explorer/s3.ts builds its S3Client from
+      # S3_EXPLORER_AWS_* and the SDK-standard AWS_ENDPOINT_URL_S3 override
+      # points it at the mock. All three values are FAKE demo placeholders
+      # (the mock only checks that the access key in X-Amz-Credential
+      # matches). The s3-explorer PAGE stays dark regardless: it is gated on
+      # S3_EXPLORER_OWNER_IDS + TOTP secrets, which remain unset by design.
+      AWS_ENDPOINT_URL_S3: http://elk-os-mocks:8080
+      S3_EXPLORER_AWS_ACCESS_KEY_ID: demo-dam-access-key
+      S3_EXPLORER_AWS_SECRET_ACCESS_KEY: demo-dam-secret-key
+      S3_EXPLORER_AWS_REGION: us-west-2
