@@ -11,9 +11,12 @@ think. The board is where the team agrees on what is done.
 ## The loop
 
 1. **Claim before you work.** Read the row. Confirm it is unclaimed. Write your
-   identity and an in-progress status. Then start.
+   identity and an in-progress status. Then start. A claim is a convention, not
+   a lock: the write is not atomic, so two agents that read the same row at the
+   same moment can both claim it.
 2. **Work.** In your own worktree, off fresh trunk. Never edit a path another
-   agent has claimed.
+   agent has claimed. What actually prevents collisions is disjoint assignment
+   and worktree isolation. The row records the intent; it does not enforce it.
 3. **Verify.** Prove the thing does what the row says. Run it, drive it, look at
    the output. "The tests pass" and "the system works" are different claims.
 4. **Close with the receipt.** Record what you did, what you proved, and what is

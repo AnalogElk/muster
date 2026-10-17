@@ -3,21 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Muster: a shared task board for your Claude agents</title>
-<meta name="description" content="Your Claude agents forget everything between sessions and clobber each other in parallel. Muster gives them a shared task board they read and write over MCP, and one you can watch. Install the plugin, connect to a board, done.">
+<title>Muster: your back office, wired into Claude Code</title>
+<meta name="description" content="Muster is a self-hosted back office for projects, clients, invoices, knowledge, assets, and delivery records, wired into Claude Code. Agents read and update the same records people use, over MCP.">
 <!-- canonical = https://musterr.dev/ (double R is deliberate; muster.dev is not ours). -->
 <link rel="canonical" href="https://musterr.dev/">
 
 <!-- Open Graph / Twitter -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://musterr.dev/">
-<meta property="og:title" content="Muster: a shared task board for your Claude agents">
-<meta property="og:description" content="Agents that forget, collide, and mark things done that aren't. One board fixes the coordination half. Live demo inside.">
+<meta property="og:title" content="Muster: your back office, wired into Claude Code">
+<meta property="og:description" content="Projects, clients, invoices, knowledge, assets, and delivery records in one self-hosted system your agents can update while they work.">
 <meta property="og:image" content="https://musterr.dev/assets/muster-board.png">
+<meta property="og:image:alt" content="The Muster task board: rows grouped by status, in the team portal.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Muster: a shared task board for your Claude agents">
-<meta name="twitter:description" content="Agents that forget, collide, and mark things done that aren't. One board fixes the coordination half. Live demo inside.">
+<meta name="twitter:title" content="Muster: your back office, wired into Claude Code">
+<meta name="twitter:description" content="Projects, clients, invoices, knowledge, assets, and delivery records in one self-hosted system your agents can update while they work.">
 <meta name="twitter:image" content="https://musterr.dev/assets/muster-board.png">
+<meta name="twitter:image:alt" content="The Muster task board: rows grouped by status, in the team portal.">
 
 <!-- favicon: three steps + one ember, the Build-Trail at 16px -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Cpolyline points='6,58 18,58 18,44 30,44 30,30 42,30' fill='none' stroke='%2325402F' stroke-width='5' stroke-linecap='square'/%3E%3Cpolyline points='30,30 30,16 42,16' fill='none' stroke='%23DE7330' stroke-width='5' stroke-linecap='square'/%3E%3Ccircle cx='42' cy='16' r='5' fill='%23DE7330'/%3E%3C/svg%3E">
@@ -28,6 +30,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Muster",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Docker",
+  "url": "https://musterr.dev/",
+  "description": "A self-hosted back office for projects, clients, invoices, knowledge, assets, and delivery records, wired into Claude Code. Agents read and update the same records people use, over MCP.",
+  "license": "https://github.com/AnalogElk/muster/blob/main/LICENSE",
+  "isAccessibleForFree": true,
+  "author": {
+    "@type": "Person",
+    "name": "Michael Walliser",
+    "url": "https://walliser.me"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
 
 <!-- Matomo: self-hosted, first-party cookie, IP-anonymized server-side; skipped entirely
      when the browser sends Global Privacy Control (DNT is honored server-side by Matomo).
@@ -45,101 +71,9 @@ if (!navigator.globalPrivacyControl) {
   document.head.appendChild(g);
 }
 </script>
-
-<!-- Interaction heatmap: first-party beacon to our own sink (analogelk.com), the same
-     infrastructure as the analytics above. Anonymous click positions and scroll depth
-     only: no cookies, no PII, no element text. Runs only on the production hostname and
-     is skipped entirely when the browser sends Global Privacy Control.
-     Disclosed in privacy.html -->
-<script>
-if (!navigator.globalPrivacyControl) {
-  (function () {
-    'use strict';
-    if (typeof navigator.sendBeacon !== 'function') return;
-    if (location.hostname !== 'musterr.dev' && location.hostname !== 'www.musterr.dev') return;
-
-    var ENDPOINT = 'https://analogelk.com/api/interactions';
-    var MAX_CLICK_BEACONS = 200; // storm cap per page load
-    var SITE = 'musterr.dev';
-
-    var device = /Mobi|Android|iPhone|iPad|iPod|Tablet/i.test(navigator.userAgent)
-      ? 'mobile'
-      : 'desktop';
-
-    function beacon(body) {
-      try {
-        navigator.sendBeacon(ENDPOINT, JSON.stringify(body));
-      } catch (e) {
-        /* telemetry must never affect the page */
-      }
-    }
-
-    // Clicks: one capture-phase listener, viewport-relative X, document-relative Y.
-    var clickCount = 0;
-    document.addEventListener('click', function (e) {
-      if (clickCount >= MAX_CLICK_BEACONS) return;
-      clickCount += 1;
-      var scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-      var xPct = (e.clientX / window.innerWidth) * 100;
-      var yPct = scrollHeight > 0 ? ((e.clientY + window.scrollY) / scrollHeight) * 100 : 0;
-      beacon({
-        event_type: 'click',
-        route: location.pathname,
-        site: SITE,
-        xPct: Math.min(100, Math.max(0, xPct)),
-        yPct: Math.min(100, Math.max(0, yPct)),
-        viewport_w: window.innerWidth,
-        viewport_h: window.innerHeight,
-        device: device
-      });
-    }, true);
-
-    // Scroll depth: rAF-throttled max tracker, one beacon per page view,
-    // flushed on pagehide or tab-hide (whichever comes first).
-    var maxScroll = 0;
-    var ticking = false;
-
-    function currentScrollPct() {
-      var scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
-      if (!scrollHeight) return 0;
-      var raw = ((window.scrollY + window.innerHeight) / scrollHeight) * 100;
-      return Math.min(100, Math.max(0, raw));
-    }
-
-    window.addEventListener('scroll', function () {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(function () {
-        var p = currentScrollPct();
-        if (p > maxScroll) maxScroll = p;
-        ticking = false;
-      });
-    }, { passive: true });
-
-    function flush() {
-      if (maxScroll <= 0) return;
-      beacon({
-        event_type: 'scroll',
-        route: location.pathname,
-        site: SITE,
-        scroll_pct: maxScroll,
-        viewport_w: window.innerWidth,
-        viewport_h: window.innerHeight,
-        device: device
-      });
-      maxScroll = 0;
-    }
-
-    window.addEventListener('pagehide', flush);
-    document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'hidden') flush();
-    });
-  })();
-}
-</script>
 </head>
 <body>
-<a class="skip" href="#install">Skip to content</a>
+<a class="skip" href="#connect">Skip to content</a>
 
 <!-- ===================== STICKY TOP BAR ===================== -->
 <header class="topbar" id="topbar" hidden>
@@ -148,41 +82,41 @@ if (!navigator.globalPrivacyControl) {
     Muster
   </a>
   <nav class="topbar__nav" aria-label="Section jump links">
-    <a href="#install">Install</a>
-    <a href="#proof">Proof</a>
-    <a href="#solves">Solves</a>
-    <a href="#catch">Catch</a>
-    <a href="#depth">Depth</a>
+    <a href="#connect">Connect</a>
+    <a href="#proof">Demo</a>
+    <a href="#desks">What's in it</a>
+    <a href="#own">Self-host</a>
+    <a href="#limits">Limits</a>
   </nav>
   <span class="topbar__spacer"></span>
   <div class="topbar__cta">
-    <a class="btn btn--live btn--sm" href="https://app.musterr.dev" target="_blank" rel="noopener" title="demo login: demo@muster.dev / muster-demo (read-only)">Live board ↗</a>
-    <a class="btn btn--sm" href="/about.html">Build log</a>
-    <a class="btn btn--sm" href="/paper.html">Whitepaper</a>
+    <a class="btn btn--live btn--sm" href="https://app.musterr.dev" target="_blank" rel="noopener" title="demo logins: demo@muster.dev or client@muster.dev, both muster-demo (read-only)">Live demo ↗</a>
+    <a class="btn btn--sm topbar__secondary" href="/about.html">Build log</a>
+    <a class="btn btn--sm topbar__secondary" href="/paper.html">Whitepaper</a>
   </div>
 </header>
 
 <!-- ===================== LEDGER RAIL (desktop telemetry margin) ===================== -->
 <aside class="rail" aria-hidden="true">
   <div class="rail__inner">
-    <div class="rail__title">the loop, verified</div>
+    <div class="rail__title">what is checkable</div>
     <div class="rail__item" data-rail="install"><span>install</span><span class="v">2 commands</span></div>
     <div class="rail__item" data-rail="approve"><span>approval</span><span class="v">1 time</span></div>
     <div class="rail__item" data-rail="connect"><span>connect args</span><span class="v">0</span></div>
     <div class="rail__item" data-rail="commands"><span>commands</span><span class="v">4</span></div>
-    <div class="rail__item" data-rail="demo"><span>demo docker</span><span class="v">none</span></div>
+    <div class="rail__item" data-rail="demo"><span>demo logins</span><span class="v">2</span></div>
+    <div class="rail__item" data-rail="schema"><span>schema entries</span><span class="v">50</span></div>
     <div class="rail__item" data-rail="stack"><span>own stack</span><span class="v">Docker</span></div>
-    <div class="rail__item" data-rail="cost"><span>session cost</span><span class="v">~220 tok</span></div>
-    <div class="rail__item" data-rail="version"><span>plugin ver</span><span class="v">0.1.3</span></div>
+    <div class="rail__item" data-rail="licence"><span>licence</span><span class="v">MIT</span></div>
     <div class="rail__phase" id="railPhase">
       <span class="lbl">now reading</span>
-      <span id="railPhaseText">the pain</span>
+      <span id="railPhaseText">the pitch</span>
     </div>
   </div>
 </aside>
 
 <main>
-<!-- ===================== HERO: THE PAIN ===================== -->
+<!-- ===================== HERO ===================== -->
 <section class="band band-paper hero" id="top">
   <div class="doc">
     <svg class="hero__mark trail-draw" viewBox="0 0 48 64" role="img" aria-label="The Build-Trail: stacked verified steps, the top step ember and live">
@@ -191,36 +125,40 @@ if (!navigator.globalPrivacyControl) {
       <circle cx="40" cy="22" r="3.4" fill="var(--ember)"/>
     </svg>
 
-    <p class="kicker">Muster</p>
-    <h1 class="hero__wordmark">Your Claude agents forget everything.</h1>
+    <p class="kicker">The agent-connected back office</p>
+    <h1 class="hero__wordmark">Your back office, wired into Claude Code.</h1>
 
-    <p class="hero__pitch">Every session starts from zero. Two agents edit the same file and clobber each other. <b>"What's actually done?"</b> has no answer that outlives a context window.</p>
+    <p class="hero__pitch">Projects, clients, invoices, knowledge, assets, and delivery records in one self-hosted system your agents can update while they work.</p>
 
-    <p class="hero__lede" style="max-width:34ch">Muster gives them a shared task board. They claim it, work it, verify it, close it. You watch the same rows.</p>
+    <p class="hero__lede">Claude Code is stateless; your business is not. The records above are the ones that outlive a session, and they live in a Directus you host. The plugin wires your agents into them over MCP: four commands, one approval, and the row you check is the row an agent can update while it works. Start with the demo.</p>
 
     <div class="hero__cta">
-      <a class="btn btn--solid" href="#install">Install the plugin ↓</a>
-      <a class="btn btn--live" href="https://app.musterr.dev" target="_blank" rel="noopener">Open the live board ↗</a>
+      <a class="btn btn--solid btn--live" href="https://app.musterr.dev" target="_blank" rel="noopener">Explore the live demo ↗</a>
+      <a class="btn" href="#own">Self-host with Docker ↓</a>
       <a class="btn" href="/about.html">How it was built</a>
       <a class="btn" href="/paper.html">Whitepaper</a>
     </div>
   </div>
 </section>
 
-<!-- ===================== INSTALL ===================== -->
-<section class="band band-paper band-paper--alt" id="install">
+<!-- ===================== THE CONNECTION ===================== -->
+<section class="band band-paper band-paper--alt" id="connect">
   <div class="doc">
-    <p class="kicker">Install</p>
-    <h2 class="h2">Two commands. Then one for the board.</h2>
-    <p class="lead">A Claude Code plugin, installed the way any plugin is. The marketplace has to be added before the plugin, in that order.</p>
-    <pre class="code" aria-label="Install the Muster plugin"><span class="c"># in Claude Code</span>
+    <p class="kicker">The Claude Code connection</p>
+    <h2 class="h2">The update is a side effect of the work.</h2>
+    <p class="lead">Every back office you have set up died because keeping it current was a second job. This one is written to by the agents already doing the first job.</p>
+
+    <pre class="code" tabindex="0" aria-label="Install the Muster plugin"><span class="c"># in Claude Code</span>
 /plugin marketplace add <span class="e">AnalogElk/muster</span>
 /plugin install <span class="e">muster@muster</span></pre>
     <p>That is two commands, not one. <code>/plugin install muster</code> alone is invalid until the marketplace has been added first. Verified 2026&#8209;07&#8209;15 against <a href="https://github.com/AnalogElk/muster">github.com/AnalogElk/muster</a> on Claude Code 2.1.211, from a clean install: what actually happened, not what a doc claimed.</p>
-    <p>The first time an agent calls an MCP tool from the plugin, Claude Code stops and asks you to approve it. That approval is one time, but it is real: there is no zero&#8209;click connect. The honest flow is <strong>install, approve, connect.</strong></p>
-    <pre class="code" aria-label="Connect to the demo board"><span class="c"># zero arguments works too; it resolves to this same board by default</span>
+
+    <pre class="code" tabindex="0" aria-label="Connect to the demo board"><span class="c"># zero arguments works; it resolves to the public demo board by default</span>
 /muster:connect <span class="e">https://cms.musterr.dev</span></pre>
-    <p class="fineprint">No Docker. That is the live demo board, and your agents can read it right now.</p>
+
+    <p>Four slash commands, one skill, one SessionStart hook, and one MCP server connection. <a href="https://github.com/AnalogElk/muster/blob/main/.claude-plugin/plugin.json"><code>.claude-plugin/plugin.json</code></a> names all of it.</p>
+
+    <p class="fineprint">The first time an agent calls an MCP tool from the plugin, Claude Code stops and asks you to approve it. That approval is one time, but it is real: there is no zero&#8209;click connection. The honest flow is <strong>install, approve, connect.</strong> Writes need your own deployment and writable credentials. The public demo is read&#8209;only.</p>
   </div>
 </section>
 
@@ -228,48 +166,103 @@ if (!navigator.globalPrivacyControl) {
 <section class="band band-paper" id="proof">
   <div class="doc">
     <p class="kicker">Proof</p>
-    <h2 class="h2">This is the actual board, not a mockup.</h2>
-    <p class="lead">Public, live, and read-only. Sign in and look at real rows, not a screenshot staged for a landing page.</p>
+    <h2 class="h2">This is the actual system, not a mockup.</h2>
+    <p class="lead">Two doors, both public, both read-only. Sign in and count the rows yourself.</p>
 
     <figure style="margin:1.5rem 0">
-      <a href="https://app.musterr.dev" target="_blank" rel="noopener"><img src="assets/muster-board.png" alt="The live Muster task board: real os_tasks rows, grouped by status" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(0,0,0,.18)"></a>
-      <figcaption class="fineprint" style="margin-top:.5rem">The live board at <a href="https://app.musterr.dev">app.musterr.dev</a>, read-only demo login <code>demo@muster.dev</code> / <code>muster-demo</code>.</figcaption>
+      <a href="https://app.musterr.dev" target="_blank" rel="noopener"><img src="assets/muster-board.png" alt="The Muster task board: rows grouped by status, in the team portal" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(0,0,0,.18)"></a>
+      <figcaption class="fineprint" style="margin-top:.5rem">The team portal at <a href="https://app.musterr.dev">app.musterr.dev</a>. The client portal is the same records, scoped to one organization.</figcaption>
     </figure>
 
-    <p>Once you're connected, <code>/muster:board</code> shows the same rows from inside Claude Code, grouped by status, without opening the portal.</p>
+    <div class="planes" role="list" aria-label="Demo logins">
+      <div class="plane" role="listitem"><p class="plane__h">Team view</p><p class="plane__d"><code>demo@muster.dev</code> / <code>muster-demo</code><br>Delivery, money, studio operations, knowledge and assets, and the analytics over all of it.</p></div>
+      <div class="plane" role="listitem"><p class="plane__h">Client view</p><p class="plane__d"><code>client@muster.dev</code> / <code>muster-demo</code><br>What a client sees: their projects, tasks, invoices, brand assets, and messages. Nothing else.</p></div>
+    </div>
 
-    <p class="try-demo">
-      <a class="btn btn--live" href="https://app.musterr.dev" target="_blank" rel="noopener">Open the live board ↗</a>
-      &nbsp;<span class="fineprint">read-only demo login: <code>demo@muster.dev</code> / <code>muster-demo</code></span>
-    </p>
+    <p>Once you are connected, <code>/muster:board</code> shows the same task rows from inside Claude Code, without opening the portal.</p>
+    <p class="fineprint">The demo data is synthetic and the demo is read-only. It proves shared reads and the shape of the records. It does not prove agent writes, and it is not a clean-install replica.</p>
   </div>
 </section>
 
-<!-- ===================== WHAT IT SOLVES ===================== -->
-<section class="band band-paper band-paper--alt" id="solves">
+<!-- ===================== THE DESKS ===================== -->
+<section class="band band-paper band-paper--alt" id="desks">
   <div class="doc">
-    <p class="kicker">What it solves</p>
-    <h2 class="h2">Four things a rolling context window can't hold.</h2>
-    <div class="planes" role="list" aria-label="What a shared task board solves">
-      <div class="plane" role="listitem"><p class="plane__h">Agents forget between sessions</p><p class="plane__d">A new session starts from zero context. The board does not: the row still says what was done, by whom, and what is left.</p></div>
-      <div class="plane" role="listitem"><p class="plane__h">No durable answer to "what's done"</p><p class="plane__d">"Done" that only lives in a chat transcript is gone once the window compacts. A closed row is a durable answer that outlives the conversation.</p></div>
-      <div class="plane" role="listitem"><p class="plane__h">Parallel agents clobber each other</p><p class="plane__d">Two agents editing the same file from the same branch overwrite each other's work. Claiming a row before working it is a coordination signal a chat transcript cannot give.</p></div>
-      <div class="plane" role="listitem"><p class="plane__h">You re-explain your standards every session</p><p class="plane__d">Rules stated once in chat do not survive a new session. A board row and its governance files get read fresh every time, not re-typed by you.</p></div>
+    <p class="kicker">What is in it</p>
+    <h2 class="h2">Five desks and a second front door.</h2>
+    <p class="lead">The schema ships 50 snapshot entries: 38 <code>os_*</code> collections, 6 support tables, and 6 groups that only organize the sidebar. This is what they add up to.</p>
+
+    <div class="planes" role="list" aria-label="What Muster holds">
+      <div class="plane" role="listitem">
+        <p class="plane__h">Delivery desk</p>
+        <p class="plane__d">Projects, tasks, sprints, releases, and repositories: what's claimed, what's blocked, and what actually shipped, on rows that outlive the session that wrote them.</p>
+        <p class="fineprint">Demo: open Tasks and switch views, backlog to sprint to plan. <code>/muster:board</code> shows the same rows from inside Claude Code.</p>
+      </div>
+      <div class="plane" role="listitem">
+        <p class="plane__h">Money desk</p>
+        <p class="plane__d">Deals, proposals, invoices, payments, expenses, and the services and packages you sell: a ledger, not accounting software; no double entry, no bank feed, no tax workflow.</p>
+        <p class="fineprint">Demo: Invoices and the revenue view. Synthetic data, read-only.</p>
+      </div>
+      <div class="plane" role="listitem">
+        <p class="plane__h">Studio operations</p>
+        <p class="plane__d">Organizations, contacts, activities, support, messages, and your own inbox: the studio's records, not its employment paperwork; no payroll, no hiring, no time tracking.</p>
+        <p class="fineprint">Demo: follow one organization through to its contacts and its activity trail.</p>
+      </div>
+      <div class="plane" role="listitem">
+        <p class="plane__h">Knowledge and assets</p>
+        <p class="plane__d">The knowledge base holds what you've learned; the asset library holds what you've made, review states and brand guidelines attached.</p>
+        <p class="fineprint">Demo: the knowledge base and the asset library. Retrieval runs locally; answer generation uses the model provider you configure.</p>
+      </div>
+      <div class="plane" role="listitem">
+        <p class="plane__h">Operations view</p>
+        <p class="plane__d">One dashboard over the rest of the desk: site, portfolio, delivery, and infrastructure analytics, plus a cost ledger for what the agents spent.</p>
+        <p class="fineprint">Demo: the dashboard and the AI ledger, synthetic data. Connected-service views need your own credentials; without them a view can be empty or explicitly mocked.</p>
+      </div>
+      <div class="plane" role="listitem">
+        <p class="plane__h">Client portal</p>
+        <p class="plane__d">The second front door: clients sign in to the same records you work, scoped to what they may see: projects, invoices, brand assets, messages.</p>
+        <p class="fineprint">Demo: <code>client@muster.dev</code> / <code>muster-demo</code>, then compare it with the team view.</p>
+      </div>
     </div>
   </div>
 </section>
 
+<!-- ===================== OWN IT ===================== -->
+<section class="band band-paper" id="own">
+  <div class="doc">
+    <p class="kicker">Self-host</p>
+    <h2 class="h2">Your Postgres, your Directus, your rows.</h2>
+    <p class="lead">A Docker Compose stack you run yourself, MIT licensed. There is no hosted plan to be moved off, and no export to request.</p>
+    <pre class="code" tabindex="0" aria-label="Bring up your own stack"><span class="c"># from inside Claude Code, once the plugin is installed</span>
+/muster:up
+/muster:doctor</pre>
+    <p><code>/muster:up</code> wraps the bring-up and <code>/muster:doctor</code> returns a health report you can read. The stack itself is <a href="https://github.com/AnalogElk/muster/blob/main/compose/compose.yaml">compose/compose.yaml</a> and <a href="https://github.com/AnalogElk/muster/blob/main/bin/elk-os">bin/elk-os</a>, under the <a href="https://github.com/AnalogElk/muster/blob/main/LICENSE">MIT licence</a>.</p>
+    <p class="fineprint">Docker is the hard dependency. The portal runs from a published image or a source checkout you supply; without one, the stack comes up Directus&#8209;only. A clean self&#8209;host does not reproduce every section of the demo, because the base snapshot omits the demo's enrichment.</p>
+  </div>
+</section>
+
 <!-- ===================== THE HONEST CATCH ===================== -->
-<section class="band band-paper" id="catch">
+<section class="band band-paper band-paper--alt" id="limits">
   <div class="doc">
     <p class="kicker">The honest catch</p>
-    <h2 class="h2">What this does not buy you.</h2>
+    <h2 class="h2">What this does not do.</h2>
+    <p class="lead">Four that change whether you should install it. The other six follow.</p>
     <ul class="tight">
-      <li><strong>It does not make the model smarter.</strong> Muster coordinates agents that already work. It does nothing for an agent that reasons badly.</li>
-      <li><strong>It is overkill for anything that fits in one context window.</strong> A single agent on a single small task does not need a board. Reach for this when the work outlives a session, or needs more than one agent at once.</li>
-      <li><strong>There is a real token premium.</strong> The plugin itself adds about 220 tokens to every session, verified from a clean install, before a single tool call. Add whatever your verifiers spend on top of that, and it is paid whether or not they find anything.</li>
-      <li><strong>Your own stack needs Docker.</strong> <code>/muster:up</code> wraps the bring-up and <code>/muster:doctor</code> gives you a green or red board to check it took. The demo board needs neither: no Docker, no signup, no config.</li>
+      <li><strong>Muster does not make Claude smarter or run agents in the background.</strong> It gives instructed agents shared records and a protocol. Reach for it when the work outlives a session, or when more than one agent is running at once.</li>
+      <li><strong>The first MCP tool call requires approval in Claude Code.</strong> There is no zero-click connection. Approve it once, then <code>/muster:connect</code> takes no arguments.</li>
+      <li><strong>The public demo is synthetic and read-only.</strong> It proves shared reads, not agent writes or self-hosting. To watch an agent write a row, stand up your own.</li>
+      <li><strong>A clean self-host does not reproduce every demo section.</strong> The base snapshot omits demo enrichment and some portal dependencies, and the portal requires a published image or a separate source checkout.</li>
     </ul>
+
+    <h3 class="h3" style="margin-top:2rem">The other six</h3>
+    <ul class="tight">
+      <li><strong>The Money desk is not accounting software.</strong> There is no double-entry ledger, bank feed, reconciliation, tax workflow, or bookkeeping automation.</li>
+      <li><strong>Studio operations is not HR software.</strong> There is no payroll, hiring, benefits, leave management, or time tracking.</li>
+      <li><strong>Connected-service views require their own credentials.</strong> Without them, a view may be empty, unavailable, or explicitly mocked.</li>
+      <li><strong>Task claims are not atomic locks.</strong> Avoiding collisions requires disjoint assignments and worktree isolation. The row records the intent; it does not enforce it.</li>
+      <li><strong>Retrieval and embeddings can run locally.</strong> Answer generation uses the configured model provider, so nothing here claims that all assistant data stays on your box.</li>
+      <li><strong>Muster is unnecessary for work that fits in one context</strong> and has no back-office records to maintain. A single agent on a single small task does not need any of this.</li>
+    </ul>
+    <p class="fineprint">The plugin added about 220 tokens per session when measured from a clean install on Claude Code 2.1.211 on 2026&#8209;07&#8209;15. That is a dated measurement, not a standing guarantee. Whatever your verifiers spend sits on top of it, and it is paid whether or not they find anything.</p>
   </div>
 </section>
 
@@ -286,7 +279,7 @@ if (!navigator.globalPrivacyControl) {
       &nbsp;
       <a class="btn" href="https://github.com/AnalogElk/muster" target="_blank" rel="noopener">GitHub ↗</a>
     </p>
-    <p class="note">The build log is a field report on the 2.5-hour build itself: the fleet, the bugs it caught, the honesty ledger. The whitepaper is the same material in long form, with citations. Neither changes anything about the install above.</p>
+    <p class="note">Both are dated records of an earlier build, kept as they were written. The build log is a field report on the original build: the agents, the bugs it caught, the honesty ledger. The whitepaper is the same material in long form, with citations. Each carries a dated note where the current product has moved past it.</p>
   </div>
 </section>
 </main>
@@ -294,12 +287,12 @@ if (!navigator.globalPrivacyControl) {
 <!-- ===================== FOOTER ===================== -->
 <footer class="footer">
   <div class="doc">
-    <div><a href="https://analogelk.com" target="_blank" rel="noopener">Muster by Analog Elk</a> · a shared task board for your Claude agents, over MCP</div>
+    <div><a href="https://analogelk.com" target="_blank" rel="noopener">Muster by Analog Elk</a> · the agent-connected back office</div>
     <div>Built by <a href="https://walliser.me" target="_blank" rel="noopener">Michael Walliser</a> · design and system architecture</div>
     <div class="footer__links">
       <a href="/about.html">Build log</a>
       <a href="/paper.html">Whitepaper</a>
-      <a href="https://app.musterr.dev" target="_blank" rel="noopener" title="demo login: demo@muster.dev / muster-demo (read-only)">Live board ↗</a>
+      <a href="https://app.musterr.dev" target="_blank" rel="noopener" title="demo logins: demo@muster.dev or client@muster.dev, both muster-demo (read-only)">Live demo ↗</a>
       <a href="https://github.com/AnalogElk/muster" target="_blank" rel="noopener">GitHub ↗</a>
       <a href="https://github.com/AnalogElk/muster/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
       <a href="privacy.html">Privacy</a>
@@ -327,17 +320,18 @@ if (!navigator.globalPrivacyControl) {
     topbar.classList.add("is-visible");
   }
 
-  /* ---- Ledger Rail: highlight phase + telemetry per active section ---- */
+  /* ---- Ledger Rail: highlight the telemetry line the active section proves ---- */
   var phaseText = document.getElementById("railPhaseText");
   var sectionLabels = {
-    top: "the pain", install: "the install", proof: "the proof",
-    solves: "what it solves", catch: "the honest catch", depth: "go deeper"
+    top: "the pitch", connect: "the connection", proof: "the proof",
+    desks: "what is in it", own: "self-host", limits: "the honest catch",
+    depth: "go deeper"
   };
   var railMap = {
-    install: "install", proof: "commands", catch: "stack"
+    connect: "install", proof: "demo", desks: "schema", own: "stack", limits: "approve"
   };
   function setRail(id) {
-    if (phaseText) phaseText.textContent = sectionLabels[id] || "the pain";
+    if (phaseText) phaseText.textContent = sectionLabels[id] || "the pitch";
     document.querySelectorAll(".rail__item").forEach(function (it) { it.classList.remove("is-active"); });
     var key = railMap[id];
     if (key) {

@@ -5,7 +5,9 @@ description: Stand up your own Muster stack (Directus board, portal, RAG) with D
 # Stand up a Muster stack
 
 This needs Docker running. It uses the `bin/elk-os` that shipped with this
-plugin, so there is nothing to clone.
+plugin, so the CLI itself needs no separate checkout. The portal is a separate
+matter: it runs from a published image, or from a source checkout you supply.
+Without one of those, the stack comes up Directus-only.
 
 1. Check Docker is reachable: `docker info` (if it fails, stop and say so; do
    not continue).

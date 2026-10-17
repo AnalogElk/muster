@@ -10,6 +10,37 @@
 
 ---
 
+> ### [2026-07-25] Dated notice: the category in this paper has been superseded
+>
+> **This document is preserved as written.** It is a dated field report from
+> 2026-06-29 with 2026-07 addenda, and its body has not been revised to match
+> current positioning. Correcting a dated record by quietly rewriting it would
+> cost more than the inconsistency it fixes.
+>
+> Three things a reader should carry into it:
+>
+> 1. **The category changed.** This paper calls Muster "an operating system for
+>    agentic software teams". The product is now positioned as **the
+>    agent-connected back office**: projects, clients, invoices, knowledge,
+>    assets, and delivery records, wired into Claude Code. The task record is
+>    still the coordination substrate, and section 3 still defends that. It is
+>    now one desk of six rather than the whole product.
+> 2. **The build metrics are historical.** "Roughly 2.5 hours", "about 30
+>    subagents", "over 2 million tokens", "$2 to $4 per month", and the
+>    2026-07-02 note about 18 PRs across 8 repositories all describe specific
+>    dated runs. They are evidence about those runs and are no longer quoted as
+>    current product claims. The box now runs always on, not duty-cycled.
+> 3. **The install boundary is narrower than section 8 implies.** Docker is the
+>    hard dependency, but the portal additionally needs a published image or a
+>    source checkout you supply, and a clean self-host does not reproduce every
+>    section of the public demo.
+>
+> Current claims, and the limits that bound them, live at
+> [musterr.dev](https://musterr.dev). Where this paper and that page disagree,
+> the page is current and this document is the record.
+
+---
+
 ## Abstract
 
 On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock (17:56 to 20:23 Pacific), spanned 8 phases, 27 commits, and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations that consumed over 2 million tokens. The result runs on a single AWS instance for about $2 to $4 per month at demo duty-cycle (stopped when idle; §8 firewalls the costs), and you can open it right now.

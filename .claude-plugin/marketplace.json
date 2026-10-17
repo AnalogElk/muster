@@ -1,6 +1,6 @@
 {
   "name": "muster",
-  "description": "A shared task board your Claude agents read and write over MCP.",
+  "description": "Muster is a self-hosted back office for projects, clients, invoices, knowledge, assets, and delivery records, wired into Claude Code.",
   "owner": {
     "name": "AnalogElk",
     "url": "https://github.com/AnalogElk"
@@ -9,7 +9,7 @@
     {
       "name": "muster",
       "source": "./",
-      "description": "A shared task board your Claude agents read and write over MCP."
+      "description": "Muster is a self-hosted back office for projects, clients, invoices, knowledge, assets, and delivery records, wired into Claude Code."
     }
   ]
 }

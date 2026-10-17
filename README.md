@@ -1,19 +1,18 @@
 <h1 align="center">Muster</h1>
 
 <p align="center">
-  <strong>The operating system for agentic software teams.</strong><br>
-  Stands up in one command; proves itself in one more.
-  A human and a fleet of AI coding agents share one task board. Muster packages the
-  whole loop (the task substrate, a production portal, and a local intelligence engine)
-  so you can stand it up on a fresh cloud box or a laptop.
+  <strong>Your back office, wired into Claude Code.</strong><br>
+  Projects, clients, invoices, knowledge, assets, and delivery records in one
+  self-hosted system your agents can update while they work.
 </p>
 
 <p align="center">
-  <a href="https://musterr.dev">Landing &amp; whitepaper</a> ·
-  <a href="https://app.musterr.dev">Live portal demo</a> ·
+  <a href="https://musterr.dev">Site &amp; whitepaper</a> ·
+  <a href="https://app.musterr.dev">Live demo</a> ·
   <a href="https://github.com/AnalogElk/muster">Source</a><br>
-  <sub>Read-only demo login: <code>demo@muster.dev</code> / <code>muster-demo</code>.
-  Live now on real Let's Encrypt TLS. (musterr.dev has two Rs on purpose.)</sub>
+  <sub>Read-only demo logins: <code>demo@muster.dev</code> (team) and
+  <code>client@muster.dev</code> (client), both <code>muster-demo</code>.
+  (musterr.dev has two Rs on purpose.)</sub>
 </p>
 
 <p align="center">
@@ -22,50 +21,58 @@
   <a href="https://app.musterr.dev"><img src="https://img.shields.io/badge/live%20demo-app.musterr.dev-2E7D32" alt="live demo"></a>
 </p>
 
-> **Naming note:** the public product name is **Muster**; **Elk OS** is the
-> project's working name and survives in the CLI (`bin/elk-os`), env vars
-> (`ELK_OS_*`), and some internal docs. Renaming those is a tracked decision,
-> not an accident. The two names refer to the same thing.
+> **Naming note:** the product is **Muster**. The CLI is `bin/elk-os` and the env
+> vars are `ELK_OS_*`, from the project's working name. Renaming those is a
+> tracked decision, not an accident. They refer to the same thing.
 
 ---
 
-Most "AI for work" tools bolt a chatbot onto the side of your real system. Muster
-inverts that. The **shared task board is the substrate**, and both the human and
-the agents are first-class users of it. The row a human drags on a board is the
-row an agent picks up over MCP and writes back when it's done. The intelligence
-layered on top is local, private, and permission-aware. Muster ships that whole
-loop, wired and reproducible, as a self-hostable product.
-
-It is built solo over about six months as a thesis and portfolio project: a real,
-running, multi-service system with a live public demo, not a slide deck. See
-[who built this](#who-built-this) at the bottom.
+Claude Code is stateless; your business is not. Muster keeps the records that
+outlive a session in a Directus you host, and gives your agents a door into them
+over MCP. The row you check in the portal is the row an agent can update while it
+works.
 
 ```bash
 git clone https://github.com/AnalogElk/muster.git && cd muster
 ./bin/elk-os init --profile generic         # generate secrets + .env
 ./bin/elk-os up                             # docker compose up the whole stack
 ./bin/elk-os migrate && ./bin/elk-os seed   # os_* schema + profile data
-./bin/elk-os wire                           # point Claude Code at this board
-./bin/elk-os doctor                         # green/red health board, the loop proof
+./bin/elk-os wire                           # point Claude Code at this deployment
+./bin/elk-os doctor                         # per-subsystem health report
 ```
 
 <p align="center">
-  <a href="https://app.musterr.dev"><img src="site/assets/muster-board.png" alt="The Muster task board: the shared os_* substrate the human and the agent fleet both work" width="840"></a><br>
-  <sub>The board is the product. This is the live portal at <a href="https://app.musterr.dev">app.musterr.dev</a>; the demo login is read-only.</sub>
+  <a href="https://app.musterr.dev"><img src="site/assets/muster-board.png" alt="The Muster task board: rows grouped by status, in the team portal" width="840"></a><br>
+  <sub>The live team portal at <a href="https://app.musterr.dev">app.musterr.dev</a>. The demo is synthetic and read-only.</sub>
 </p>
 
-Docker is the only hard dependency (`migrate`/`seed` additionally use stdlib
-`python3`, see the CLI table below; building the portal image locally also
-needs `git`/`node`/`perl` on the host, and `prepare-context.sh` preflights
-them with the alternatives spelled out). Secrets are generated into a
-gitignored `.env` and never printed.
+Docker is the hard dependency. `migrate` and `seed` also use stdlib `python3`;
+building the portal image locally additionally needs `git`, `node`, and `perl` on
+the host, and `prepare-context.sh` preflights them with the alternatives spelled
+out. Secrets are generated into a gitignored `.env` and never printed.
 
 > **Fresh-clone note:** the portal image builds from a *local checkout* of
-> `analog-elk-front-end` (see [`portal/`](./portal/)), which a fresh clone
-> won't have. `up` stops with the alternatives spelled out. Either set
-> `ELK_OS_WITH_PORTAL=false` in `.env` (Directus + RAG + the board still stand
-> up) or pull published images (`ELK_OS_USE_PUBLISHED_IMAGES=true` +
-> `PORTAL_IMAGE`/`RAG_IMAGE`).
+> `analog-elk-front-end` (see [`portal/`](./portal/)), which a fresh clone does
+> not have. `up` stops with the alternatives spelled out. Either set
+> `ELK_OS_WITH_PORTAL=false` in `.env` (Directus and the records still stand up)
+> or pull published images (`ELK_OS_USE_PUBLISHED_IMAGES=true` plus
+> `PORTAL_IMAGE` / `RAG_IMAGE`).
+
+## What is in it
+
+The schema ships **50 snapshot entries: 38 `os_*` collections, 6 support tables,
+and 6 groups that only organize the Directus sidebar**
+([`KEPT-AND-PRUNED.md`](./directus/schema/KEPT-AND-PRUNED.md)). They add up to
+five desks and a second front door.
+
+| Desk | Holds |
+|---|---|
+| **Delivery desk** | Projects, tasks, sprints, releases, repositories. What's claimed, what's blocked, what actually shipped. |
+| **Money desk** | Deals, proposals, invoices, payments, expenses, services, packages. A ledger, not accounting software. |
+| **Studio operations** | Organizations, contacts, activities, support, messages, your own inbox. The studio's records, not its employment paperwork. |
+| **Knowledge and assets** | A knowledge base for what you've learned; an asset library for what you've made, with review states and brand guidelines attached. |
+| **Operations view** | One dashboard over the rest: site, portfolio, delivery, and infrastructure analytics, plus a cost ledger for what the agents spent. |
+| **Client portal** | The second front door. Clients sign in to the same records, scoped to what they may see. |
 
 ## The four subsystems
 
@@ -73,115 +80,114 @@ One `elk-os up` stands up four wired pieces:
 
 | Subsystem | What it is |
 |---|---|
-| **Claude-side OS** | A governance constitution (`CLAUDE.md`), an MCP bridge, SessionStart hooks, and persistent memory that turn Claude Code into a standing team member. Rendered per-deployment by `elk-os wire`. |
-| **Directus + `os_*`** | The shared-state bus: tasks, sprints, projects, releases, repositories. Directus's **native MCP server** (`/mcp`) is the agent's door to the board. |
-| **The intelligent layer** | A local RAG engine (Postgres + Qdrant + Redis + FastAPI) plus **Elk Chat**, an in-portal assistant that answers over your own knowledge base and task data. Embeddings are local: no external inference, no API key, no quota. See [The intelligent layer](#the-intelligent-layer). |
-| **The portal** | The human surface (admin + client), a Next.js app over the same `os_*` data. |
+| **The Claude Code connection** | A governance file (`CLAUDE.md`), an MCP bridge, SessionStart hooks, and persistent memory, rendered per deployment by `elk-os wire`. |
+| **Directus + `os_*`** | The shared record store. Directus's **native MCP server** (`/mcp`) is the agent's door to it. |
+| **The retrieval engine** | A local RAG service (Postgres + Qdrant + Redis + FastAPI) plus the in-portal assistant, answering over your own knowledge base and record data. Embeddings run on the box. |
+| **The portal** | The human surface, team and client, a Next.js app over the same `os_*` records. |
 
 ## The loop, concretely
 
 ```
         ┌─────────────────────────────────────────────────────┐
-        │            Directus  +  the os_* board              │
-        │     (tasks · sprints · projects · releases)         │
+        │            Directus  +  the os_* records            │
+        │      (tasks · sprints · projects · releases)        │
         └───────────────▲───────────────────────▲─────────────┘
-       drags a card on  │                       │  reads/writes via the
-        the portal      │                       │  native Directus MCP (/mcp)
+       drags a card in  │                       │  reads/writes via the
+         the portal     │                       │  native Directus MCP (/mcp)
                   ┌──────┴──────┐         ┌──────┴───────────┐
-                  │    Human    │         │  Claude fleet    │
+                  │    Human    │         │  Claude agents   │
                   │  (portal)   │         │ (wired CLAUDE.md)│
                   └─────────────┘         └──────────────────┘
 ```
 
 `elk-os wire` enables the native MCP server (`settings.mcp_enabled`), writes a
 `.mcp.json` pointing Claude at *this* deployment's Directus, and proves the loop
-by reading seeded `os_tasks` back through the same endpoint + token. `doctor`
+by reading seeded `os_tasks` back through the same endpoint and token. `doctor`
 then walks every subsystem, including a live `tools/list` probe against `/mcp`
 (a WARN until wired), and exits nonzero on any red row.
+
+## As a Claude Code plugin
+
+You do not have to self-host to try it. The plugin connects to the public demo:
+
+```
+/plugin marketplace add AnalogElk/muster
+/plugin install muster@muster
+/muster:connect
+```
+
+Two commands to install, then one to connect. Four slash commands
+(`connect`, `board`, `up`, `doctor`), one skill, one SessionStart hook, and one
+MCP server connection, all named in
+[`.claude-plugin/plugin.json`](./.claude-plugin/plugin.json). The first MCP tool
+call asks you to approve it, once. There is no zero-click connection.
 
 ## Why not just a plain Claude Code session?
 
 A plain session is the right tool for a large class of work. Muster is what you
 wrap around it when the work is multi-session, ships to others, and cannot be
-human-reviewed line by line:
+reviewed line by line:
 
 | A plain Claude Code session | Muster |
 |---|---|
-| One rolling context window is the project memory | A durable task board + on-disk memory + an append-only log survive every session |
-| Serial by default; two agents clobber one checkout | Governed fan-out with worktree isolation around one shared board |
-| The builder audits its own work, sharing its blind spots | Adversarial verifiers and from-scratch loop-proofs |
-| Rules live in a human's head and drift | A written constitution loaded into every session |
+| One rolling context window is the project memory | Durable records, on-disk memory, and an append-only log survive every session |
+| Serial by default; two agents clobber one checkout | Disjoint assignment and worktree isolation around one shared set of records |
+| The builder audits its own work, sharing its blind spots | Adversarial verifiers and from-scratch loop proofs |
+| Rules live in a human's head and drift | A written governance file loaded into every session |
 
-The honest version of this table, including which rows a disciplined single
-agent can match, is [whitepaper section 7](https://musterr.dev/paper.html).
+The honest version of this table, including which rows a disciplined single agent
+can match, is [whitepaper section 7](https://musterr.dev/paper.html).
 
-## The intelligent layer
+## The retrieval engine
 
-The board is where work happens. The intelligent layer is how the system answers
-questions about itself. It is the headline capability of this release, and it is
-built to a strict rule: **the engine is never trusted for what a user is allowed
-to see.**
+The records are where work happens. The retrieval engine is how the system
+answers questions about itself, under one strict rule: **the engine is never
+trusted for what a user is allowed to see.**
 
-**A local RAG engine.** Muster embeds the retrieval engine from Mike's
-`analog-elk-v3` project: a FastAPI service on port `9100`, backed by Postgres 15,
-Qdrant, and Redis. Embeddings are generated on the box with
-[fastembed](https://github.com/qdrant/fastembed) using `BAAI/bge-small-en-v1.5`
-(384-dimensional vectors, ONNX on CPU). Retrieval and indexing run entirely
-locally: no external inference, no embedding API key, no quota, and no document
-text leaving the machine. On the self-host stack the engine runs on the private
-`elkos-rag` network in development mode; the engine's only host exposure is a
-loopback binding (`127.0.0.1:19100`, `RAG_API_PORT`), which is how `bin/elk-os doctor`
-and host-side tools reach it. Nothing is reachable off the box, so the machine
-boundary is the perimeter out of the box.
+**Local retrieval.** Muster embeds the engine from the `analog-elk-v3` project: a
+FastAPI service backed by Postgres 15, Qdrant, and Redis. Embeddings are
+generated on the box with [fastembed](https://github.com/qdrant/fastembed) using
+`BAAI/bge-small-en-v1.5` (384-dimensional vectors, ONNX on CPU). Retrieval and
+indexing run locally: no external inference, no embedding API key, no quota, and
+no document text leaving the machine. The engine's only host exposure is a
+loopback binding (`127.0.0.1:19100`, `RAG_API_PORT`), which is how
+`bin/elk-os doctor` and host-side tools reach it.
 
-**Elk Chat.** On top of the engine sits an in-portal assistant that answers
-questions over your own knowledge base and `os_*` task data. It is a grounding
-window over the knowledge substrate, not a second place to coordinate work. The
-task record, not a chat transcript, stays the coordination surface.
+**The portal assistant.** On top of the engine sits an in-portal assistant that
+answers over your own knowledge base and `os_*` records. It is a grounding window
+over the knowledge, not a second place to coordinate work. The task record, not a
+chat transcript, stays the coordination surface.
 
-**The untrusted-oracle model.** This is the load-bearing design decision. The RAG
+**The untrusted-oracle model.** This is the load-bearing design decision. The
 engine indexes everything it is given, including gated and unpublished pages, so
-its raw output can never be trusted to decide visibility. Elk Chat uses it only
-to *rank* candidate document slugs. Every candidate is then re-fetched through
-Directus under the caller's own token and re-gated by the portal's role-based
-permission filter (`buildPageFilter`) before a single line reaches the model's
-context. The assistant cannot surface a document the caller is not allowed to
-see, even if the engine ranked it first. Retrieval is a suggestion; permission is
-the gate.
+its raw output can never decide visibility. The assistant uses it only to *rank*
+candidate document slugs. Every candidate is then re-fetched through Directus
+under the caller's own token and re-gated by the portal's role-based filter
+(`buildPageFilter`) before a line reaches the model's context. Retrieval ranks;
+permissions decide.
 
-**Security hardening.** The engine is built to be safe to expose behind a reverse
-proxy, the way Analog Elk runs its own production instance:
-
-- **Read-key auth.** `/query`, `/stats`, and the ingest routes require an
-  `X-API-Key` header (constant-time comparison) once a key is set.
-- **Fail-closed startup guard.** Outside development the engine *refuses to boot*
-  without `RAG_API_KEY` set. A misconfigured deploy cannot silently ship an open
-  API. Set `ELK_OS_RAG_ENV=production` + `RAG_API_KEY` to expose it.
-- **Rate limiting.** A Redis-backed fixed-window limiter (default 300 req/min per
-  key) sits in the engine itself, since stock Caddy on the ingress has no
-  rate-limit module. Self-hosters get it for free.
-- **Orphaned-vector reconciliation.** Deleting a document reconciles its Qdrant
-  vectors, so a stale snippet cannot leak back through semantic search after its
-  source row is gone.
-
-**Where it came from.** `analog-elk-v3` began as a standalone Claude Code plugin:
-a local knowledge base, a RAG API, and agent tooling. The portal is a real
-production Next.js/Directus app that runs the Analog Elk agency day to day. Muster
-is the two combined: the portal's task substrate plus the engine's private,
-permission-aware intelligence, packaged as one reproducible self-host stack.
+**Hardening.** Read-key auth on `/query`, `/stats`, and the ingest routes
+(constant-time comparison) once a key is set. A fail-closed startup guard: outside
+development the engine refuses to boot without `RAG_API_KEY`, so a misconfigured
+deploy cannot silently ship an open API. A Redis-backed fixed-window rate limiter
+(default 300 req/min per key) inside the engine, since stock Caddy on the ingress
+has no rate-limit module. And orphaned-vector reconciliation, so a deleted
+document's vectors go with it and a stale snippet cannot come back through
+semantic search.
 
 > **Honest note on generation.** Retrieval and embeddings are local and keyless.
 > The step that *writes* an answer uses whatever model provider you configure
-> (`ANTHROPIC_API_KEY` + `ASSISTANT_MODEL`, both passed through `.env`; see
-> `.env.example`). Muster's "no external inference" claim is scoped to the
-> engine, which is where your documents live. Without a generation key the chat
-> answers with an honest in-chat notice rather than a broken box.
+> (`ANTHROPIC_API_KEY` plus `ASSISTANT_MODEL`, both passed through `.env`; see
+> `.env.example`). The "no external inference" claim is scoped to the engine,
+> which is where your documents live. Do not read it as "nothing leaves the box".
+> Without a generation key the assistant answers with an honest notice rather
+> than a broken box.
 
 ## Profiles
 
 | Profile | Stands up |
 |---|---|
-| `generic` | A blank slate seeded with a synthetic "Demo Co", schema + seed data scrubbed of origin. Make it your own. |
+| `generic` | A blank slate seeded with a synthetic "Demo Co", schema and seed data scrubbed of origin. Make it your own. |
 | `analogelk` | Analog Elk's own demo data (the reference instance). |
 
 > Honest note: the portal **UI** ships Muster-branded for *every* profile. The
@@ -195,95 +201,105 @@ permission-aware intelligence, packaged as one reproducible self-host stack.
 ## The CLI
 
 An idempotent phased installer (`.elk-os-state.json` records completed phases;
-every phase is safe to re-run, completed work no-ops, so you can stop at any
+every phase is safe to re-run and completed work no-ops, so you can stop at any
 point and pick the sequence back up):
 
 | Command | Does |
 |---|---|
-| `init` | Generate secrets + write `.env` from `.env.example`. |
-| `up` | `docker compose up` the core (+ RAG + portal), then mint the admin static token. |
-| `migrate` | Apply the pruned `os_*` schema snapshot (idempotent diff + apply). |
+| `init` | Generate secrets and write `.env` from `.env.example`. |
+| `up` | `docker compose up` the core (plus RAG and portal), then mint the admin static token. |
+| `migrate` | Apply the pruned `os_*` schema snapshot (idempotent diff and apply). |
 | `seed` | Load the profile's seed data (idempotent upsert). |
-| `wire` | Render the Claude-side OS, enable the native MCP server, prove the loop. |
-| `doctor` | Per-subsystem green/red board, the runtime acceptance test. |
-| `logs [service]` | Tail container logs (e.g. `directus`, `elkos-rag-api`). |
-| `rebuild-portal` | Re-prepare the pinned context + rebuild the portal image. |
+| `wire` | Render the Claude Code connection, enable the native MCP server, prove the loop. |
+| `doctor` | Per-subsystem health report, the runtime acceptance test. |
+| `logs [service]` | Tail container logs (for example `directus`, `elkos-rag-api`). |
+| `rebuild-portal` | Re-prepare the pinned context and rebuild the portal image. |
 | `down` | Stop the stack (`--volumes` to wipe data). |
 
-## Deploy options (honest about what's local vs needs a host)
+## Deploy options
 
 | Path | Hosts | Best for |
 |---|---|---|
-| **Box** ([`provision/`](./provision/)) | the **whole stack** behind Caddy + TLS | The recommended live demo: a ~$6-12/mo VPS + a domain. |
-| **Render** ([`deploy/render.yaml`](./deploy/render.yaml)) | Directus + Postgres + portal | The most turnkey PaaS one-click. |
+| **Box** ([`provision/`](./provision/)) | the **whole stack** behind Caddy and TLS | The reliable full-stack path: a VPS and a domain. |
+| **Render** ([`deploy/render.yaml`](./deploy/render.yaml)) | Directus + Postgres + portal | A managed PaaS, fewest manual steps. |
 | **Fly / Railway** ([`deploy/`](./deploy/)) | per-service, wired by hand | If you already live there. |
 | **Netlify** ([`deploy/netlify/`](./deploy/netlify/)) | the portal **front-end only** | Putting the UI on a CDN. **Requires a Directus you host elsewhere.** |
 
 **The honest caveat:** the portal **fail-fasts without a reachable Directus
-backend**. A front-end-only host (Netlify) hosts the UI, not the backend. The
-backend (Postgres + Directus + RAG + native MCP) needs a real host: the box is
-the reliable full-stack path. And the portal image ships via GHCR (it can't
-be built on a bare PaaS); the GHCR packages currently require a `docker login
-ghcr.io` while the public image release is prepared (tracked). See
-[`provision/`](./provision/) and [`deploy/README.md`](./deploy/README.md).
+backend**. A front-end-only host hosts the UI, not the backend. The backend
+(Postgres, Directus, RAG, native MCP) needs a real host, and the box is the
+reliable full-stack path. The portal image ships via GHCR and cannot be built on
+a bare PaaS; the GHCR packages currently require a `docker login ghcr.io` while
+the public image release is prepared (tracked). See [`provision/`](./provision/)
+and [`deploy/README.md`](./deploy/README.md).
 
-The live demo *is* the box path: [`site/`](./site/) is the whitepaper homepage
-Caddy serves at the demo root, and [`provision/`](./provision/) includes the
-scripts that make the public demo real: `seed-demo.py` (seed the actual Muster
-build board), `re-add-kb.py` (restore + seed the knowledge base), and
-`demo-readonly-role.py` (lock the `demo@muster.dev` login to read-only).
+The live demo *is* the box path: [`site/`](./site/) is the homepage Caddy serves
+at the demo root, and [`provision/`](./provision/) holds the scripts that make the
+public demo real, including `seed-demo.py`, `re-add-kb.py`, and
+`demo-readonly-role.py` (which locks the demo logins to read-only).
 
-## What's regenerated post-clone (not shipped pre-rendered)
+## What is regenerated post-clone
 
-- **`portal/.build/`** is the portal's Docker build context, a *frozen archive*
-  of a pinned `analog-elk-front-end` commit, reproduced on demand by
-  `portal/prepare-context.sh`. Gitignored; never committed.
+- **`portal/.build/`** is the portal's Docker build context, a *frozen archive* of
+  a pinned `analog-elk-front-end` commit, reproduced on demand by
+  `portal/prepare-context.sh`. Gitignored, never committed.
 - **`wire/`** is the per-deployment Claude config, rendered by `elk-os wire` from
   the committed [`claude-os/`](./claude-os/) templates. It bakes absolute local
-  paths and references the token by env name only. Gitignored; regenerate any
-  time with `elk-os wire`.
+  paths and references the token by env name only. Gitignored; regenerate any time
+  with `elk-os wire`.
 
-## Versioning & releases
+## What it does not do
+
+1. Muster does not make Claude smarter or run agents in the background. It gives
+   instructed agents shared records and a protocol.
+2. The first MCP tool call requires approval in Claude Code. There is no
+   zero-click connection.
+3. The public demo is synthetic and read-only. It proves shared reads, not agent
+   writes or self-hosting.
+4. A clean self-host does not reproduce every demo section. The base snapshot
+   omits demo enrichment and some portal dependencies, and the portal requires a
+   published image or a separate source checkout.
+5. The Money desk is not accounting software. There is no double-entry ledger,
+   bank feed, reconciliation, tax workflow, or bookkeeping automation.
+6. Studio operations is not HR software. There is no payroll, hiring, benefits,
+   leave management, or time tracking.
+7. Connected-service views require their own credentials. Without them, a view may
+   be empty, unavailable, or explicitly mocked.
+8. Task claims are not atomic locks. Avoiding collisions requires disjoint
+   assignments and worktree isolation.
+9. Retrieval and embeddings can run locally. Answer generation uses the configured
+   model provider.
+10. Muster is unnecessary for work that fits in one context and has no back-office
+    records to maintain.
+
+## Versioning and releases
 
 Versioning is automated via [release-please](https://github.com/googleapis/release-please)
-(`release-type: simple`, Muster is a bash/compose repo, not a Node package). The
+(`release-type: simple`; this is a bash and compose repo, not a Node package). The
 version of record lives in [`version.txt`](./version.txt); the narrative in
-[`CHANGELOG.md`](./CHANGELOG.md). Every commit/PR title must be a valid
-[Conventional Commit](https://www.conventionalcommits.org/) (`feat:` -> minor,
-`fix:`/`perf:` -> patch, `feat!:` -> major). On tag, service images publish to GHCR
-([`publish-images.yml`](./.github/workflows/publish-images.yml)).
+[`CHANGELOG.md`](./CHANGELOG.md). Every commit and PR title must be a valid
+[Conventional Commit](https://www.conventionalcommits.org/) (`feat:` to minor,
+`fix:` / `perf:` to patch, `feat!:` to major). On tag, service images publish to
+GHCR ([`publish-images.yml`](./.github/workflows/publish-images.yml)).
 
-## Does it hold up outside a demo?
+## Design and status
 
-The system Muster packages runs a real agency in production: real clients,
-invoices, uptime monitoring, backup restore drills, automated releases. In one
-48-hour window (2026-07-01/02) it carried **18 pull requests to production
-across 8 repositories**, every machine-written change passing a **3-reviewer
-adversarial risk gate** before merge. The gate earns its keep by saying no: in
-that window it stopped four changes with reproducible evidence, including a "fix"
-it proved to be a complete no-op via its own deploy preview, and a blog rollout
-it still holds because indexing thin pages before the content exists would be an
-SEO regression. When the orchestrating session was killed by a machine crash, a
-fresh session rebuilt the full state from the task record and per-agent journals
-and resumed with zero lost work.
-
-## Design & status
-
-Full spec: [`docs/superpowers/specs/2026-06-29-elk-os-installer-design.md`](./docs/superpowers/specs/2026-06-29-elk-os-installer-design.md).
-Per-phase real status (shipped vs aspirational) is tracked honestly in
-[`WHITEPAPER-LOG.md`](./WHITEPAPER-LOG.md). The loop (core + RAG + schema/seed +
-portal + the wired Claude-OS) is proven on a from-scratch install, and the live
-public demo is up: [the whitepaper homepage](https://musterr.dev) with
+Full spec:
+[`docs/superpowers/specs/2026-06-29-elk-os-installer-design.md`](./docs/superpowers/specs/2026-06-29-elk-os-installer-design.md).
+Per-phase status, shipped against aspirational, is tracked in
+[`WHITEPAPER-LOG.md`](./WHITEPAPER-LOG.md). The loop (core, RAG, schema and seed,
+portal, and the wired Claude Code connection) is proven on a from-scratch install,
+and the public demo is up: [the site](https://musterr.dev) with
 [the portal](https://app.musterr.dev) one link away.
 
 ## License
 
-[MIT](./LICENSE) © Michael Walliser (Analog Elk). Muster's `os_*` schema derives
-from [directus-labs/agency-os](https://github.com/directus-labs/agency-os)
-(also MIT); that attribution lives in [`NOTICE`](./NOTICE) and rides along with
-any redistribution. Decision record: permissive licensing maximizes adoption and
-trust; the business is services (hosting, support, custom builds). The code is
-the credential, not the moat.
+[MIT](./LICENSE) © Michael Walliser (Analog Elk). The `os_*` schema derives from
+[directus-labs/agency-os](https://github.com/directus-labs/agency-os) (also MIT);
+that attribution lives in [`NOTICE`](./NOTICE) and rides along with any
+redistribution. Decision record: permissive licensing maximizes adoption and
+trust; the business is services (hosting, support, custom builds). The code is the
+credential, not the moat.
 
 ## Who built this
 

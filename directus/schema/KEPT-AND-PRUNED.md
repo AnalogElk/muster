@@ -35,9 +35,14 @@ version match. `bin/elk-os migrate` works around this by reading the target's
 clean long-term fix is to **bump the compose image tag to `directus:11.15.1`**
 (a `compose/` change, outside this agent's lane — flagged for the orchestrator).
 
-## Kept (50 collections)
+## Kept (50 snapshot entries: 38 `os_*`, 6 support tables, 6 UI groups)
 
-### Agency-OS core — all `os_*` (38)
+Counted as Directus sees them. 44 of the 50 are real tables; the remaining 6
+(`billing`, `business`, `crm`, `hidden_Fields`, `projects`, `sales`) carry no
+schema and exist only to group collections in the Studio sidebar. Public copy
+must use this breakdown rather than calling all 50 collections.
+
+### Agency-OS core, all `os_*` (38)
 
 `os_activities`, `os_activity_contacts`, `os_activity_log`,
 `os_client_ticket_responses`, `os_client_tickets`, `os_deal_contacts`,

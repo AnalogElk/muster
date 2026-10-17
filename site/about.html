@@ -4,19 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How Muster was built: a field report</title>
-<meta name="description" content="Muster was built by a governed fleet of AI agents in about 2.5 hours, using the coordination apparatus it packages. This is the build log, the receipts, and the honest ledger of what that did and did not buy.">
+<meta name="description" content="A dated field report on the 2026-06-29 build of Muster: the agents, the bugs they caught, and an honest ledger of what the apparatus did and did not buy. Preserved as written.">
 <!-- canonical = https://musterr.dev/ (double R is deliberate; muster.dev is not ours). -->
 <link rel="canonical" href="https://musterr.dev/about.html">
 
 <!-- Open Graph / Twitter -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://musterr.dev/">
-<meta property="og:title" content="Muster: a self-hostable OS for agentic software teams">
-<meta property="og:description" content="You and your AI coding agents share one task board over MCP, with a local, private RAG and an Elk Chat assistant. It built itself, it is live, and it is open source.">
+<meta property="og:url" content="https://musterr.dev/about.html">
+<meta property="og:title" content="How Muster was built: a dated field report">
+<meta property="og:description" content="A dated field report on the 2026-06-29 build of Muster: the agents, the bugs they caught, and an honest ledger of what the apparatus did and did not buy. Preserved as written.">
 <meta property="og:image" content="https://musterr.dev/assets/muster-board.png">
+<meta property="og:image:alt" content="The Muster task board: rows grouped by status, in the team portal.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Muster: a self-hostable OS for agentic software teams">
-<meta name="twitter:description" content="One shared board for humans and agents, plus local, permission-aware intelligence. Live demo and open-source repo inside.">
+<meta name="twitter:title" content="How Muster was built: a dated field report">
+<meta name="twitter:description" content="A dated field report on the 2026-06-29 build of Muster: the agents, the bugs they caught, and an honest ledger of what the apparatus did and did not buy. Preserved as written.">
 <meta name="twitter:image" content="https://musterr.dev/assets/muster-board.png">
 
 <!-- favicon: three steps + one ember, the Build-Trail at 16px -->
@@ -159,7 +160,7 @@ if (!navigator.globalPrivacyControl) {
   <span class="topbar__spacer"></span>
   <div class="topbar__cta">
     <a class="btn btn--live btn--sm" href="https://app.musterr.dev" target="_blank" rel="noopener" title="demo login: demo@muster.dev / muster-demo (read-only)">Live portal ↗</a>
-    <a class="btn btn--sm" href="/paper.html">Whitepaper</a>
+    <a class="btn btn--sm topbar__secondary" href="/paper.html">Whitepaper</a>
   </div>
 </header>
 
@@ -223,6 +224,24 @@ if (!navigator.globalPrivacyControl) {
       <div class="metric"><span class="metric__n" data-count="18" data-suffix="">18</span><span class="metric__l">PRs to production in one 48-hr window · 8 repos</span></div>
       <div class="metric"><span class="metric__n">$2–4</span><span class="metric__l">per month to host the demo (duty-cycled)</span></div>
     </div>
+  </div>
+</section>
+
+<!-- ===================== DATED NOTICE (2026-07-25) ===================== -->
+<!-- Preserved-record policy: the body below is a dated field report and is NOT
+     revised to match current positioning. Corrections go here, at the top,
+     where a reader meets them before the claims they correct. -->
+<section class="band band-paper band-paper--alt" id="dated-notice">
+  <div class="doc">
+    <p class="kicker">Dated notice · 2026-07-25</p>
+    <h2 class="h2">This is a record, not the current pitch.</h2>
+    <p class="lead">Everything below is preserved as written on 2026-06-29. It has not been edited to match how Muster is described today.</p>
+    <ul class="tight">
+      <li><strong>The category changed.</strong> This report calls Muster a self-hostable operating system for agentic software teams. Muster is now <a href="/">the agent-connected back office</a>: projects, clients, invoices, knowledge, assets, and delivery records, wired into Claude Code. The task record is still the coordination substrate. It is now one desk of six rather than the whole product.</li>
+      <li><strong>The numbers are historical.</strong> About 2.5 hours, roughly 30 subagents, over 2 million tokens, and $2 to $4 per month describe one dated run. They are evidence about that run, not current product claims. The demo box runs always on now, not duty-cycled.</li>
+      <li><strong>The install boundary is narrower than this report implies.</strong> Docker is the hard dependency, but the portal also needs a published image or a source checkout you supply, and a clean self-host does not reproduce every section of the public demo.</li>
+    </ul>
+    <p class="fineprint">Where this page and <a href="/">the current page</a> disagree, the current page is right and this one is the record.</p>
   </div>
 </section>
 
@@ -331,7 +350,7 @@ if (!navigator.globalPrivacyControl) {
   <div class="doc">
     <p class="kicker">§7 · Bugs the machines caught</p>
     <h2 class="h2">~7 functional bugs, 6 brand leaks. None caught by a human running the software.</h2>
-    <div class="table-wrap">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable defect table">
       <table class="proof">
         <thead><tr><th scope="col">Defect / risk</th><th scope="col">What caught it</th><th scope="col">Needed the fleet?</th></tr></thead>
         <tbody>
@@ -383,7 +402,7 @@ if (!navigator.globalPrivacyControl) {
   <div class="doc">
     <p class="kicker">§10 · vs. an ungoverned single-agent workflow</p>
     <h2 class="h2">No strawman. A workflow, not a product.</h2>
-    <div class="table-wrap">
+    <div class="table-wrap" tabindex="0" role="region" aria-label="Scrollable workflow comparison table">
       <table class="proof">
         <thead><tr><th scope="col">Ungoverned single-agent workflow</th><th scope="col">Muster</th></tr></thead>
         <tbody>
@@ -420,7 +439,7 @@ if (!navigator.globalPrivacyControl) {
     <p class="kicker">§12 · Run it yourself</p>
     <h2 class="h2">Six commands. The doctor board is the proof.</h2>
     <p class="lead">The apparatus is public and self-hostable. <code>bin/elk-os</code> (the CLI keeps the project's working name, Elk OS) is a resumable, idempotent phase machine whose only hard dependency is Docker (<code>migrate</code>/<code>seed</code> additionally use stdlib <code>python3</code>).</p>
-    <pre class="code" aria-label="Six-command install"><span class="c"># scaffold → live, from an empty volume</span>
+    <pre class="code" tabindex="0" aria-label="Six-command install"><span class="c"># scaffold → live, from an empty volume</span>
 bin/elk-os <span class="e">init</span>      <span class="c"># scaffold + env</span>
 bin/elk-os <span class="e">up</span>        <span class="c"># compose core (Directus, Postgres, RAG, portal)</span>
 bin/elk-os <span class="e">migrate</span>   <span class="c"># apply os_* schema</span>
