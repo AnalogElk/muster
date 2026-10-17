@@ -91,7 +91,7 @@ if (!navigator.globalPrivacyControl) {
   </nav>
   <span class="topbar__spacer"></span>
   <div class="topbar__cta">
-    <a class="btn btn--live btn--sm" href="https://app.musterr.dev" target="_blank" rel="noopener" title="demo logins: demo@muster.dev or client@muster.dev, both muster-demo (read-only)">Live demo ↗</a>
+    <a class="btn btn--live btn--sm" href="https://app.musterr.dev" target="_blank" rel="noopener" title="static demo snapshot, no sign-in">Live demo ↗</a>
     <a class="btn btn--sm topbar__secondary" href="/about.html">Build log</a>
     <a class="btn btn--sm topbar__secondary" href="/paper.html">Whitepaper</a>
   </div>
@@ -105,7 +105,7 @@ if (!navigator.globalPrivacyControl) {
     <div class="rail__item" data-rail="approve"><span>approval</span><span class="v">1 time</span></div>
     <div class="rail__item" data-rail="connect"><span>connect args</span><span class="v">0</span></div>
     <div class="rail__item" data-rail="commands"><span>commands</span><span class="v">4</span></div>
-    <div class="rail__item" data-rail="demo"><span>demo logins</span><span class="v">2</span></div>
+    <div class="rail__item" data-rail="demo"><span>demo views</span><span class="v">2</span></div>
     <div class="rail__item" data-rail="schema"><span>schema entries</span><span class="v">50</span></div>
     <div class="rail__item" data-rail="stack"><span>own stack</span><span class="v">Docker</span></div>
     <div class="rail__item" data-rail="licence"><span>licence</span><span class="v">MIT</span></div>
@@ -168,20 +168,20 @@ if (!navigator.globalPrivacyControl) {
   <div class="doc">
     <p class="kicker">Proof</p>
     <h2 class="h2">This is the actual system, not a mockup.</h2>
-    <p class="lead">Two doors, both public, both read-only. Sign in and count the rows yourself.</p>
+    <p class="lead">Two doors, both public, no sign-in. Open either one and count the rows yourself.</p>
 
     <figure style="margin:1.5rem 0">
       <a href="https://app.musterr.dev" target="_blank" rel="noopener"><img src="assets/muster-board.png" alt="The Muster task board: rows grouped by status, in the team portal" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(0,0,0,.18)"></a>
       <figcaption class="fineprint" style="margin-top:.5rem">The team portal at <a href="https://app.musterr.dev">app.musterr.dev</a>. The client portal is the same records, scoped to one organization.</figcaption>
     </figure>
 
-    <div class="planes" role="list" aria-label="Demo logins">
-      <div class="plane" role="listitem"><p class="plane__h">Team view</p><p class="plane__d"><code>demo@muster.dev</code> / <code>muster-demo</code><br>Delivery, money, studio operations, knowledge and assets, and the analytics over all of it.</p></div>
-      <div class="plane" role="listitem"><p class="plane__h">Client view</p><p class="plane__d"><code>client@muster.dev</code> / <code>muster-demo</code><br>What a client sees: their projects, tasks, invoices, brand assets, and messages. Nothing else.</p></div>
+    <div class="planes" role="list" aria-label="Demo views">
+      <div class="plane" role="listitem"><p class="plane__h">Team view</p><p class="plane__d"><a href="https://app.musterr.dev" target="_blank" rel="noopener">app.musterr.dev</a><br>Delivery, money, studio operations, knowledge and assets, and the analytics over all of it.</p></div>
+      <div class="plane" role="listitem"><p class="plane__h">Client view</p><p class="plane__d"><a href="https://app.musterr.dev/client-portal/" target="_blank" rel="noopener">app.musterr.dev/client-portal</a><br>What a client sees: their projects, tasks, invoices, brand assets, and messages. Nothing else.</p></div>
     </div>
 
     <p>Once you are connected, <code>/muster:board</code> shows the same task rows from inside Claude Code, without opening the portal.</p>
-    <p class="fineprint">The demo data is synthetic and the demo is read-only. It proves shared reads and the shape of the records. It does not prove agent writes, and it is not a clean-install replica.</p>
+    <p class="fineprint">The demo is a static snapshot of a real deploy, captured on 2026&#8209;08&#8209;02. The data is synthetic, there is no sign-in, and nothing you click is saved. It shows the shape of the records. It does not prove agent writes, and it is not a clean-install replica.</p>
   </div>
 </section>
 
@@ -221,7 +221,7 @@ if (!navigator.globalPrivacyControl) {
       <div class="plane" role="listitem">
         <p class="plane__h">Client portal</p>
         <p class="plane__d">The second front door: clients sign in to the same records you work, scoped to what they may see: projects, invoices, brand assets, messages.</p>
-        <p class="fineprint">Demo: <code>client@muster.dev</code> / <code>muster-demo</code>, then compare it with the team view.</p>
+        <p class="fineprint">Demo: open <a href="https://app.musterr.dev/client-portal/" target="_blank" rel="noopener">the client view</a>, then compare it with the team view.</p>
       </div>
     </div>
   </div>
@@ -293,7 +293,7 @@ if (!navigator.globalPrivacyControl) {
     <div class="footer__links">
       <a href="/about.html">Build log</a>
       <a href="/paper.html">Whitepaper</a>
-      <a href="https://app.musterr.dev" target="_blank" rel="noopener" title="demo logins: demo@muster.dev or client@muster.dev, both muster-demo (read-only)">Live demo ↗</a>
+      <a href="https://app.musterr.dev" target="_blank" rel="noopener" title="static demo snapshot, no sign-in">Live demo ↗</a>
       <a href="https://github.com/AnalogElk/muster" target="_blank" rel="noopener">GitHub ↗</a>
       <a href="https://github.com/AnalogElk/muster/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
       <a href="privacy.html">Privacy</a>

@@ -10,8 +10,9 @@
   <a href="https://musterr.dev">Site &amp; whitepaper</a> ·
   <a href="https://app.musterr.dev">Live demo</a> ·
   <a href="https://github.com/AnalogElk/muster">Source</a><br>
-  <sub>Read-only demo logins: <code>demo@muster.dev</code> (team) and
-  <code>client@muster.dev</code> (client), both <code>muster-demo</code>.
+  <sub>The demo is a static snapshot with no sign-in: the
+  <a href="https://app.musterr.dev">team view</a> and the
+  <a href="https://app.musterr.dev/client-portal/">client view</a>.
   (musterr.dev has two Rs on purpose.)</sub>
 </p>
 
@@ -233,10 +234,12 @@ a bare PaaS; the GHCR packages currently require a `docker login ghcr.io` while
 the public image release is prepared (tracked). See [`provision/`](./provision/)
 and [`deploy/README.md`](./deploy/README.md).
 
-The live demo *is* the box path: [`site/`](./site/) is the homepage Caddy serves
-at the demo root, and [`provision/`](./provision/) holds the scripts that make the
-public demo real, including `seed-demo.py`, `re-add-kb.py`, and
-`demo-readonly-role.py` (which locks the demo logins to read-only).
+The live demo was built on the box path: [`provision/`](./provision/) holds the
+scripts that made the public demo real, including `seed-demo.py`, `re-add-kb.py`,
+and `demo-readonly-role.py` (which locked the demo logins to read-only). Since
+2026-08-02 the public demo is a static snapshot of that box, crawled page by page
+and served as plain files, so it has no login and cannot write. [`site/`](./site/)
+is the homepage at the demo root.
 
 ## What is regenerated post-clone
 
