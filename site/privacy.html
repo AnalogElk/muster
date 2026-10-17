@@ -24,12 +24,13 @@
   .backhome { display:inline-flex; gap:0.4rem; align-items:center; min-height:var(--target-min); font-family:var(--mono); font-size:var(--type-floor); text-decoration:none; color:var(--pine); }
   .fineprint-block { font-family: var(--mono); font-size: var(--type-floor); color: var(--pine); opacity: 0.75; margin-top: 2.5rem; }
 </style>
-<!-- Matomo: self-hosted, first-party cookie, IP-anonymized server-side; skipped entirely
+<!-- Matomo: self-hosted, cookieless (disableCookies), IP-anonymized server-side; skipped entirely
      when the browser sends Global Privacy Control (DNT is honored server-side by Matomo).
      Disclosed on this page -->
 <script>
 if (!navigator.globalPrivacyControl) {
   var _paq = window._paq = window._paq || [];
+  _paq.push(['disableCookies']);
   _paq.push(['setTrackerUrl', 'https://analytics.analogelk.com/matomo.php']);
   _paq.push(['setSiteId', '10']);
   _paq.push(['trackPageView']);
@@ -160,25 +161,33 @@ if (!navigator.globalPrivacyControl) {
   </ul>
 
   <h2>Cookies</h2>
-  <p>Matomo sets a first-party cookie (<code>_pk_id</code>, plus a short-lived session cookie) so that a returning browser is counted once instead of twice. It works only on this domain, is never used for advertising, and is not shared with anyone. There is no third-party ad tech, no fingerprinting service, and no social widget on this site.</p>
+  <p>None. Matomo runs here in cookieless mode: it sets no <code>_pk_id</code> or session cookie and stores nothing in your browser. The trade-off is ours, not yours. A returning visitor is counted as a new one, because there is nothing on your device to recognize. There is no third-party ad tech, no fingerprinting service, and no social widget on this site.</p>
 
   <h2>Interaction heatmaps</h2>
-  <p>To see which parts of a page actually get used, the site also sends small anonymous interaction beacons (where on the page clicks land and how far down you scroll, both as percentages) to <code>analogelk.com</code>, infrastructure we run ourselves. A beacon carries only coordinates, the page path, and a coarse device class (mobile or desktop). It records no text, no identifiers, sets no cookies, and cannot be tied to you. Like the analytics above, these beacons honor Global Privacy Control: if your browser sends it, none are ever sent.</p>
+  <p>To see which parts of a page actually get used, the site also sends small anonymous interaction beacons (where on the page clicks land and how far down you scroll, both as percentages) to <code>analogelk.com</code>, infrastructure we run ourselves. A beacon carries only those coordinates, the page path, the size of your browser window, and a coarse device class (mobile or desktop). It records no text and no identifiers, sets no cookies, and cannot be tied to you.</p>
 
-  <h2>What we honor and discard</h2>
+  <h2>Privacy signals</h2>
   <ul>
-    <li>We respect both browser privacy signals. If your browser sends <strong>Global Privacy Control</strong> (<code>Sec-GPC</code>), neither the analytics script nor the interaction beacon ever runs. If it sends the older <strong>Do Not Track</strong> signal, the server discards the visit. Either way, you are not tracked at all.</li>
+    <li><strong>Global Privacy Control</strong> (<code>Sec-GPC</code>): if your browser sends it, neither the analytics script nor the interaction beacon runs. No analytics request of any kind leaves your browser.</li>
+    <li><strong>Do Not Track</strong>: the analytics server discards visits that carry it. The interaction beacon does not check this older signal, so the anonymous click and scroll percentages above are still sent. Use Global Privacy Control if you want both off.</li>
+  </ul>
+
+  <h2>Fonts</h2>
+  <p>Pages load their typefaces from Google Fonts. Like any web request, that tells Google your IP address and that a page here was opened. It sets no cookies. Global Privacy Control does not change it.</p>
+
+  <h2>Retention</h2>
+  <ul>
     <li>Raw visit logs are deleted after 13 months; only aggregate statistics (counts, not visits) are kept beyond that.</li>
-    <li>All analytics data stays on infrastructure we operate. No third party receives it.</li>
+    <li>All analytics and beacon data stays on infrastructure we operate. No third party receives it.</li>
   </ul>
 
   <h2>The demo portal</h2>
-  <p>If you log into the read-only demo (<code>demo@muster.dev</code>), the app stores a session token in your browser. That token exists solely so the login works; it is not used for tracking.</p>
+  <p>The demo at <code>app.musterr.dev</code> is a static snapshot of the portal. There is no login, no account, and no session token. The page keeps a small data cache in your browser's local storage so views load faster. It loads nothing from third parties. The portal software still tries to send page-view, performance, and click events back to <code>app.musterr.dev</code>, but the snapshot is plain files with no server behind them, so those requests are answered with a redirect and nothing is recorded.</p>
 
   <h2>Questions</h2>
   <p>Email <a href="mailto:mike@analogelk.com">mike@analogelk.com</a> for any question, or to ask that a visit record be deleted.</p>
 
-  <p class="fineprint-block">Last updated 2026-07-23 · Muster · <a href="index.html">home</a> · <a href="paper.html">whitepaper</a></p>
+  <p class="fineprint-block">Last updated 2026-10-17 · Muster · <a href="index.html">home</a> · <a href="paper.html">whitepaper</a></p>
 </main>
 </body>
 </html>

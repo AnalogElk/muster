@@ -29,12 +29,13 @@
   .backhome { display:inline-flex; gap:0.4rem; align-items:center; min-height:var(--target-min); font-family:var(--mono); font-size:var(--type-floor); text-decoration:none; color:var(--pine); }
   .paper-doc table.proof { font-size: 0.92rem; }
 </style>
-<!-- Matomo: self-hosted, first-party cookie, IP-anonymized server-side; skipped entirely
+<!-- Matomo: self-hosted, cookieless (disableCookies), IP-anonymized server-side; skipped entirely
      when the browser sends Global Privacy Control (DNT is honored server-side by Matomo).
      Disclosed in privacy.html. NOTE: braces doubled because TEMPLATE is a format string. -->
 <script>
 if (!navigator.globalPrivacyControl) {
   var _paq = window._paq = window._paq || [];
+  _paq.push(['disableCookies']);
   _paq.push(['setTrackerUrl', 'https://analytics.analogelk.com/matomo.php']);
   _paq.push(['setSiteId', '10']);
   _paq.push(['trackPageView']);
