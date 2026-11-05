@@ -9,20 +9,30 @@
   "homepage": "https://musterr.dev",
   "repository": "https://github.com/AnalogElk/muster",
   "license": "MIT",
-  "keywords": ["back-office", "task-board", "coordination", "directus", "mcp", "agents", "invoicing", "client-portal", "rag"],
+  "keywords": [
+    "back-office",
+    "task-board",
+    "coordination",
+    "directus",
+    "mcp",
+    "agents",
+    "invoicing",
+    "client-portal",
+    "rag"
+  ],
   "userConfig": {
     "directus_url": {
       "type": "string",
       "title": "Board URL",
-      "description": "Directus base URL of the board, e.g. https://cms.musterr.dev",
-      "default": "https://cms.musterr.dev"
+      "description": "Directus base URL of your board, e.g. https://your-board.example.com. Required.",
+      "required": true
     },
     "directus_token": {
       "type": "string",
       "title": "Board API token",
-      "description": "Directus static token for your board. Stored in your OS keychain. The default is the public read-only token for the musterr.dev demo board, so /muster:connect needs no arguments. The first MCP tool call still asks you to approve it. Replace this token when you point at your own board.",
+      "description": "Directus static token for your board. Stored in your OS keychain. Required. The first MCP tool call still asks you to approve it.",
       "sensitive": true,
-      "default": "muster_demo_70220c56f3b9c77c1c6f9721e1130a9e3e45dc8d8a8267e9"
+      "required": true
     }
   }
 }
