@@ -3,21 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Muster: your back office, wired into Claude Code</title>
-<meta name="description" content="Muster is a self-hosted back office for projects, clients, invoices, knowledge, assets, and delivery records, wired into Claude Code. Agents read and update the same records people use, over MCP.">
+<title>Muster: the back office we run our studio on, wired into Claude Code</title>
+<meta name="description" content="The back office we run our studio on, wired into Claude Code. Agents read and update the same records people use, over MCP. For small studios of 2 to 10 people who already use Claude Code.">
 <!-- canonical = https://musterr.dev/ (double R is deliberate; muster.dev is not ours). -->
 <link rel="canonical" href="https://musterr.dev/">
 
 <!-- Open Graph / Twitter -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://musterr.dev/">
-<meta property="og:title" content="Muster: your back office, wired into Claude Code">
-<meta property="og:description" content="Projects, clients, invoices, knowledge, assets, and delivery records in one self-hosted system your agents can update while they work.">
+<meta property="og:title" content="Muster: the back office we run our studio on, wired into Claude Code">
+<meta property="og:description" content="The back office we run our studio on, wired into Claude Code. Agents read and update the same records people use, over MCP. For small studios of 2 to 10 people who already use Claude Code.">
 <meta property="og:image" content="https://musterr.dev/assets/muster-board.png">
 <meta property="og:image:alt" content="The Muster task board: rows grouped by status, in the team portal.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Muster: your back office, wired into Claude Code">
-<meta name="twitter:description" content="Projects, clients, invoices, knowledge, assets, and delivery records in one self-hosted system your agents can update while they work.">
+<meta name="twitter:title" content="Muster: the back office we run our studio on, wired into Claude Code">
+<meta name="twitter:description" content="The back office we run our studio on, wired into Claude Code. Agents read and update the same records people use, over MCP. For small studios of 2 to 10 people who already use Claude Code.">
 <meta name="twitter:image" content="https://musterr.dev/assets/muster-board.png">
 <meta name="twitter:image:alt" content="The Muster task board: rows grouped by status, in the team portal.">
 
@@ -39,7 +39,7 @@
   "applicationCategory": "BusinessApplication",
   "operatingSystem": "Docker",
   "url": "https://musterr.dev/",
-  "description": "A self-hosted back office for projects, clients, invoices, knowledge, assets, and delivery records, wired into Claude Code. Agents read and update the same records people use, over MCP.",
+  "description": "The back office we run our studio on, wired into Claude Code. Agents read and update the same records people use, over MCP. For small studios of 2 to 10 people who already use Claude Code.",
   "license": "https://github.com/AnalogElk/muster/blob/main/LICENSE",
   "isAccessibleForFree": true,
   "author": {
@@ -178,6 +178,7 @@ if (!navigator.globalPrivacyControl) {
     <a href="#connect">Connect</a>
     <a href="#proof">Demo</a>
     <a href="#desks">What's in it</a>
+    <a href="/features.html">Features</a>
     <a href="#own">Self-host</a>
     <a href="#limits">Limits</a>
   </nav>
@@ -218,18 +219,16 @@ if (!navigator.globalPrivacyControl) {
       <circle cx="40" cy="22" r="3.4" fill="var(--ember)"/>
     </svg>
 
-    <p class="kicker">Self-hosted back office for Claude Code</p>
-    <h1 class="hero__wordmark">Your back office, wired into Claude Code.</h1>
+    <p class="kicker">For small studios that use Claude Code</p>
+    <h1 class="hero__wordmark">The back office we run our studio on, wired into Claude Code.</h1>
 
-    <p class="hero__pitch">Projects, clients, invoices, knowledge, assets, and delivery records in one self-hosted system your agents can update while they work.</p>
+    <p class="hero__pitch">Muster is for small studios of 2 to 10 people who already use Claude Code.</p>
 
     <p class="hero__lede">Claude Code forgets everything when a session ends. Muster keeps the records that need to last in a Directus instance you host, and its plugin gives your agents access to them over MCP. When an agent finishes a task, it updates the same row you look at. Start with the read&#8209;only demo.</p>
 
     <div class="hero__cta">
       <a class="btn btn--solid btn--live" href="https://app.musterr.dev" target="_blank" rel="noopener">Explore the live demo ↗</a>
-      <a class="btn" href="#own">Self-host with Docker ↓</a>
-      <a class="btn" href="/about.html">How it was built</a>
-      <a class="btn" href="/paper.html">Whitepaper</a>
+      <a class="btn" href="/about.html">See how it works</a>
     </div>
   </div>
 </section>
@@ -281,18 +280,38 @@ if (!navigator.globalPrivacyControl) {
 <section class="band band-paper band-paper--alt" id="desks">
   <div class="doc">
     <p class="kicker">What it stores</p>
-    <h2 class="h2">Six areas, one database.</h2>
+    <h2 class="h2">Eight areas, one database.</h2>
     <p class="lead">38 <code>os_*</code> collections, grouped by job. The schema snapshot has 50 entries in total, counting 6 support tables and 6 sidebar groups.</p>
 
     <div class="planes" role="list" aria-label="What Muster holds">
       <div class="plane" role="listitem">
-        <p class="plane__h">Delivery desk</p>
-        <p class="plane__d">Projects, tasks, sprints, releases, and repositories. Each task row shows who claimed it, what blocks it, and whether it shipped, and it stays after the session that wrote it ends.</p>
+        <p class="plane__h">Work and tasks</p>
+        <p class="plane__d">Projects, tasks, sprints, and repositories. Each task row shows who claimed it, what blocks it, and whether it shipped, and it stays after the session that wrote it ends.</p>
         <p class="fineprint">Demo: open Tasks. <code>/muster:board</code> shows the same rows from inside Claude Code.</p>
       </div>
       <div class="plane" role="listitem">
+        <p class="plane__h">AI cost ledger</p>
+        <p class="plane__d">A ledger of what the agents spent.</p>
+        <p class="fineprint">Demo: the AI ledger, synthetic data. Partly in Muster. <a href="/features.html">See the features list.</a></p>
+      </div>
+      <div class="plane" role="listitem">
+        <p class="plane__h">Releases</p>
+        <p class="plane__d">A release record for each project, with a changelog.</p>
+        <p class="fineprint">Listed as in Muster on the <a href="/features.html">features list</a>.</p>
+      </div>
+      <div class="plane" role="listitem">
+        <p class="plane__h">Knowledge</p>
+        <p class="plane__d">A local retrieval service indexes your records and answers questions over them. The base snapshot has no knowledge-base or asset-library collections.</p>
+        <p class="fineprint">Retrieval runs locally. Answer generation uses the model provider you configure.</p>
+      </div>
+      <div class="plane" role="listitem">
+        <p class="plane__h">Client portal</p>
+        <p class="plane__d">Clients sign in to the same records you work in, limited to their own projects, invoices, brand assets, and messages.</p>
+        <p class="fineprint">Demo: open <a href="https://app.musterr.dev/client-portal/" target="_blank" rel="noopener">the client view</a>, then compare it with the team view.</p>
+      </div>
+      <div class="plane" role="listitem">
         <p class="plane__h">Money desk</p>
-        <p class="plane__d">Deals, proposals, invoices, payments, and expenses. It is a ledger, without double entry, bank feeds, or tax workflow.</p>
+        <p class="plane__d">Built: deals, proposals, invoices, payments, and expenses. It is a ledger, without double entry, bank feeds, or tax workflow.</p>
         <p class="fineprint">Demo: Invoices and the revenue view. Synthetic data, read-only.</p>
       </div>
       <div class="plane" role="listitem">
@@ -301,19 +320,18 @@ if (!navigator.globalPrivacyControl) {
         <p class="fineprint">Demo: follow one organization through to its contacts and its activity trail.</p>
       </div>
       <div class="plane" role="listitem">
-        <p class="plane__h">Retrieval</p>
-        <p class="plane__d">A local retrieval service indexes your records and answers questions over them. The base snapshot has no knowledge-base or asset-library collections.</p>
-        <p class="fineprint">Retrieval runs locally; answer generation uses the model provider you configure.</p>
-      </div>
-      <div class="plane" role="listitem">
         <p class="plane__h">Operations view</p>
-        <p class="plane__d">One dashboard for site, portfolio, delivery, and infrastructure analytics, plus a ledger of what the agents spent.</p>
-        <p class="fineprint">Demo: the dashboard and the AI ledger, synthetic data. Connected-service views need your own credentials; without them a view can be empty or explicitly mocked.</p>
+        <p class="plane__d">One dashboard for site, portfolio, delivery, and infrastructure analytics.</p>
+        <p class="fineprint">Demo: the dashboard, synthetic data. Connected-service views need your own accounts. Without them a view can be empty or explicitly mocked.</p>
       </div>
+    </div>
+
+    <h3 class="h3" style="margin-top:2rem">Built on the same records</h3>
+    <div class="planes" role="list" aria-label="Case study">
       <div class="plane" role="listitem">
-        <p class="plane__h">Client portal</p>
-        <p class="plane__d">Clients sign in to the same records you work in, limited to their own projects, invoices, brand assets, and messages.</p>
-        <p class="fineprint">Demo: open <a href="https://app.musterr.dev/client-portal/" target="_blank" rel="noopener">the client view</a>, then compare it with the team view.</p>
+        <p class="plane__h">Photo: private albums for clients</p>
+        <p class="plane__d">Private albums, magic links, favorites, zip downloads, and tips. <a href="/photo.html">Read the case study.</a></p>
+        <p class="fineprint">Internal only, not in the release.</p>
       </div>
     </div>
   </div>
@@ -383,6 +401,8 @@ if (!navigator.globalPrivacyControl) {
     <div><a href="https://analogelk.com" target="_blank" rel="noopener">Muster by Analog Elk</a> · a self-hosted back office for Claude Code</div>
     <div>Built by <a href="https://walliser.me" target="_blank" rel="noopener">Michael Walliser</a> · design and system architecture</div>
     <div class="footer__links">
+      <a href="/features.html">Features</a>
+      <a href="/photo.html">Photo case study</a>
       <a href="/about.html">Build log</a>
       <a href="/paper.html">Whitepaper</a>
       <a href="https://app.musterr.dev" target="_blank" rel="noopener" title="static demo snapshot, no sign-in">Live demo ↗</a>

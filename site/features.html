@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muster features: what is in the release</title>
+<meta name="description" content="A plain list of what is in Muster, what is partly in it, and what we use internally and do not ship.">
+<link rel="canonical" href="https://musterr.dev/features.html">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://musterr.dev/features.html">
+<meta property="og:title" content="Muster features: what is in the release">
+<meta property="og:description" content="A plain list of what is in Muster, what is partly in it, and what we use internally and do not ship.">
+<meta property="og:image" content="https://musterr.dev/assets/muster-board.png">
+<meta property="og:image:alt" content="The Muster task board: rows grouped by status, in the team portal.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Muster features: what is in the release">
+<meta name="twitter:description" content="A plain list of what is in Muster, what is partly in it, and what we use internally and do not ship.">
+<meta name="twitter:image" content="https://musterr.dev/assets/muster-board.png">
+
+<!-- favicon: three steps + one ember, the Build-Trail at 16px -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 64'%3E%3Cpolyline points='6,58 18,58 18,44 30,44 30,30 42,30' fill='none' stroke='%2325402F' stroke-width='5' stroke-linecap='square'/%3E%3Cpolyline points='30,30 30,16 42,16' fill='none' stroke='%23DE7330' stroke-width='5' stroke-linecap='square'/%3E%3Ccircle cx='42' cy='16' r='5' fill='%23DE7330'/%3E%3C/svg%3E">
+
+<!-- fonts: Fraunces (display), Hanken Grotesk (body), IBM Plex Mono (mono), display:swap -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+
+<!-- Matomo: self-hosted, cookieless (disableCookies), IP-anonymized server-side; skipped entirely
+     when the browser sends Global Privacy Control (DNT is honored server-side by Matomo).
+     Disclosed in privacy.html -->
+<script>
+if (!navigator.globalPrivacyControl) {
+  var _paq = window._paq = window._paq || [];
+  _paq.push(['disableCookies']);
+  _paq.push(['setTrackerUrl', 'https://analytics.analogelk.com/matomo.php']);
+  _paq.push(['setSiteId', '10']);
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  var g = document.createElement('script');
+  g.async = true;
+  g.src = 'https://analytics.analogelk.com/matomo.js';
+  document.head.appendChild(g);
+}
+</script>
+
+<!-- Interaction heatmap: first-party beacon to our own sink (analogelk.com), the same
+     infrastructure as the analytics above. Anonymous click positions and scroll depth
+     only: no cookies, no PII, no element text. Runs only on the production hostname and
+     is skipped entirely when the browser sends Global Privacy Control.
+     Disclosed in privacy.html -->
+<script>
+if (!navigator.globalPrivacyControl) {
+  (function () {
+    'use strict';
+    if (typeof navigator.sendBeacon !== 'function') return;
+    if (location.hostname !== 'musterr.dev' && location.hostname !== 'www.musterr.dev') return;
+
+    var ENDPOINT = 'https://analogelk.com/api/interactions';
+    var MAX_CLICK_BEACONS = 200; // storm cap per page load
+    var SITE = 'musterr.dev';
+
+    var device = /Mobi|Android|iPhone|iPad|iPod|Tablet/i.test(navigator.userAgent)
+      ? 'mobile'
+      : 'desktop';
+
+    function beacon(body) {
+      try {
+        navigator.sendBeacon(ENDPOINT, JSON.stringify(body));
+      } catch (e) {
+        /* telemetry must never affect the page */
+      }
+    }
+
+    // Clicks: one capture-phase listener, viewport-relative X, document-relative Y.
+    var clickCount = 0;
+    document.addEventListener('click', function (e) {
+      if (clickCount >= MAX_CLICK_BEACONS) return;
+      clickCount += 1;
+      var scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+      var xPct = (e.clientX / window.innerWidth) * 100;
+      var yPct = scrollHeight > 0 ? ((e.clientY + window.scrollY) / scrollHeight) * 100 : 0;
+      beacon({
+        event_type: 'click',
+        route: location.pathname,
+        site: SITE,
+        xPct: Math.min(100, Math.max(0, xPct)),
+        yPct: Math.min(100, Math.max(0, yPct)),
+        viewport_w: window.innerWidth,
+        viewport_h: window.innerHeight,
+        device: device
+      });
+    }, true);
+
+    // Scroll depth: rAF-throttled max tracker, one beacon per page view,
+    // flushed on pagehide or tab-hide (whichever comes first).
+    var maxScroll = 0;
+    var ticking = false;
+
+    function currentScrollPct() {
+      var scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+      if (!scrollHeight) return 0;
+      var raw = ((window.scrollY + window.innerHeight) / scrollHeight) * 100;
+      return Math.min(100, Math.max(0, raw));
+    }
+
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(function () {
+        var p = currentScrollPct();
+        if (p > maxScroll) maxScroll = p;
+        ticking = false;
+      });
+    }, { passive: true });
+
+    function flush() {
+      if (maxScroll <= 0) return;
+      beacon({
+        event_type: 'scroll',
+        route: location.pathname,
+        site: SITE,
+        scroll_pct: maxScroll,
+        viewport_w: window.innerWidth,
+        viewport_h: window.innerHeight,
+        device: device
+      });
+      maxScroll = 0;
+    }
+
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') flush();
+    });
+  })();
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar" id="topbar" hidden>
+  <a class="topbar__brand" href="/" aria-label="Muster: home">
+    <svg viewBox="0 0 48 64" aria-hidden="true"><polyline points="6,58 18,58 18,44 30,44 30,30 42,30" fill="none" stroke="var(--pine)" stroke-width="4.5" stroke-linecap="square"/><polyline points="30,30 30,16 42,16" fill="none" stroke="var(--ember)" stroke-width="4.5" stroke-linecap="square"/><circle cx="42" cy="16" r="4.5" fill="var(--ember)"/></svg>
+    Muster
+  </a>
+  <nav class="topbar__nav" aria-label="Site links">
+    <a href="/">Product</a>
+    <a href="/features.html">Features</a>
+    <a href="/photo.html">Photo</a>
+    <a href="/about.html">Build log</a>
+    <a href="/paper.html">Whitepaper</a>
+  </nav>
+  <span class="topbar__spacer"></span>
+  <div class="topbar__cta">
+    <a class="btn btn--live btn--sm" href="https://app.musterr.dev" target="_blank" rel="noopener" title="static demo snapshot, no sign-in">Live demo ↗</a>
+    <a class="btn btn--sm topbar__secondary" href="/about.html">Build log</a>
+  </div>
+</header>
+
+<main id="main">
+<section class="band band-paper hero" id="top">
+  <div class="doc">
+    <svg class="hero__mark trail-draw" viewBox="0 0 48 64" role="img" aria-label="The Build-Trail: stacked verified steps, the top step ember and live">
+      <polyline points="4,60 16,60 16,48 28,48 28,36 40,36" fill="none" stroke="var(--pine)" stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter" style="--len:120"/>
+      <polyline class="ember-step" points="28,36 28,22 40,22" fill="none" stroke="var(--ember)" stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter" style="--len:40"/>
+      <circle cx="40" cy="22" r="3.4" fill="var(--ember)"/>
+    </svg>
+    <h1 class="hero__wordmark">What is in Muster.</h1>
+    <p class="hero__lede">Each item has one sentence and one label. The label says whether it is in the release.</p>
+  </div>
+</section>
+
+<section class="band band-paper band-paper--alt">
+  <div class="doc">
+    <h2 class="h2">Delivery</h2>
+    <ul class="tight">
+      <li><strong>Task board and sprints.</strong> A task board with sprints. Agents and people read and write the same rows. <span class="fineprint">[In Muster]</span></li>
+      <li><strong>Releases.</strong> Each release has a record with a changelog. <span class="fineprint">[In Muster]</span></li>
+    </ul>
+  </div>
+</section>
+<section class="band band-paper">
+  <div class="doc">
+    <h2 class="h2">Clients and money</h2>
+    <ul class="tight">
+      <li><strong>Client portal.</strong> Clients see their own projects, tasks, invoices, and messages. <span class="fineprint">[In Muster]</span></li>
+      <li><strong>Proposals.</strong> Proposals are stored as records. <span class="fineprint">[In Muster]</span></li>
+      <li><strong>Invoices and Stripe billing.</strong> Invoices are stored as records and billing runs through Stripe. <span class="fineprint">[In Muster]</span></li>
+      <li><strong>Deals and expenses.</strong> Deals and expenses are stored as records. <span class="fineprint">[In Muster]</span></li>
+    </ul>
+  </div>
+</section>
+<section class="band band-paper band-paper--alt">
+  <div class="doc">
+    <h2 class="h2">Knowledge and assets</h2>
+    <ul class="tight">
+      <li><strong>Knowledge base.</strong> A searchable set of pages. It is not in a clean install. <span class="fineprint">[Partly in Muster]</span></li>
+      <li><strong>DAM and brand books.</strong> Asset library and brand books. Only part of this is in the release. <span class="fineprint">[Partly in Muster]</span></li>
+    </ul>
+  </div>
+</section>
+<section class="band band-paper">
+  <div class="doc">
+    <h2 class="h2">Operations</h2>
+    <ul class="tight">
+      <li><strong>AI cost ledger.</strong> A ledger of what the agents spent. Only part of this is in the release. <span class="fineprint">[Partly in Muster]</span></li>
+      <li><strong>Analytics.</strong> Site and delivery analytics. Only part of this is in the release. <span class="fineprint">[Partly in Muster]</span></li>
+      <li><strong>Infra dashboards.</strong> Dashboards for infrastructure. Only part of this is in the release. <span class="fineprint">[Partly in Muster]</span></li>
+      <li><strong>Tools launchpad.</strong> A page that launches the studio tools. Only part of this is in the release. <span class="fineprint">[Partly in Muster]</span></li>
+    </ul>
+  </div>
+</section>
+<section class="band band-paper band-paper--alt">
+  <div class="doc">
+    <h2 class="h2">Internal tools</h2>
+    <ul class="tight">
+      <li><strong>Photo galleries.</strong> Private client albums. <a href="/photo.html">Read the case study.</a> <span class="fineprint">[Internal only, not in the release]</span></li>
+      <li><strong>Claude rules with toggles.</strong> Rules for Claude that staff switch on and off. <span class="fineprint">[Internal only, not in the release]</span></li>
+      <li><strong>Heatmap tiles.</strong> Click and scroll tiles from first-party beacons. <span class="fineprint">[Internal only, not in the release]</span></li>
+    </ul>
+  </div>
+</section>
+<section class="band band-paper">
+  <div class="doc">
+    <p class="fineprint">Three labels. In Muster means it is in the release. Partly in Muster means only part of it is. Internal only means we use it and it is not in the release. The portal is not yet public, so a clean install does not show every item here. See <a href="/#own">the install notes</a>.</p>
+  </div>
+</section>
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+  <div class="doc">
+    <div><a href="https://analogelk.com" target="_blank" rel="noopener">Muster by Analog Elk</a> · a self-hosted back office for Claude Code</div>
+    <div>Built by <a href="https://walliser.me" target="_blank" rel="noopener">Michael Walliser</a> · design and system architecture</div>
+    <div class="footer__links">
+      <a href="/features.html">Features</a>
+      <a href="/photo.html">Photo case study</a>
+      <a href="/about.html">Build log</a>
+      <a href="/paper.html">Whitepaper</a>
+      <a href="https://app.musterr.dev" target="_blank" rel="noopener" title="static demo snapshot, no sign-in">Live demo ↗</a>
+      <a href="https://github.com/AnalogElk/muster" target="_blank" rel="noopener">GitHub ↗</a>
+      <a href="https://github.com/AnalogElk/muster/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+      <a href="privacy.html">Privacy</a>
+      <button type="button" onclick="window.print()" style="background:none;border:0;padding:0;font:inherit;color:var(--ember);cursor:pointer;text-decoration:underline">Download PDF / Print</button>
+    </div>
+    <div class="fineprint" style="margin-top:1rem;">Muster the agents. Keep the receipts. © 2026 <a href="https://walliser.me" target="_blank" rel="noopener">Michael Walliser</a> · MIT-licensed · schema lineage from directus-labs/agency-os, attributed in <a href="https://github.com/AnalogElk/muster/blob/main/NOTICE" target="_blank" rel="noopener">NOTICE</a> · musterr.dev, two Rs · <a href="https://wlsr.me" target="_blank" rel="noopener">photography</a></div>
+  </div>
+</footer>
+<div class="ae-credit">
+  <a href="https://analogelk.com">
+    <svg viewBox="117 123 287 465" width="10" height="16" aria-hidden="true" focusable="false">
+      <path d="M206 383.7l93 44.9c8.1 3.9 8.3 15.5.2 19.6l-93 47.8c-7.3 3.7-16-1.5-16-9.7v-92.8c0-8 8.5-13.3 15.8-9.8z"/>
+      <path d="M368.5 381.2L199 299.3c-15.5-7.5-32.9-7-47.9.9v-36.6l135.6-1.1c59.5-.5 107.7-48.6 108.2-108.2l.2-25.9-35-.3-.2 23.5c-.3 41.7-34.1 75.5-75.8 75.8l-9.8.1-.8-102.3-35 .3.8 102.2-88.2.7v-69.7h-31.8v256.9h0v108.6c0 21.2 9.9 40.6 26.4 51.9 9.2 6.3 19.7 9.6 30.2 9.6 8.3 0 16.5-2 24.3-6l169.5-87.2c20.2-10.4 32.7-32 32.4-56.3-.1-25.2-13-46.5-33.4-56.3z m-12.6 80l-169.5 87.2c-7.7 4-16.3 3.4-23.5-1.6-7.2-4.9-11.3-13.1-11.3-22.3V355.4c0-9.1 4.1-17.2 11.1-22.2 4.1-2.9 8.6-4.3 13.2-4.3 3.4 0 6.7.8 10 2.3l169.5 81.9c8.9 4.3 14.3 13.2 14.4 23.8.1 10.7-5.1 19.8-13.9 24.3z"/>
+    </svg>
+    <span>Site by <strong>Analog Elk</strong></span>
+  </a>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var topbar = document.getElementById("topbar");
+  var hero = document.getElementById("top");
+  if (topbar) topbar.hidden = false;
+  if (topbar && "IntersectionObserver" in window) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        topbar.classList.toggle("is-visible", !e.isIntersecting);
+      });
+    }, { rootMargin: "-120px 0px 0px 0px" }).observe(hero);
+  } else if (topbar) {
+    topbar.classList.add("is-visible");
+  }
+})();
+</script>
+</body>
+</html>
