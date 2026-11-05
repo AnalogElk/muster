@@ -52,12 +52,13 @@ building the portal image locally additionally needs `git`, `node`, and `perl` o
 the host, and `prepare-context.sh` preflights them with the alternatives spelled
 out. Secrets are generated into a gitignored `.env` and never printed.
 
-> **Fresh-clone note:** the portal image builds from a *local checkout* of
-> `analog-elk-front-end` (see [`portal/`](./portal/)), which a fresh clone does
-> not have. `up` stops with the alternatives spelled out. Either set
-> `ELK_OS_WITH_PORTAL=false` in `.env` (Directus and the records still stand up)
-> or pull published images (`ELK_OS_USE_PUBLISHED_IMAGES=true` plus
-> `PORTAL_IMAGE` / `RAG_IMAGE`).
+> **Fresh-clone note:** a fresh clone gets the Directus record layer. The portal
+> image `elk-os-portal` is private, so a clone cannot pull it. Building it needs a
+> local checkout of `analog-elk-front-end` (see [`portal/`](./portal/)), which is
+> not public. The portal is shown in the live demo and is not yet public. The
+> default is `ELK_OS_WITH_PORTAL=true`, and `up` stops without a portal source.
+> Before the first `up`, edit `.env` and set `ELK_OS_WITH_PORTAL=false`. Directus
+> and the records then stand up.
 
 ## What is in it
 
@@ -69,9 +70,9 @@ five desks and a second front door.
 | Desk | Holds |
 |---|---|
 | **Delivery desk** | Projects, tasks, sprints, releases, repositories. What's claimed, what's blocked, what actually shipped. |
-| **Money desk** | Deals, proposals, invoices, payments, expenses, services, packages. A ledger, not accounting software. |
+| **Money desk** | Deals, proposals, invoices, payments, expenses. A ledger, not accounting software. |
 | **Studio operations** | Organizations, contacts, activities, support, messages, your own inbox. The studio's records, not its employment paperwork. |
-| **Knowledge and assets** | A knowledge base for what you've learned; an asset library for what you've made, with review states and brand guidelines attached. |
+| **Retrieval** | A local retrieval service over your records. The base snapshot has no knowledge-base (`kb_*`) or asset-library (`dam_*`) collections. |
 | **Operations view** | One dashboard over the rest: site, portfolio, delivery, and infrastructure analytics, plus a cost ledger for what the agents spent. |
 | **Client portal** | The second front door. Clients sign in to the same records, scoped to what they may see. |
 
@@ -109,15 +110,15 @@ then walks every subsystem, including a live `tools/list` probe against `/mcp`
 
 ## As a Claude Code plugin
 
-You do not have to self-host to try it. The plugin connects to the public demo:
+The plugin connects to a board you run. It needs a board URL and a Directus API token. The public demo is a static snapshot and cannot be connected to:
 
 ```
 /plugin marketplace add AnalogElk/muster
 /plugin install muster@muster
-/muster:connect
+/muster:connect https://your-board.example.com
 ```
 
-Two commands to install, then one to connect. Four slash commands
+Two commands to install, then one to connect with your board URL. Four slash commands
 (`connect`, `board`, `up`, `doctor`), one skill, one SessionStart hook, and one
 MCP server connection, all named in
 [`.claude-plugin/plugin.json`](./.claude-plugin/plugin.json). The first MCP tool
@@ -155,7 +156,7 @@ loopback binding (`127.0.0.1:19100`, `RAG_API_PORT`), which is how
 `bin/elk-os doctor` and host-side tools reach it.
 
 **The portal assistant.** On top of the engine sits an in-portal assistant that
-answers over your own knowledge base and `os_*` records. It is a grounding window
+answers over your `os_*` records. It is a grounding window
 over the knowledge, not a second place to coordinate work. The task record, not a
 chat transcript, stays the coordination surface.
 
@@ -260,8 +261,8 @@ is the homepage at the demo root.
 3. The public demo is synthetic and read-only. It proves shared reads, not agent
    writes or self-hosting.
 4. A clean self-host does not reproduce every demo section. The base snapshot
-   omits demo enrichment and some portal dependencies, and the portal requires a
-   published image or a separate source checkout.
+   omits demo enrichment and some portal dependencies. The portal image is private
+   and is not yet public.
 5. The Money desk is not accounting software. There is no double-entry ledger,
    bank feed, reconciliation, tax workflow, or bookkeeping automation.
 6. Studio operations is not HR software. There is no payroll, hiring, benefits,

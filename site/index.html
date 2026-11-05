@@ -195,7 +195,7 @@ if (!navigator.globalPrivacyControl) {
     <div class="rail__title">at a glance</div>
     <div class="rail__item" data-rail="install"><span>install</span><span class="v">2 commands</span></div>
     <div class="rail__item" data-rail="approve"><span>approval</span><span class="v">1 time</span></div>
-    <div class="rail__item" data-rail="connect"><span>connect args</span><span class="v">0</span></div>
+    <div class="rail__item" data-rail="connect"><span>connect needs</span><span class="v">URL + token</span></div>
     <div class="rail__item" data-rail="commands"><span>commands</span><span class="v">4</span></div>
     <div class="rail__item" data-rail="demo"><span>demo views</span><span class="v">2</span></div>
     <div class="rail__item" data-rail="schema"><span>schema entries</span><span class="v">50</span></div>
@@ -246,12 +246,12 @@ if (!navigator.globalPrivacyControl) {
 /plugin install <span class="e">muster@muster</span></pre>
     <p>Add the marketplace first. <code>/plugin install muster</code> on its own fails until you do. Tested from a clean install of <a href="https://github.com/AnalogElk/muster">github.com/AnalogElk/muster</a> on Claude Code 2.1.211, 2026&#8209;07&#8209;15.</p>
 
-    <pre class="code" tabindex="0" aria-label="Connect to the demo board"><span class="c"># zero arguments works; it resolves to the public demo board by default</span>
-/muster:connect <span class="e">https://cms.musterr.dev</span></pre>
+    <pre class="code" tabindex="0" aria-label="Connect to your board"><span class="c"># needs your board URL and a Directus API token</span>
+/muster:connect <span class="e">https://your-board.example.com</span></pre>
 
     <p>The plugin adds four slash commands, one skill, one SessionStart hook, and one MCP server. <a href="https://github.com/AnalogElk/muster/blob/main/.claude-plugin/plugin.json"><code>.claude-plugin/plugin.json</code></a> lists each one.</p>
 
-    <p class="fineprint">The first time an agent calls a Muster tool, Claude Code asks you to approve it. You approve once. Writing records needs your own deployment and credentials; the public demo is read&#8209;only.</p>
+    <p class="fineprint">The first time an agent calls a Muster tool, Claude Code asks you to approve it. You approve once. Connecting needs a board URL and a token for a board you run. The public demo is a static snapshot and cannot be connected to.</p>
   </div>
 </section>
 
@@ -268,7 +268,7 @@ if (!navigator.globalPrivacyControl) {
     </figure>
 
     <div class="planes" role="list" aria-label="Demo views">
-      <div class="plane" role="listitem"><p class="plane__h">Team view</p><p class="plane__d"><a href="https://app.musterr.dev" target="_blank" rel="noopener">app.musterr.dev</a><br>Delivery, money, studio operations, knowledge and assets, and the analytics over all of it.</p></div>
+      <div class="plane" role="listitem"><p class="plane__h">Team view</p><p class="plane__d"><a href="https://app.musterr.dev" target="_blank" rel="noopener">app.musterr.dev</a><br>Delivery, money, studio operations, and the analytics over all of it.</p></div>
       <div class="plane" role="listitem"><p class="plane__h">Client view</p><p class="plane__d"><a href="https://app.musterr.dev/client-portal/" target="_blank" rel="noopener">app.musterr.dev/client-portal</a><br>What a client sees: their projects, tasks, invoices, brand assets, and messages. Nothing else.</p></div>
     </div>
 
@@ -288,11 +288,11 @@ if (!navigator.globalPrivacyControl) {
       <div class="plane" role="listitem">
         <p class="plane__h">Delivery desk</p>
         <p class="plane__d">Projects, tasks, sprints, releases, and repositories. Each task row shows who claimed it, what blocks it, and whether it shipped, and it stays after the session that wrote it ends.</p>
-        <p class="fineprint">Demo: open Tasks and switch views, backlog to sprint to plan. <code>/muster:board</code> shows the same rows from inside Claude Code.</p>
+        <p class="fineprint">Demo: open Tasks. <code>/muster:board</code> shows the same rows from inside Claude Code.</p>
       </div>
       <div class="plane" role="listitem">
         <p class="plane__h">Money desk</p>
-        <p class="plane__d">Deals, proposals, invoices, payments, expenses, and the services and packages you sell. It is a ledger, without double entry, bank feeds, or tax workflow.</p>
+        <p class="plane__d">Deals, proposals, invoices, payments, and expenses. It is a ledger, without double entry, bank feeds, or tax workflow.</p>
         <p class="fineprint">Demo: Invoices and the revenue view. Synthetic data, read-only.</p>
       </div>
       <div class="plane" role="listitem">
@@ -301,9 +301,9 @@ if (!navigator.globalPrivacyControl) {
         <p class="fineprint">Demo: follow one organization through to its contacts and its activity trail.</p>
       </div>
       <div class="plane" role="listitem">
-        <p class="plane__h">Knowledge and assets</p>
-        <p class="plane__d">A knowledge base for what you have learned, and an asset library for what you have made, with review states and brand guidelines.</p>
-        <p class="fineprint">Demo: the knowledge base and the asset library. Retrieval runs locally; answer generation uses the model provider you configure.</p>
+        <p class="plane__h">Retrieval</p>
+        <p class="plane__d">A local retrieval service indexes your records and answers questions over them. The base snapshot has no knowledge-base or asset-library collections.</p>
+        <p class="fineprint">Retrieval runs locally; answer generation uses the model provider you configure.</p>
       </div>
       <div class="plane" role="listitem">
         <p class="plane__h">Operations view</p>
@@ -329,7 +329,7 @@ if (!navigator.globalPrivacyControl) {
 /muster:up
 /muster:doctor</pre>
     <p><code>/muster:up</code> starts the stack and <code>/muster:doctor</code> reports whether each part is healthy. The stack is defined in <a href="https://github.com/AnalogElk/muster/blob/main/compose/compose.yaml">compose/compose.yaml</a> and <a href="https://github.com/AnalogElk/muster/blob/main/bin/elk-os">bin/elk-os</a>, under the <a href="https://github.com/AnalogElk/muster/blob/main/LICENSE">MIT licence</a>.</p>
-    <p class="fineprint">Docker is the hard dependency. The portal runs from a published image or a source checkout you supply; without one, the stack comes up Directus&#8209;only. A clean self&#8209;host does not reproduce every section of the demo, because the base snapshot omits the demo's enrichment.</p>
+    <p class="fineprint">Docker is the hard dependency. Before the first <code>up</code>, edit <code>.env</code> and set <code>ELK_OS_WITH_PORTAL=false</code>. The default is true, and <code>up</code> stops without a portal source. A fresh clone gets the Directus record layer: Postgres, Directus, the schema, and the seed data. The portal image <code>elk-os-portal</code> is private, so a clone cannot pull it, and building it needs a local checkout of <code>analog-elk-front-end</code>, which is not public. The portal is shown in the live demo and is not yet public. A clean self&#8209;host does not reproduce every section of the demo.</p>
   </div>
 </section>
 
@@ -341,9 +341,9 @@ if (!navigator.globalPrivacyControl) {
     <p class="lead">The first four affect whether you should install it.</p>
     <ul class="tight">
       <li><strong>Muster does not make Claude smarter or run agents in the background.</strong> It gives instructed agents shared records and a protocol. Reach for it when the work outlives a session, or when more than one agent is running at once.</li>
-      <li><strong>The first MCP tool call requires approval in Claude Code.</strong> There is no zero-click connection. Approve it once, then <code>/muster:connect</code> takes no arguments.</li>
+      <li><strong>The first MCP tool call requires approval in Claude Code.</strong> There is no zero-click connection. Approve it once.</li>
       <li><strong>The public demo is synthetic and read-only.</strong> It proves shared reads, not agent writes or self-hosting. To watch an agent write a row, stand up your own.</li>
-      <li><strong>A clean self-host does not reproduce every demo section.</strong> The base snapshot omits demo enrichment and some portal dependencies, and the portal requires a published image or a separate source checkout.</li>
+      <li><strong>A clean self-host does not reproduce every demo section.</strong> The base snapshot omits demo enrichment and some portal dependencies. The portal image is private and is not yet public.</li>
     </ul>
 
     <h3 class="h3" style="margin-top:2rem">Also worth knowing</h3>

@@ -6,8 +6,11 @@ description: Stand up your own Muster stack (Directus board, portal, RAG) with D
 
 This needs Docker running. It uses the `bin/elk-os` that shipped with this
 plugin, so the CLI itself needs no separate checkout. The portal is a separate
-matter: it runs from a published image, or from a source checkout you supply.
-Without one of those, the stack comes up Directus-only.
+matter. Its image is private and its source is not public, so a fresh copy gets
+the Directus record layer only. The portal is shown in the live demo and is not
+yet public. The default `.env` has `ELK_OS_WITH_PORTAL=true`, and `up` stops
+without a portal source. After `init` writes `.env`, edit it and set
+`ELK_OS_WITH_PORTAL=false` before `up`.
 
 1. Check Docker is reachable: `docker info` (if it fails, stop and say so; do
    not continue).
