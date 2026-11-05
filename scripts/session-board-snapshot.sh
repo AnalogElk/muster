@@ -7,7 +7,7 @@ URL="${CLAUDE_PLUGIN_OPTION_DIRECTUS_URL:-}"
 TOKEN="${CLAUDE_PLUGIN_OPTION_DIRECTUS_TOKEN:-}"
 
 if [ -z "$URL" ] || [ -z "$TOKEN" ]; then
-  echo "Muster: no board configured. Run /muster:connect to point at one."
+  echo "Muster: no board configured. Run /plugin configure muster@muster to set your board URL and token."
   exit 0
 fi
 

@@ -5,7 +5,13 @@ description: Point Claude at a Muster board (Directus os_tasks) and prove the lo
 # Connect to a Muster board
 
 The user's board URL is "$ARGUMENTS" (may be empty; if so, use the configured
-`directus_url`, defaulting to https://cms.musterr.dev).
+`directus_url`).
+
+Muster has no default board. A board URL and a Directus API token are required
+from the user. If there is no URL, or the `muster-board` MCP connection has no
+token, stop. Tell the user to run `/plugin configure muster@muster` and enter
+both, or `/muster:up` to stand up their own board first. The public demo is a
+static snapshot and cannot be connected to.
 
 Do this in order:
 
@@ -22,6 +28,6 @@ Do this in order:
    connection are different problems and must not be reported the same way.
 
 4. Tell the user what they can do next: `/muster:board` to see the board, and
-   `/muster:up` if they want their own stack instead of this one.
+   `/muster:up` if they want a new stack of their own.
 
 Never print the token. If a step would render it, do not run that step.
