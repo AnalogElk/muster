@@ -201,7 +201,7 @@ if (!navigator.globalPrivacyControl) {
 
     <p class="hero__sub mono">This is the story of how Muster got built, by the thing it packages. If you want to know what Muster does for you, start on <a href="/">the product page</a>.</p>
 
-    <p class="hero__pitch">You and a fleet of AI coding agents work <b>one shared task board</b> over MCP. The row you drag is the row an agent picks up and writes back when it is done. On top runs a <b>local RAG engine</b> and <b>Elk Chat</b>, a private assistant over your own knowledge base and task data: no API key, nothing leaves the box. <b>One command</b> stands the stack up on a laptop or a cloud box, six take an empty volume to a green doctor board, and Docker is the only hard dependency.</p>
+    <p class="hero__pitch">You and a fleet of AI coding agents work <b>one shared task board</b> over MCP. The row you drag is the row an agent picks up and writes back when it is done. On top runs a <b>local RAG engine</b> and <b>Elk Chat</b>, a private assistant over your own knowledge base and task data: no API key, nothing leaves the box. The <code>bin/elk-os</code> phases (init, up, migrate, seed, wire, doctor) take an empty volume to a green doctor board, and Docker is the only hard dependency. A fresh clone gets the Directus record layer. The portal image is private and is not yet public.</p>
 
     <p class="hero__sub mono">This page is the build log. The links are the live system. Designed, governed, and shipped by <a href="#author">Mike Walliser</a>.</p>
     <p class="hero__sub mono">Week one in service: 18 production PRs across 8 repos in 48 hours, behind a 3-reviewer gate that said no four times. <a href="#service">The receipts ↓</a></p>
@@ -239,8 +239,8 @@ if (!navigator.globalPrivacyControl) {
     <p class="lead">Everything below is preserved as written on 2026-06-29. It has not been edited to match how Muster is described today.</p>
     <ul class="tight">
       <li><strong>The category changed.</strong> This report calls Muster a self-hostable operating system for agentic software teams. Muster is now <a href="/">the agent-connected back office</a>: projects, clients, invoices, knowledge, assets, and delivery records, wired into Claude Code. The task record is still the coordination substrate. It is now one desk of six rather than the whole product.</li>
-      <li><strong>The numbers are historical.</strong> About 2.5 hours, roughly 30 subagents, over 2 million tokens, and $2 to $4 per month describe one dated run. They are evidence about that run, not current product claims. The demo box runs always on now, not duty-cycled.</li>
-      <li><strong>The install boundary is narrower than this report implies.</strong> Docker is the hard dependency, but the portal also needs a published image or a source checkout you supply, and a clean self-host does not reproduce every section of the public demo.</li>
+      <li><strong>The numbers are historical.</strong> About 2.5 hours, roughly 30 subagents, over 2 million tokens, and $2 to $4 per month describe one dated run. They are evidence about that run, not current product claims. The demo is now a static snapshot served as plain files.</li>
+      <li><strong>The install boundary is narrower than this report implies.</strong> Docker is the hard dependency, but the portal image is private and its source checkout is not public, so a clean self-host gets the Directus record layer only, and it does not reproduce every section of the public demo.</li>
     </ul>
     <p class="fineprint">Where this page and <a href="/">the current page</a> disagree, the current page is right and this one is the record.</p>
   </div>
@@ -250,7 +250,7 @@ if (!navigator.globalPrivacyControl) {
 <section class="band band-paper" id="abstract">
   <div class="doc">
     <p class="kicker">§1 · Abstract</p>
-    <p class="lead">On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock, spanned 8 phases, 27 commits and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations consuming over 2 million tokens. It runs on a single AWS instance for about $2–4 per month at demo duty-cycle (stopped when idle), and you can open it right now.</p>
+    <p class="lead">On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock, spanned 8 phases, 27 commits and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations consuming over 2 million tokens. It ran on a single AWS instance through mid-2026 for about $2–4 per month at demo duty-cycle (stopped when idle). Today the demo is a static snapshot.</p>
     <p>That an agent fleet emits files quickly is not the interesting part; volume is unfalsifiable and ages badly. The interesting part is the apparatus that let a long, multi-session, ship-grade build hold together without a human reviewing every diff, and the fact that the system used that apparatus on itself. The thesis: <strong>the value is the architecture, not the prompt.</strong></p>
     <p class="note">Three costs, kept apart on purpose: hosting (~$3/mo at demo duty-cycle) is not the one-time build model-spend, and neither is the ongoing cost of running the fleet on your next project. The cheap number is only the box.</p>
   </div>

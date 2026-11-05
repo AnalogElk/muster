@@ -29,11 +29,11 @@
 >    subagents", "over 2 million tokens", "$2 to $4 per month", and the
 >    2026-07-02 note about 18 PRs across 8 repositories all describe specific
 >    dated runs. They are evidence about those runs and are no longer quoted as
->    current product claims. The box now runs always on, not duty-cycled.
+>    current product claims. The demo is now a static snapshot served as plain files.
 > 3. **The install boundary is narrower than section 8 implies.** Docker is the
->    hard dependency, but the portal additionally needs a published image or a
->    source checkout you supply, and a clean self-host does not reproduce every
->    section of the public demo.
+>    hard dependency, but the portal image is private and its source checkout is
+>    not public, so a clean self-host gets the Directus record layer only. It
+>    does not reproduce every section of the public demo.
 >
 > Current claims, and the limits that bound them, live at
 > [musterr.dev](https://musterr.dev). Where this paper and that page disagree,
@@ -43,7 +43,7 @@
 
 ## Abstract
 
-On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock (17:56 to 20:23 Pacific), spanned 8 phases, 27 commits, and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations that consumed over 2 million tokens. The result runs on a single AWS instance for about $2 to $4 per month at demo duty-cycle (stopped when idle; §8 firewalls the costs), and you can open it right now.
+On the evening of June 29, 2026, an empty git repository became a live, internet-reachable, self-hostable software product. The arc from scaffold to public demo took about 2.5 hours of wall-clock (17:56 to 20:23 Pacific), spanned 8 phases, 27 commits, and 90 files, and was executed by a governed fleet of roughly 30 Claude subagent invocations that consumed over 2 million tokens. The result ran on a single AWS instance through mid-2026 for about $2 to $4 per month at demo duty-cycle (stopped when idle; §8 firewalls the costs). Today the demo is a static snapshot.
 
 That an agent fleet can emit 90 files quickly is not the interesting part. Volume is unfalsifiable and ages badly. The interesting part is the apparatus that let a long, multi-session, ship-grade build hold together without a human reviewing every diff, and the fact that the system used that apparatus on itself. Muster used its own task board as the build's spine, its own parallel fan-out to construct one of its own subsystems, and its own adversarial verifiers to keep its own sellable template clean.
 
@@ -126,7 +126,7 @@ Muster is a coordination architecture with named organs. Read it as a transferab
 
 **The constitution: governance as plain-English code.** A numbered, versioned ruleset (`CLAUDE.md`) loaded into every session as non-optional context: secrets are env-only, one trunk equals production, semver is automated, never edit a contested worktree path, and a literal "definition of done" ceremony. This build ran under the author's ten-section constitution; the repo ships a distilled per-profile cut (six to seven sections) that `wire` renders into every deployment. The rules are imperative and testable. This is what makes a stateless model behave like a long-lived teammate.
 
-The whole thing stands up with one command. `bin/elk-os` is a resumable, idempotent phase machine (`init → up → migrate → seed → wire → doctor`) whose only hard dependency is Docker (the `migrate`/`seed` phases additionally use stdlib `python3`). The `doctor` subcommand is the credibility instrument: a green/red board that checks every subsystem from an empty start and exits nonzero on red. It is a from-scratch acceptance test, not a smoke check.
+The stack stands up in six phases. `bin/elk-os` is a resumable, idempotent phase machine (`init → up → migrate → seed → wire → doctor`) whose only hard dependency is Docker (the `migrate`/`seed` phases additionally use stdlib `python3`). The `doctor` subcommand is the credibility instrument: a green/red board that checks every subsystem from an empty start and exits nonzero on red. It is a from-scratch acceptance test, not a smoke check.
 
 A note on alternatives, because "task board vs raw chat" is a soft target nobody serious argues for. The real competitors to a task board are: git itself (branches and PRs as the unit of work), markdown plan files in the repo (which my own spec-flow kit uses), and framework-managed handoff state (LangGraph, CrewAI, AutoGen). A board earns its place over markdown-plan-files for one reason: it is a **queryable, concurrently-writable, human-watchable** store with a stable ID per unit. Plan files in git serialize fine for one agent but invite merge conflicts the moment several agents update status at once, and they are not watchable in real time by a non-technical stakeholder. A board over a database gives you the query surface and the live human read-side that flat files do not. That is the honest reason to reach for one, and it is a smaller, more defensible claim than "tickets are novel."
 
@@ -296,7 +296,7 @@ bin/elk-os doctor    # green/red from-scratch acceptance board
 
 The repository is public: [github.com/AnalogElk/muster](https://github.com/AnalogElk/muster). It ships `bin/elk-os`, the `CLAUDE.md` constitution templates (a distilled cut of the ten-section ruleset that governed this build, the single most reusable artifact in this package, and the one I would copy first), the two profiles, the compose topology, and the local intelligent layer of §4 (the RAG engine plus the permission-aware Elk Chat wiring).
 
-An empty repository became a live, self-hostable product in about 2.5 hours, governed end to end by its own task board, hosted for a few dollars a month, and you can poke the real thing now. The [portal](https://app.musterr.dev) is the human read-side of the loop, and the board it renders is the spine itself: sign in with the read-only demo login (`demo@muster.dev` / `muster-demo`) and you are looking at the actual coordination substrate of *this build*, the same `os_tasks` rows the fleet claimed, worked, and closed to bring the system into existence. (The Directus Studio/admin surface is not publicly exposed; the portal is the read window, and the demo login holds the same read-only scope at the API.)
+An empty repository became a live, self-hostable product in about 2.5 hours, governed end to end by its own task board, hosted for a few dollars a month, and the demo still shows it as a snapshot. The [portal](https://app.musterr.dev) is the human read-side of the loop, and the board it renders is the spine itself. The demo is now a static snapshot with no sign-in (the read-only login this paragraph first described was retired), and it shows the actual coordination substrate of *this build*, the same `os_tasks` rows the fleet claimed, worked, and closed to bring the system into existence. (The Directus Studio/admin surface is not publicly exposed.)
 
 The model is stateless; the organization around it does not have to be. That is the whole argument. The next generation of dev tools will not compete on model quality, which commoditizes. They will compete on the operating system around the model, and the task record is its coordination substrate. Make the ticket the unit of work, and the chat becomes disposable.
 
@@ -320,7 +320,7 @@ Second, the board behind the demo login stopped being a summary. It carries the 
 
 Third, the exhibit hardened from a bare IP to a product surface: musterr.dev (the double R is deliberate) with browser-trusted Let's Encrypt TLS, a static landing and this paper served as plain files that survive the live system being down, and self-hosted, IP-anonymized analytics that honor Global Privacy Control, disclosed on a public [privacy page](https://musterr.dev/privacy.html).
 
-One correction to §8's hosting frame, in the ledger's spirit: the demo box currently runs always-on, on a larger instance than the build-night machine, while the demo is in active rotation. The duty-cycled $2-to-4 figure remains the floor of the hosting model, not the current posture. The claims did not change; how much of them you can check without taking my word did.
+One correction to §8's hosting frame, in the ledger's spirit: in July 2026 the demo box ran always-on, on a larger instance than the build-night machine. The demo has since become a static snapshot served as plain files. The duty-cycled $2-to-4 figure remains the floor of the hosting model, not the current posture. The claims did not change; how much of them you can check without taking my word did.
 
 ---
 
