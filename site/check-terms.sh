@@ -21,6 +21,8 @@ cd "$ROOT" || exit 2
 
 TIER1=(
   site/index.html
+  site/features.html
+  site/photo.html
   site/privacy.html
   site/og.svg
   README.md
